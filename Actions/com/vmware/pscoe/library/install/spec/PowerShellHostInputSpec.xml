@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="PowerShellHostInputSpec" result-type="Any" api-version="6.0.0" id="08db24dd-c9e8-482b-a638-89288c76ac48" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[PowerShellHost input specificator. Allows the operator to specify a rest host object as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var RefInputSpec = Class.load("com.vmware.pscoe.library.install.spec", "RefInputSpec");
+var InputSpecBase = Class.load("com.vmware.pscoe.library.install.spec", "InputSpecBase");
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+    .getLogger("com.vmware.pscoe.library.install.spec.PowerShellHostInputSpec");
+
+return Class.define(function PowerShellHostInputSpec(path) {
+    InputSpecBase.apply(this, arguments);
+    this.refType = "PowerShell:PowerShellHost";
+    this.validators.push(function (val) {
+        return (val && (val.hostName || val.id || val.host)) ? null : ("no 'host' or 'hostName' or 'id' property found for powershell host " + JSON.stringify(val) + " under path: \"" + path + "\".");
+    });
+}, {
+    reachable: function (timeout) {
+        timeout = timeout || 60;
+        this.validators.push(function (value) {
+            if (!value.host && !value.hostName) {
+                logger.warn("Reachable method require 'host' or 'hostName' parameter to be passed. Validation is considered as successful.");
+                return null;
+            }
+            var host = value.host == null ? value.hostName : value.host;
+            var isHostReachable = System.isHostReachable(host, timeout);
+            return !isHostReachable ? "Powershell Host '" + host + "' is not reachable. " : null;
+        });
+        return this;
+    },
+    execute: function (value, context) {
+        var deref = this.dereference(value)[0];
+        return InputSpecBase.prototype.execute.apply(this, [deref, context]);
+    },
+
+    /**
+     * Finds a PowerShell:PowerShellHost object in vRO. First-level properties:
+     * -id
+     * -name
+     * -url
+     * -host or hostName
+     * -port
+     * -authentication
+     * -type
+     * -transportProtocol
+     * -username
+     * -password
+     * -acceptAllCertificates
+     * -shellCodePage
+     * -idleTimeout
+     * -sessionMode
+     * -customProperties (optional) - setting custom properties on the vRO PowerShellHost
+     *
+     * @param {Any} value - JSON criteria
+     * @returns {PowerShell:PowerShellHost}
+     */
+    dereference: function (value) {
+        var dereferenceCriteria = buildDereferenceCriteria(value);
+        var hosts = RefInputSpec.prototype.dereference.apply(this, [dereferenceCriteria]);
+        if (!value.id) {
+            if ((hosts && hosts.length == 1) && (value.overwrite)) {
+                removePowerShellHost(hosts[0]);
+                hosts = [createPowerShellHost(value)];
+                value.override = false;
+                value.overwrite = false;
+            }
+            if (!hosts || hosts.length < 1) {
+                hosts = [createPowerShellHost(value)];
+            }
+        }
+        return hosts;
+    }
+}, InputSpecBase);
+
+
+function buildDereferenceCriteria(value) {
+    var criteria = {};
+    if (value.id) {
+        criteria.id = value.id;
+    } else {
+        var validKeys = ["name", "hostName", "host", "connectionURL", "transportProtocol", "username"];
+        Object.keys(value).forEach(function (key) {
+            if (validKeys.indexOf(key) > -1) {
+                if (key == "host" || key == "hostName" || key == "connectionURL") {
+                    criteria["connectionURL"] = value[key];
+                } else {
+                    criteria[key] = value[key];
+                }
+            }
+        });
+    }
+    return criteria;
+}
+
+function createPowerShellHost(options) {
+    var wfpath = "Library/PowerShell/Configuration";
+    var wfname = "Add a PowerShell host";
+    var path = Server.getWorkflowCategoryWithPath(wfpath);
+    var workflows = path.workflows.filter(function (workflow) {return workflow.name == wfname;});
+    var wf = workflows[0];
+    logger.info("Creating a new PowerShell host with options: " + JSON.stringify(options) +" using workflow \"" + wfpath + "/" + wfname + "\" (id: " + wf.id + ").");
+
+    var inputs = new Properties();
+
+    inputs.put("name", (options.name) ? options.name : options.url);
+    inputs.put("url",                   options.connectionURL || (options.hostName || options.host));
+    inputs.put("hostName",              options.hostName || (options.host || options.connectionURL));
+    inputs.put("port",                  options.port);
+    inputs.put("authentication",        options.authentication || "Basic");
+    inputs.put("type",                  options.type || "WinRM");
+    inputs.put("transportProtocol",     options.transportProtocol || "HTTPS");
+    inputs.put("username",              options.username);
+    inputs.put("password",              options.password);
+    inputs.put("acceptAllCertificates", options.acceptAllCertificates || false);
+    inputs.put("shellCodePage",         options.shellCodePage);
+    inputs.put("idleTimeout",           options.idleTimeout);
+    inputs.put("sessionMode",           options.sessionMode || "Shared Session");
+
+    var token = wf.execute(inputs);
+    var output = System.getModule("com.vmware.pscoe.library.util").waitForWorkflowToComplete(token, 1, 30);
+    var pwHost = output.get("host");
+    if (!!options.customProperties) {
+        var inSpecDummy = new InputSpecBase("dummy");
+        Object.keys(options.customProperties).forEach(function (key) {
+            inSpecDummy.setCustomProperty(pwHost, key, options.customProperties[key]);
+        }, this);
+    }
+    return pwHost;
+}
+
+function removePowerShellHost(host) {
+    PowerShellHostManager.remove(host.id);
+    logger.info("PowerShellHost with url '" + host.url + "' has been deleted.");
+}]]></script>
+</dunes-script-module>

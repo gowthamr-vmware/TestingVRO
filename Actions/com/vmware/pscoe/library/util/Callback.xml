@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Callback" result-type="Any" api-version="6.0.0" id="add9ae17-d0a1-4e44-80a7-624116800ec9" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Depricated - use Func.retryWithTimeout instead.]]></description>
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.util.Callback");
+var Func = System.getModule("com.vmware.pscoe.library.util").Func();
+
+return function (func) {
+    /*    @arguments contains all parameters which are passed to the callback. */
+    /*    The first parameter is a passed method, because of that we slice it. */
+    var args = [];
+    for (var i = 1; i < arguments.length; i++) {
+        args.push(arguments[i]);
+    }
+
+    var self = this;
+    this.runWithRetryTimeout = function (timeout, sleep) {
+        logger.debug("Depricated Calback::runWithRetryTimeout -> use Func.retryWithTimeout instead.")
+
+        // endless support ? better don't rely on this but set a large enough timeout instead
+        timeout = (timeout < 0) ? Number.MAX_VALUE : timeout;
+        sleep = (sleep >= 0) ? sleep : 1;
+        var lastExeption = null;
+
+        try {
+            return Func.retryWithTimeout(function () {
+                return func.apply(self, args);
+            }, function (value, error) {
+                if (error) {
+                    lastExeption = error;
+                    return false;
+                }
+                return true;
+            }, timeout, sleep);
+        } catch (timeoutError) {
+            if (lastExeption) {
+                throw lastExeption;
+            }
+            throw timeoutError;
+        }
+    };
+};]]></script>
+</dunes-script-module>

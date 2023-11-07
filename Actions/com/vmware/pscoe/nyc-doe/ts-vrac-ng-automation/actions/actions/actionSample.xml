@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="actionSample" result-type="number" api-version="6.0.0" id="b7ef4056-cc36-4e11-b8f6-7dc2774227bf" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions">
+  <param n="a" t="number"><![CDATA[]]></param>
+  <param n="b" t="number"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[return a + b;]]></script>
+</dunes-script-module>

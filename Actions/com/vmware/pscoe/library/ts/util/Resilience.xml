@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Resilience" result-type="Any" api-version="6.0.0" id="45e66233-2a19-4b5a-8147-a0735aa4f7eb" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Common_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util.Common");
+function Retry(retry, waitInterval, predicate) {
+    predicate = predicate || (function (_) { return true; });
+    return function (target, propertyName, propertyDescriptor) {
+        propertyDescriptor = propertyDescriptor || Object.getOwnPropertyDescriptor(target, propertyName);
+        var method = propertyDescriptor.value;
+        propertyDescriptor.value = function () {
+            var _this = this;
+            var args = arguments;
+            new Resilience(propertyName)
+                .retry(retry)
+                .waitInterval(waitInterval)
+                .predicate(function (state) { return predicate(state); })
+                .execute(function () { return method.apply(_this, args); });
+        };
+    };
+}
+exports.Retry = Retry;
+/**
+ * Provides resilience functionality by blocking the current vRO thread.
+ */
+var Resilience = /** @class */ (function () {
+    function Resilience(name) {
+        this.name = name;
+    }
+    Resilience.prototype.retry = function (value) {
+        this._retry = value;
+        return this;
+    };
+    Resilience.prototype.waitInterval = function (value) {
+        this._waitInterval = value;
+        return this;
+    };
+    Resilience.prototype.withLogging = function (logger) {
+        this._logger = logger;
+        return this;
+    };
+    Resilience.prototype.throwCustomError = function (message) {
+        this._throwMessage = message;
+        return this;
+    };
+    Resilience.prototype.predicate = function (value) {
+        this._predicate = value;
+        return this;
+    };
+    Resilience.prototype.execute = function (callback) {
+        var retry = this._retry || 0;
+        var waitInterval = this._waitInterval || 0;
+        var retryCount = 0;
+        var result;
+        var error;
+        var logger = this._logger || System.debug;
+        do {
+            logger("Executing task '" + this.name + "'");
+            try {
+                result = undefined;
+                error = undefined;
+                result = callback(retryCount);
+            }
+            catch (err) {
+                error = err;
+            }
+            if (error === undefined && (!this._predicate || this._predicate(result))) {
+                break;
+            }
+            if (error !== undefined) {
+                logger("Error while executing task '" + this.name + "': " + error);
+            }
+            retryCount++;
+            if (retry > -1 && retryCount > retry) {
+                if (this._throwMessage) {
+                    throw new Error(this._throwMessage);
+                }
+                else if (error) {
+                    throw error;
+                }
+                else {
+                    throw new Error("Task '" + this.name + "' failed.");
+                }
+            }
+            if (waitInterval) {
+                var ttwSeconds = Array.isArray(waitInterval) ? Common_1._.randomIntegerInRange.apply(void 0, waitInterval) : waitInterval;
+                logger("Waiting " + waitInterval + " seconds before retrying task: '" + this.name + "'...");
+                System.sleep(ttwSeconds * 1000);
+            }
+        } while (true);
+        return result;
+    };
+    return Resilience;
+}());
+exports.Resilience = Resilience;
+return exports;]]></script>
+</dunes-script-module>

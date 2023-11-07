@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="generateAlbResourceName" result-type="string" api-version="6.0.0" id="e054a8ed-4831-463a-86ea-a27d247bcdfd" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi">
+  <param n="datacenter" t="string"><![CDATA[]]></param>
+  <param n="environment" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ConfigElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ConfigElementAccessor");
+var HostnameGenerator_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname/actions/HostnameGenerator");
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var AlbConstants_1 = VROES.importLazy("com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions/avi/AlbConstants");
+if (!datacenter || !environment) {
+    throw new Error("Missing required input parameter. Got datacenter=" + datacenter + ", environment=" + environment);
+}
+if (!this["workflow"]) {
+    // if there is no workflow variable in global scope,
+    // it means the action is executed directly and the Locking
+    // class used by the HostnameGenerator might fail with ReferenceError
+    // Assigning 'workflow' to 'undefined' in this case, avoids the error
+    workflow = undefined;
+}
+var logger = Logger_1._.Logger.getLogger("generateAlbResourceName");
+var template = ("" + datacenter + environment.charAt(0) + "######").toLowerCase();
+var configElement = new ConfigElementAccessor_1._.ConfigElementAccessor(AlbConstants_1._.AlbConstants.CUSTOM_HOSTNAME_CONFIG_PATH).getElement();
+var hostnameGenerator = new HostnameGenerator_1._.HostnameGenerator(template, [], undefined, // trick the compiler to not do typecheck
+undefined, configElement, undefined);
+var name = hostnameGenerator.getValidHostname();
+logger.info("Generated resource name: " + name);
+return name;]]></script>
+</dunes-script-module>

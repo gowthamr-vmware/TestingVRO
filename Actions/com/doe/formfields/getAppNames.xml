@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getAppNames" result-type="Array/string" api-version="6.0.0" id="1ab64782-2a1f-437d-bf5f-0692afdf42d2" version="1.0.0" allowed-operations="vef" category-name="com.doe.formfields">
+  <script encoded="false"><![CDATA[System.log('starting')
+
+   var nameColName = 'Name';
+
+ 
+   var path = 'web-root';
+   var reName = 'appcriticality.csv';
+
+   var resourceElement = System.getModule("com.vmware.o11n.plugin.dynamictypes.configuration").getResourceElementByName(path + "/" + reName)
+   var rawInput = resourceElement.getContentAsMimeAttachment().content;
+
+   var csv = rawInput.split(/\r?\n/)
+   var first = csv[0];
+   first = first.replace(/\s/g, '');
+   System.log('First ' + first);
+   var firstRow = first.split(',');
+   var apps = new Array();
+   for (var i = 1; i < csv.length; i++) {
+       var aRow = csv[i].split(',');
+       if (aRow && aRow.length > 0) {
+           //apps.push(new Properties({label: aRow[0],value: aRow[0]}));
+           apps.push(aRow[0]);
+       } else { break; }
+   }
+
+apps = apps.sort();
+return apps;]]></script>
+</dunes-script-module>

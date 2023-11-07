@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="NamingService" result-type="Any" api-version="6.0.0" id="e3bead5d-1219-4150-a58e-de66cab0d7b5" version="8.8.223597" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.iaas.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * IAAS API is a RESTful service, which allows users to execute provisioning related UI actions via an API. <br><br>This page describes the RESTful APIs for IAAS API. The APIs facilitate CRUD operations on the various resources and entities used throughout Cloud Assembly(Cloud Accounts, Cloud zones, Computes, Mappings, etc.) and allows operations on them (creating a cloud account, patching a machine, creating image progile, etc.).<br><br>The APIs that list collections of resources  also support OData like implementation. Below query params can be used across different IAAS API endpoints<br><br><ol><li>`$orderby` -  returns a result with the rows being sorted by the values of provided attribute.<br>`/iaas/api/cloud-accounts?$orderby=name%20desc`</li><br><li>`$top` - number of records you want to get.<br>`/iaas/api/cloud-accounts?$top=20`</li><br><li>`$skip` - number of records you want to skip.<br>`/iaas/api/cloud-accounts?$skip=10`</li><br><li>`$select` - select a subset of properties to include in the response.<br>`/iaas/api/cloud-accounts?$select=id`</li><br><li>`$filter` - filter the results by a specified predicate expression. Operators: eq, ne, and, or.<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'ABC*'` - name starts with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC*'` - name contains 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC'` - name ends with 'ABC'<br><b>/iaas/api/projects</b> and <b>/iaas/api/deployments</b> support different format for partial match: <br>`/iaas/api/projects?$filter=startswith(name, 'ABC')` - name starts with 'ABC'<br>`/iaas/api/projects?$filter=substringof('ABC', name)` - name contains 'ABC'<br>`/iaas/api/projects?$filter=endswith(name, 'ABC')` - name ends with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20ne%20'example-cloud-account'%20or%20customProperties.isExternal%20eq%20'false'`</li><br><li>`$count` - flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.<br>`/iaas/api/cloud-accounts?$count=true`<br></li></ol>
+ */
+var NamingService = /** @class */ (function () {
+    function NamingService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Get Custom Name by Id
+     * Endpoint URL: '/iaas/api/naming/{id}'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the custom name.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetCustomNameHttpResponse} Http response (200)
+     */
+    NamingService.prototype.getCustomName = function (parameters) {
+        var path = "/iaas/api/naming/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Delete custom name with a given id
+     * Endpoint URL: '/iaas/api/naming/{id}'
+     * Endpoint Method: 'delete'
+     * @param {string} id - The ID of the custom name.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {DeleteCustomnameHttpResponse} Http response (204)
+     */
+    NamingService.prototype.deleteCustomname = function (parameters) {
+        var path = "/iaas/api/naming/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "DELETE",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Create Custom Name
+     * Endpoint URL: '/iaas/api/naming'
+     * Endpoint Method: 'post'
+     * @param {CustomNamingModel} body - Custom naming instance
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {CreateCustomNameHttpResponse} Http response (201)
+     */
+    NamingService.prototype.createCustomName = function (parameters) {
+        var path = "/iaas/api/naming";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Update custom name
+     * Endpoint URL: '/iaas/api/naming'
+     * Endpoint Method: 'put'
+     * @param {CustomNamingModel} body - Custom Name specification
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {UpdateCustomNameHttpResponse} Http response (200, 204)
+     */
+    NamingService.prototype.updateCustomName = function (parameters) {
+        var path = "/iaas/api/naming";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PUT",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get Custom Names For Project Id
+     * Endpoint URL: '/iaas/api/naming/projectId/{id}'
+     * Endpoint Method: 'get'
+     * @param {string} id - Project id.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetCustomNameByProjectIdHttpResponse} Http response (200)
+     */
+    NamingService.prototype.getCustomNameByProjectId = function (parameters) {
+        var path = "/iaas/api/naming/projectId/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    NamingService.METADATA = {
+        "license": {
+            "name": "Apache License",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0"
+        },
+        "description": "IAAS API is a RESTful service, which allows users to execute provisioning related UI actions via an API. <br><br>This page describes the RESTful APIs for IAAS API. The APIs facilitate CRUD operations on the various resources and entities used throughout Cloud Assembly(Cloud Accounts, Cloud zones, Computes, Mappings, etc.) and allows operations on them (creating a cloud account, patching a machine, creating image progile, etc.).<br><br>The APIs that list collections of resources  also support OData like implementation. Below query params can be used across different IAAS API endpoints<br><br><ol><li>`$orderby` -  returns a result with the rows being sorted by the values of provided attribute.<br>`/iaas/api/cloud-accounts?$orderby=name%20desc`</li><br><li>`$top` - number of records you want to get.<br>`/iaas/api/cloud-accounts?$top=20`</li><br><li>`$skip` - number of records you want to skip.<br>`/iaas/api/cloud-accounts?$skip=10`</li><br><li>`$select` - select a subset of properties to include in the response.<br>`/iaas/api/cloud-accounts?$select=id`</li><br><li>`$filter` - filter the results by a specified predicate expression. Operators: eq, ne, and, or.<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'ABC*'` - name starts with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC*'` - name contains 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC'` - name ends with 'ABC'<br><b>/iaas/api/projects</b> and <b>/iaas/api/deployments</b> support different format for partial match: <br>`/iaas/api/projects?$filter=startswith(name, 'ABC')` - name starts with 'ABC'<br>`/iaas/api/projects?$filter=substringof('ABC', name)` - name contains 'ABC'<br>`/iaas/api/projects?$filter=endswith(name, 'ABC')` - name ends with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20ne%20'example-cloud-account'%20or%20customProperties.isExternal%20eq%20'false'`</li><br><li>`$count` - flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.<br>`/iaas/api/cloud-accounts?$count=true`<br></li></ol>",
+        "title": "VMware Cloud Assembly IaaS API",
+        "version": "2021-07-15"
+    };
+    return NamingService;
+}());
+exports.NamingService = NamingService;
+return exports;]]></script>
+</dunes-script-module>

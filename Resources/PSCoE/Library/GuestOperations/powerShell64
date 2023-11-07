@@ -1,0 +1,7 @@
+{
+	"tmpFolder": "c:\\Windows\\Temp",
+	"runScriptArguments" : "-executionpolicy bypass -Command \"& {$proc=Start-Process powershell.exe -ArgumentList '-File {{scriptPath}} {{args}}' -Wait -PassThru -RedirectStandardOutput {{stdOutPath}} -RedirectStandardError {{stdErrPath}}; exit $proc.ExitCode}\"",
+	"separator": "\\",
+	"scriptProgram": "C:\\Windows\\system32\\WindowsPowerShell\\v1.0\\powershell.exe",
+	"scriptExtension": "ps1",
+}

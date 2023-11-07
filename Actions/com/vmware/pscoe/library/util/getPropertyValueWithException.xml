@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getPropertyValueWithException" result-type="Any" api-version="6.0.0" id="97321c83-98c9-40bb-ab6d-50dd417d98aa" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[reads any key sequence from the property. Example: properties.PSPPS.IPAM.Provider
+if the key do NOT exist or is EMPTY - throws error]]></description>
+  <param n="prop" t="Any"><![CDATA[]]></param>
+  <param n="key" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var Validator = System.getModule("com.vmware.pscoe.library.validator").Validator(); 
+var value = prop.get(key);
+if ((new Validator()).isBlank(value)) {
+	throw "Missing property error. Property \"" + key + "\" not found or empty.";
+}
+return value;]]></script>
+</dunes-script-module>

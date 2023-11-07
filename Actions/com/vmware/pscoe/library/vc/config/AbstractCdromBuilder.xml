@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AbstractCdromBuilder" result-type="Any" api-version="6.0.0" id="fccef1c7-d75d-4b16-8f06-00f7097fef7f" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Abstract base class for building CD-ROMs]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+/**
+ * @param {Any} storage - storage system, e.g. com.vmware.pscoe.library.vc.Storage
+ */
+return Class.define(function AbstractCdromBuilder(storage) {
+	this.storage = storage;
+	this.saved = null;
+	this.datastore = null;
+}, {
+        /**
+         * Required.
+         * @param {VcDatastore} ds - A datastore where to create the disk.
+         */
+		setDatastore: function (ds) {
+			this.datastore = ds;
+			return this;
+		},
+        /**
+         * Required.
+         * @returns {VcDatastore}
+         */
+		getDatastore: function () {
+			return this.datastore;
+		},
+
+		/**
+         * Required.
+         * @param {string} filepath - Path relative to the root of the datastore
+         */
+		setFilepath: function (filepath) {
+			this.filepath = filepath;
+			return this;
+		},
+        /**
+         * Required.
+         * @returns {string}
+         */
+		getFilepath: function () {
+			return this.filepath;
+		},
+
+		buildFileName: function () {
+			var datastore = this.getDatastore();
+			if (datastore && this.filepath) {
+				var datastorePath = "[" + datastore.info.name + "] ";
+				return datastorePath + this.filepath;
+			}
+			return null;
+		},
+
+		buildBackingInfo: function () {
+			var backingInfo = new VcVirtualCdromIsoBackingInfo();
+			backingInfo.fileName = this.buildFileName();
+			return backingInfo;
+		},
+
+		// Override in derived classes
+		buildCdrom: function () {
+			// empty
+		},
+
+        /**
+         * @returns {VcVirtualDeviceConfigSpec} - the device spec to be used for reconfiguration
+         */
+		build: function () {
+			var deviceConfigSpec = new VcVirtualDeviceConfigSpec();
+			deviceConfigSpec.device = this.buildCdrom();
+			return deviceConfigSpec;
+		},
+        /**
+         * Builds the device spec and saves it to the storage system specified
+         * @returns - this
+         */
+		save: function () {
+			this.saved = this.build();
+			this.storage.add(this.saved);
+			return this;
+		},
+        /**
+         * Retrieves the created disk. Null if the disk was not created.
+         * @returns {VcVirtualCdrom}
+         */
+		created: function () {
+			return this.storage.getCdromByUnitNumber(this.saved.device.unitNumber, this.saved.device.controllerKey);
+		}
+	});]]></script>
+</dunes-script-module>

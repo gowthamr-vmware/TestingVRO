@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="processTemplate" result-type="Any" api-version="6.0.0" id="f7963b5a-29a6-4641-ad83-1560c1914be5" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <param n="template" t="Any"><![CDATA[]]></param>
+  <param n="vars" t="Any"><![CDATA[]]></param>
+  <param n="pattern" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (!pattern || pattern == "") {
+	pattern = "\"#{\" + variable + \"}\"";
+}
+var beforePattern = pattern.split("variable")[0];
+var afterPattern = pattern.split("variable")[1];
+beforePattern = beforePattern.replace(/\+/g, "").trim().replace(/\"/g, "");
+afterPattern = afterPattern.replace(/\+/g, "").trim().replace(/\"/g, "");
+
+var result = template;
+for (var i in vars.keys) {
+	var variable = vars.keys[i];
+	var value = vars.get(variable);
+	result = result.replace(new RegExp(beforePattern + variable + afterPattern, "g"), value);
+}
+return result;]]></script>
+</dunes-script-module>

@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VirtualDiskBuilder" result-type="Any" api-version="6.0.0" id="b00f568a-2cdb-489c-aea8-fd7770e61d95" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building a device spec for virtual disk.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var AbstractDiskBuilder = Class.load("com.vmware.pscoe.library.vc.config", "AbstractDiskBuilder");
+var Storage = Class.load("com.vmware.pscoe.library.vc", "Storage");
+
+/**
+ * @param {Any} storage - storage system, e.g. com.vmware.pscoe.library.vc.Storage
+ */
+return Class.define(function VirtualDiskBuilder(storage) {
+    AbstractDiskBuilder.call(this, storage);
+
+    var size = null;
+    var diskMode = VcVirtualDiskMode.persistent;
+    var thinProvisioned = false;
+    var eagerlyScrub = false;
+    var sharing = null;
+
+    /**
+     * Optional. None by default.
+     * @param {Storage.DiskSharing} value - Storage.DiskSharing.<sharingMultiWriter|sharingNone>
+     */
+    this.setSharing = function (value) {
+        sharing = value;
+        return this;
+    }
+
+    /**
+     * Required.
+     * @param {Storage.DiskProvisioning} diskProvisioning - Storage.DiskProvisioning.<Thin|ThikLazy|ThikEagerZeroed>
+     */
+    this.setProvisioning = function (provisioning) {
+        switch (provisioning) {
+            case Storage.DiskProvisioning.thikLazy:
+                thinProvisioned = false;
+                eagerlyScrub = false;
+                break;
+            case Storage.DiskProvisioning.thikEager:
+                thinProvisioned = false;
+                eagerlyScrub = true;
+                break;
+            case Storage.DiskProvisioning.thin:
+            default:
+                thinProvisioned = true;
+                eagerlyScrub = false;
+        }
+        return this;
+    }
+
+    /**
+         * Optional. Default is persistent
+         * @param {VcVirtualDiskMode} mode - Required. VcVirtualDiskMode.<append|independent_nonpersistent|independent_persistent|nonpersistent|persistent|undoable>. Default is persistent.
+         */
+    this.setMode = function (mode) {
+        diskMode = mode;
+        return this;
+    };
+
+    /**
+     * @returns {VcVirtualDiskMode}
+     */
+    this.getMode = function () {
+        return diskMode;
+    };
+
+    /**
+    * Required.
+    * @param {number} gbs - The size of the disk in GBs.
+    */
+    this.setCapacityInGB = function (gbs) {
+        size = gbs;
+        return this;
+    };
+
+    /**
+     * Capacity in bytes. Overriden.
+     */
+    this.getCapacity = function () {
+        return size * 1024 * 1024;
+    };
+
+    this.buildBackingInfo = function () {
+        var diskBackingInfo = new VcVirtualDiskFlatVer2BackingInfo();
+        diskBackingInfo.diskMode = this.getMode().value;
+        diskBackingInfo.fileName = this.buildFileName();
+        if (sharing) {
+            diskBackingInfo.sharing = sharing;
+        }
+
+        diskBackingInfo.thinProvisioned = thinProvisioned;
+        diskBackingInfo.eagerlyScrub = eagerlyScrub;
+        return diskBackingInfo;
+    };
+
+}, null, AbstractDiskBuilder);]]></script>
+</dunes-script-module>

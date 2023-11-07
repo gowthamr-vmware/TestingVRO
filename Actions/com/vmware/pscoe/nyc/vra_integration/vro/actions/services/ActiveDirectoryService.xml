@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ActiveDirectoryService" result-type="Any" api-version="6.0.0" id="21ca66bc-1bfb-311b-b515-2d8253f3e382" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var ADObjectFinder = System.getModule("com.vmware.pscoe.library.activedirectory.utils").ADObjectFinder();
+var ADObjectFactory = System.getModule("com.vmware.pscoe.library.activedirectory").ADObjectFactory();
+var utils_1 = VROES.importLazy("com.vmware.pscoe.nyc.vra_integration.vro.actions/utils/utils");
+var logger = Logger_1._.Logger.getLogger("com.vmware.pscoe.rockwell.actions.services/ActiveDirectoryService");
+var ActiveDirectoryService = /** @class */ (function () {
+    function ActiveDirectoryService(adHost) {
+        System.log("constructor ActiveDirectoryService");
+        this.adHost = adHost;
+        this.util = new utils_1._.Utils();
+        this.adFactory = new ADObjectFactory();
+        this.finder = new ADObjectFinder();
+    }
+    ActiveDirectoryService.prototype.findADObjByCommonName = function (objName, objType) {
+        logger.info("searching for AD Object " + objName);
+        return this.finder.findADObjByCommonName(objType, objName, this.adHost);
+    };
+    ActiveDirectoryService.prototype.getObjectByNameAndType = function (objName, objType) {
+        return this.findADObjByCommonName(objName, objType).filter(function (adObject) {
+            objName = objType == "ComputerAD" ? objName + "$" : objName;
+            return objName.toLowerCase() == adObject.getAttribute("sAMAccountName").toLowerCase();
+        }).shift();
+    };
+    ActiveDirectoryService.prototype.createComputer = function (computerName, orgUnit) {
+        var searchOU = orgUnit.split("=")[1].split(",")[0];
+        logger.info("Search OU:" + searchOU);
+        var ouArray = ActiveDirectory.search("OrganizationalUnit", searchOU, this.adHost);
+        logger.debug("ouArray:" + JSON.stringify(ouArray));
+        var ouIndex = ouArray.map(function (e) { return e.distinguishedName.toLowerCase(); }).indexOf(orgUnit.toLowerCase());
+        if (ouIndex > -1) {
+            var ouName = ouArray[ouIndex];
+            logger.info("Found OU:" + ouName.distinguishedName + " computerName: " + computerName);
+            System.getModule("com.vmware.library.microsoft.activeDirectory").createComputer(ouName, computerName, null);
+        }
+        else {
+            throw new Error("OU " + searchOU + " not found");
+        }
+    };
+    /**
+    * Add Computer object to User Group
+    * @param {string} computerDn
+    * @param {string[]} groupDns to add
+    *
+    * @return {void}
+    */
+    ActiveDirectoryService.prototype.addComputerToGroup = function (computerDn, groupDns) {
+        var computer = new ADObjectFactory().getClassInstance("ComputerAD", computerDn, this.adHost.Url);
+        computer.addToUserGroup(groupDns);
+    };
+    ActiveDirectoryService.prototype.moveAdComputer = function (computerName, parentOU) {
+        computerName = computerName.toUpperCase();
+        var computerObject;
+        this.util.executeWithRetry(15, 60, function () {
+            computerObject = this.getObjectByNameAndType(computerName, "ComputerAD");
+            if (!computerObject) {
+                throw new Error("Computer " + computerName + " doesn't exists");
+            }
+        }.bind(this));
+        ActiveDirectory.rename(computerObject.distinguishedName, "CN=" + computerName, parentOU, this.adHost);
+        logger.info("Computer '" + computerName + "' successfully moved to OU '" + parentOU + "'.");
+        return "CN=" + computerName + "," + parentOU;
+    };
+    ActiveDirectoryService.prototype.deleteAdComputer = function (computerName) {
+        computerName = computerName.toUpperCase();
+        var computer = this.getObjectByNameAndType(computerName, "ComputerAD");
+        logger.info("Computer: " + computer);
+        if (!computer) {
+            logger.info("Warning: computer object-" + computer + " doesn't exist.");
+        }
+        else {
+            logger.info("Deleting Computer object with " + computer);
+            computer.destroy();
+        }
+    };
+    return ActiveDirectoryService;
+}());
+exports.ActiveDirectoryService = ActiveDirectoryService;
+return exports;]]></script>
+</dunes-script-module>

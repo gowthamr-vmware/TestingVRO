@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="GetServicesData" result-type="Any" api-version="6.0.0" id="88f247d1-0463-487e-bdca-116fb9a76d47" version="1.0.0" allowed-operations="vef" category-name="corp.local.new-demo">
+  <script encoded="false"><![CDATA[//Demo mocked data
+return{
+    "finance": ["Las Vegas", "San Francisco"],
+    "it": ["London", "Sofia", "Munich"],
+    "sales": ["Singapore", "Tokyo", "Beijing"]
+}]]></script>
+</dunes-script-module>

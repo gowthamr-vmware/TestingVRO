@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ModuleLoader" result-type="Any" api-version="6.0.0" id="b0f65255-25c4-4742-aa5c-604d0cac18e8" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger(
+	"com.vmware.pscoe.library.util.ModuleLoader");
+
+return function(modulePath) {
+	var visited = {};
+	var mod = System.getModule(modulePath);
+	var _filter = null;
+
+	var visit = function(name, callback) {
+		logger.debug("Loading module: " + name);
+		var isFiltered = _filter != undefined && !_filter(name);
+		if (visited[name] || isFiltered) {
+			logger.debug("Skipping module: " +
+						 "visited[name]=" + visited[name] +
+						 " isFiltered= " + isFiltered);
+			return;
+		}
+		visited[name] = true;
+		try {
+			var exported = mod[name]();
+			var ActionClass = typeof exported == "function" ? exported : exported[name];
+
+			var object = new ActionClass();
+			if (object) {
+				object.name = name;
+				if (object.getDependencies && object.getDependencies()) {
+					for (var i in object.getDependencies()) {
+						var dep = object.getDependencies()[i];
+						visit(dep, callback);
+					}
+				}
+				callback(object);
+			} else {
+				logger.warn("Action with class name " + name + " cannot be instantiated");
+			}
+		} catch (e) {
+			logger.warn("Error loading Action class with name: " + name);
+			logger.warn(e);
+			logger.warn(e.stack);
+			return;
+		}
+	};
+
+	this.filter = function(callback) {
+		_filter = callback;
+		return this;
+	};
+
+	this.forEach = function(callback) {
+		for (var i in mod.actionDescriptions) {
+			var act = mod.actionDescriptions[i];
+			visit(act.name, callback);
+		}
+	};
+};]]></script>
+</dunes-script-module>

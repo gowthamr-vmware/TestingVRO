@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='3a7cf6c0-6e01-31f9-bfdf-342276a14357'&dunesName='Action'&name='RESTUtils'&category='com.vmware.pscoe.library.ts.mock.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='5092321a-5145-3d9f-bb46-bbeb5cada802'&dunesName='Action'&name='RESTRequestMock'&category='com.vmware.pscoe.library.ts.mock.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='9015c9e4-7b9b-3a24-94a4-d2d8cff2725b'&dunesName='Action'&name='RESTResponseMock'&category='com.vmware.pscoe.library.ts.mock.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='9f54c2cb-9cd4-3535-84cd-86a7d5555cc8'&dunesName='Action'&name='RESTHostMock'&category='com.vmware.pscoe.library.ts.mock.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a90275b0-47a8-37ba-98ab-f89edb7e8020'&dunesName='Action'&name='RESTHostMockBuilder'&category='com.vmware.pscoe.library.ts.mock.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='ec54069c-3b05-309d-81ab-3e36f5172ebf'&dunesName='Action'&name='RESTMock'&category='com.vmware.pscoe.library.ts.mock.rest']]></elm>
+</package>

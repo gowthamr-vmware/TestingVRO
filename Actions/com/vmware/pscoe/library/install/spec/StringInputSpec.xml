@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="StringInputSpec" result-type="Any" api-version="6.0.0" id="df142a45-8bde-46e6-a635-c08ba5ce664b" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[String input specificator. Allows the operator to specify a string value as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var InputSpecBase = System.getModule("com.vmware.pscoe.library.install.spec").InputSpecBase();
+
+
+return Class.define(function StringInputSpec() {
+	InputSpecBase.apply(this, arguments);
+	this.validators = [function (value) {
+		return value && typeof (value) !== "string" ? "string value expected, but got " + typeof (value) : null;
+	}];
+}, {
+	min: function (m) {
+		this.validators.push(function (value) {
+			return value && value.length < m ? "enter at least " + m + " characters." : null;
+		});
+		return this;
+	},
+
+	max: function (m) {
+		this.validators.push(function (value) {
+			return value && value.length > m ? "enter less than " + m + " characters." : null;
+		});
+		return this;
+	},
+
+	in: function (arr) {
+		var range = Array.isArray(arr) ? arr : [].slice.call(arguments);
+		this.validators.push(function (value) {
+			return value && range.indexOf(value) === -1 ? "provided string not within expected range: " + JSON.stringify(range) + "." : null;
+		});
+		return this;
+	},
+
+	match: function (regex) {
+		this.validators.push(function (value) {
+			return value && !regex.test(value) ? "provided string doesn't match regex: " + regex + "." : null;
+		});
+		return this;
+	}
+}, InputSpecBase);]]></script>
+</dunes-script-module>

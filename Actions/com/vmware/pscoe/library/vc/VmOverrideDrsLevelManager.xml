@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VmOverrideDrsLevelManager" result-type="VcTask" api-version="6.0.0" id="4047c26a-d18f-47f2-8627-5f2227e5aaad" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc">
+  <description><![CDATA[Configure the DRS Automation Level for a set of VMs]]></description>
+  <param n="enabled" t="boolean"><![CDATA[enabled the override DRS Automation Level for a set of VMs]]></param>
+  <param n="level" t="string"><![CDATA[DRS Automation Level to set to the VMs]]></param>
+  <param n="vms" t="Array/VcVirtualMachine"><![CDATA[Set of Vms]]></param>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+var VmOverrideDrsLevelManager = Class.define(function VmOverrideDrsLevelManager(cluster) {
+    this.cluster = cluster;
+}, {
+    /**
+     * Configure the DRS Automation Level for a set of VMs
+     * @param {boolean} enabled - enabled the override DRS Automation Level for a set of VMs
+     * @param {string} level - DRS Automation Level to set to the VMs
+     * @param {Array/VcVirtualMachine} vms - Set of Vms
+     * @returns {VcTask}
+     */
+    overrideVmsDrsLevel: function (enabled, level, vms) {
+        var spec = new VcClusterConfigSpecEx();
+
+        var allOverrides = this.getAllVmsOverride();
+        spec.drsVmConfigSpec = vms.map(function (vm) {
+            var drsVMConfig = new VcClusterDrsVmConfigSpec();
+
+            // if the vm has already overridden the DRS level
+            var operation = allOverrides.some(function (r) {
+                return r.key == vm;
+            }) ? VcArrayUpdateOperation.edit : VcArrayUpdateOperation.add;
+
+            drsVMConfig.operation = operation;
+            drsVMConfig.info = new VcClusterDrsVmConfigInfo();
+            drsVMConfig.info.behavior = VcDrsBehavior[level];
+            drsVMConfig.info.enabled = enabled;
+            drsVMConfig.info.key = vm;
+
+            return drsVMConfig;
+        });
+
+        return this.cluster.reconfigureComputeResource_Task(spec, true);
+    },
+
+    /**
+     * Remove the override DRS Automation Level for a set of VMs
+     * @param {Array/VcVirtualMachine} vms 
+     */
+    removeVmOverrideDrsLevel: function (vms) {
+        var spec = new VcClusterConfigSpecEx();
+
+        spec.drsVmConfigSpec = vms.map(function (vm) {
+            var drsVMConfig = new VcClusterDrsVmConfigSpec();
+
+            drsVMConfig.operation = VcArrayUpdateOperation.remove;
+            drsVMConfig.removeKey = new VcManagedObjectReference();
+            drsVMConfig.removeKey.type = "VirtualMachine";
+            drsVMConfig.removeKey.value = vm.id;
+
+            return drsVMConfig;
+        });
+
+        return this.cluster.reconfigureComputeResource_Task(spec, true);
+    },
+
+    getAllVmsOverride: function () {
+        if (this.cluster && this.cluster.configurationEx) {
+            return this.cluster.configurationEx.drsVmConfig || [];
+        }
+        return [];
+    }
+});
+
+VmOverrideDrsLevelManager.DrsBehavior = {
+    partiallyAutomated: "partiallyAutomated",
+    fullyAutomated: "fullyAutomated",
+    manual: "manual"
+};
+
+return VmOverrideDrsLevelManager;]]></script>
+</dunes-script-module>

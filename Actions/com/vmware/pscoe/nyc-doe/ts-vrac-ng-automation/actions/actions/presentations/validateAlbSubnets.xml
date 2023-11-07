@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="validateAlbSubnets" result-type="string" api-version="6.0.0" id="6bdcf5e1-016b-44e9-b516-146a4ffe93b1" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.presentations">
+  <param n="datacenter" t="string"><![CDATA[]]></param>
+  <param n="environment" t="string"><![CDATA[]]></param>
+  <param n="ipAddress" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var CommonIpUtil_1 = VROES.importLazy("com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions/util/CommonIpUtil");
+var result = '';
+if (!datacenter || !environment || !ipAddress) {
+    return result;
+}
+var albEndPoint = System.getModule("com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi").getAlbEndPoint(datacenter, environment);
+if (albEndPoint !== null) {
+    if (!CommonIpUtil_1._.CommonIpUtil.isValidIpForNetwork(ipAddress, albEndPoint.subnet)) {
+        var ipRange = CommonIpUtil_1._.CommonIpUtil.buildRangeFromCidr(albEndPoint.subnet);
+        result = ipAddress + " address not valid in " + albEndPoint.subnet + " subnet : " + ipRange;
+    }
+}
+return result;]]></script>
+</dunes-script-module>

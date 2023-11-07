@@ -1,0 +1,7 @@
+#[#scriptContent#=#string#Get-Disk -Number @ | Set-Disk -IsOffline $False
+
+Initialize-Disk -Number @ -PartitionStyle MBR -PassThru |
+
+New-Partition -DriveLetter *Letter* -UseMaximumSize -MbrType IFS |
+
+Format-Volume -FileSystem NTFS -AllocationUnitSize 65536 -NewFileSystemLabel "DriveLabel" -Confirm:$false -ErrorAction SilentlyContinue#+#copyResource#=#boolean#false#+#scriptWorkingDirectory#=#string##+#scriptInteractiveSession#=#boolean#false#+#scriptTimeOut#=#number#60.0#+#deleteResourceAfterRun#=#boolean#true#+#resourceSearchReplace#=#boolean#false#+#scriptType#=#string#powershell#]#

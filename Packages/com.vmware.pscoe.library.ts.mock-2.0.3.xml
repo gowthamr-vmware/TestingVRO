@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='8384c0db-8467-375f-b49b-5605ed27357f'&dunesName='Action'&name='VroMock'&category='com.vmware.pscoe.library.ts.mock']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='8a1bb85a-852f-3a74-be71-7c29072735f3'&dunesName='Action'&name='ConfigurationElementMock'&category='com.vmware.pscoe.library.ts.mock']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='95dbdca7-a1f2-3061-85c2-0bd959e244c4'&dunesName='Action'&name='ConfigurationElementCategoryMock'&category='com.vmware.pscoe.library.ts.mock']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='f50d4633-a4ef-3092-99fb-f5cf0be66912'&dunesName='Action'&name='ResourceElementCategoryMock'&category='com.vmware.pscoe.library.ts.mock']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='fbac45b2-7b73-3316-b568-f888b082db98'&dunesName='Action'&name='ResourceElementMock'&category='com.vmware.pscoe.library.ts.mock']]></elm>
+</package>

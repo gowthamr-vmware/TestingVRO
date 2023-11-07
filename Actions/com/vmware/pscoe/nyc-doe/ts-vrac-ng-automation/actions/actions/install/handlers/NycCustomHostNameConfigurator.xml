@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="NycCustomHostNameConfigurator" result-type="Any" api-version="6.0.0" id="7ec6d744-27d8-473b-9826-6600de09dc46" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.install.handlers">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ConfigElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ConfigElementAccessor");
+function NycCustomHostNameConfigurator() { }
+NycCustomHostNameConfigurator.prototype.configure = function (input) {
+    var addPropertyField = function (fieldName, itemList) {
+        var customHostnameConf = new ConfigElementAccessor_1._.ConfigElementAccessor("NYC/CustomHostname", true);
+        var properties = new Properties();
+        for (var key in itemList) {
+            var item = itemList[key];
+            for (var k in item) {
+                properties.put(k, item[k]);
+            }
+        }
+        customHostnameConf.set(fieldName, properties);
+    };
+    input.readComposite("customhostname.sites").polymorphic().then(function (sites) {
+        addPropertyField('sites', sites);
+    });
+    input.readComposite("customhostname.roles").polymorphic().then(function (roles) {
+        addPropertyField('roles', roles);
+    });
+    input.readComposite("customhostname.envtags").polymorphic().then(function (envtags) {
+        addPropertyField('envtags', envtags);
+    });
+    input.readComposite("customhostname.doeprojects").polymorphic().then(function (doeprojects) {
+        addPropertyField('doeprojects', doeprojects);
+    });
+    input.readComposite("customhostname.envdomains").polymorphic().then(function (envdomains) {
+        addPropertyField('envdomains', envdomains);
+    });
+    input.readComposite("customhostname.environments").polymorphic().then(function (environments) {
+        addPropertyField('environments', environments);
+    });
+    input.readComposite("customhostname.envous").polymorphic().then(function (envous) {
+        addPropertyField('envous', envous);
+    });
+};
+return NycCustomHostNameConfigurator;]]></script>
+</dunes-script-module>

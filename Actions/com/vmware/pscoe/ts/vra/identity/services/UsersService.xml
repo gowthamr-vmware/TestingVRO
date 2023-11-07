@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="UsersService" result-type="Any" api-version="6.0.0" id="17864190-6059-368f-9b63-968e08bcd8ca" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.identity.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * A list of identity, account and service management APIs.
+ */
+var UsersService = /** @class */ (function () {
+    function UsersService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * For vRA 8.x releases, one user can belong to exactly one organization.
+     * Endpoint URL: '/csp/gateway/am/api/users/{acct}'
+     * Endpoint Method: 'get'
+     * @param {string} acct
+     * @param {string} expandProfile
+     * @return {GetUserInAnyOrganization1HttpResponse} Http response (200)
+     */
+    UsersService.prototype.getUserInAnyOrganization1 = function (parameters) {
+        var path = "/csp/gateway/am/api/users/" + parameters["path_acct"];
+        var queryParameters = {};
+        if (parameters["query_expandProfile"] !== undefined) {
+            queryParameters["expandProfile"] = parameters["query_expandProfile"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.x releases, one user can belong to exactly one organization.
+     * Endpoint URL: '/csp/gateway/am/api/users/{acct}/orgs/{orgId}/info'
+     * Endpoint Method: 'get'
+     * @param {string} acct
+     * @param {string} orgId
+     * @return {GetUserInfoInOrganization1HttpResponse} Http response (200)
+     */
+    UsersService.prototype.getUserInfoInOrganization1 = function (parameters) {
+        var path = "/csp/gateway/am/api/users/" + parameters["path_acct"] + "/orgs/" + parameters["path_orgId"] + "/info";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.x releases, one user can belong to exactly one organization.
+     * Endpoint URL: '/csp/gateway/am/api/users/{userId}/orgs/{orgId}/roles'
+     * Endpoint Method: 'get'
+     * @param {string} userId
+     * @param {string} orgId
+     * @return {GetUserRolesInOrganization1HttpResponse} Http response (200)
+     */
+    UsersService.prototype.getUserRolesInOrganization1 = function (parameters) {
+        var path = "/csp/gateway/am/api/users/" + parameters["path_userId"] + "/orgs/" + parameters["path_orgId"] + "/roles";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.x releases, one user can belong to exactly one organization.
+     * Endpoint URL: '/csp/gateway/am/api/users/{userId}/orgs/{orgId}/roles'
+     * Endpoint Method: 'patch'
+     * @param {string} userId
+     * @param {string} orgId
+     * @param {UpdateRolesRequestBaseRoleBinding} body
+     * @return {PatchUserRolesInOrganizationHttpResponse} Http response (200)
+     */
+    UsersService.prototype.patchUserRolesInOrganization = function (parameters) {
+        var path = "/csp/gateway/am/api/users/" + parameters["path_userId"] + "/orgs/" + parameters["path_orgId"] + "/roles";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PATCH",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.x releases, one user can belong to exactly one organization.
+     * Endpoint URL: '/csp/gateway/am/api/users/{userId}/orgs/{orgId}/service-roles'
+     * Endpoint Method: 'get'
+     * @param {string} userId
+     * @param {string} orgId
+     * @param {string} serviceDefinitionLink
+     * @return {GetUserServiceRolesInOrganization1HttpResponse} Http response (200)
+     */
+    UsersService.prototype.getUserServiceRolesInOrganization1 = function (parameters) {
+        var path = "/csp/gateway/am/api/users/" + parameters["path_userId"] + "/orgs/" + parameters["path_orgId"] + "/service-roles";
+        var queryParameters = {};
+        if (parameters["query_serviceDefinitionLink"] !== undefined) {
+            queryParameters["serviceDefinitionLink"] = parameters["query_serviceDefinitionLink"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.x releases, one user can belong to exactly one organization.
+     * Endpoint URL: '/csp/gateway/am/api/users/{userId}/orgs/{orgId}/service-roles'
+     * Endpoint Method: 'patch'
+     * @param {string} userId
+     * @param {string} orgId
+     * @param {UserServiceRolesUpdateRequest} body
+     * @return {PatchUserServiceRolesInOrganizationHttpResponse} Http response (200)
+     */
+    UsersService.prototype.patchUserServiceRolesInOrganization = function (parameters) {
+        var path = "/csp/gateway/am/api/users/" + parameters["path_userId"] + "/orgs/" + parameters["path_orgId"] + "/service-roles";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PATCH",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.x releases, one user can belong to exactly one organization. The short-info is not a CSP API call and will be removed in future versions.
+     * Endpoint URL: '/csp/gateway/am/api/users/{userId}/orgs/{orgId}/short-info'
+     * Endpoint Method: 'get'
+     * @param {string} userId
+     * @param {string} orgId
+     * @return {GetUserShortInfoInOrganizationHttpResponse} Http response (200)
+     */
+    UsersService.prototype.getUserShortInfoInOrganization = function (parameters) {
+        var path = "/csp/gateway/am/api/users/" + parameters["path_userId"] + "/orgs/" + parameters["path_orgId"] + "/short-info";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    UsersService.METADATA = {
+        "description": "A list of identity, account and service management APIs.",
+        "title": "Identity Service API",
+        "version": "1.3.0"
+    };
+    return UsersService;
+}());
+exports.UsersService = UsersService;
+return exports;
+]]></script>
+</dunes-script-module>

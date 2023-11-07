@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="FabricVsphereDatastoresService" result-type="Any" api-version="6.0.0" id="68fa35fc-e621-414a-972e-ef79ede69e8f" version="8.8.223597" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.iaas.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * IAAS API is a RESTful service, which allows users to execute provisioning related UI actions via an API. <br><br>This page describes the RESTful APIs for IAAS API. The APIs facilitate CRUD operations on the various resources and entities used throughout Cloud Assembly(Cloud Accounts, Cloud zones, Computes, Mappings, etc.) and allows operations on them (creating a cloud account, patching a machine, creating image progile, etc.).<br><br>The APIs that list collections of resources  also support OData like implementation. Below query params can be used across different IAAS API endpoints<br><br><ol><li>`$orderby` -  returns a result with the rows being sorted by the values of provided attribute.<br>`/iaas/api/cloud-accounts?$orderby=name%20desc`</li><br><li>`$top` - number of records you want to get.<br>`/iaas/api/cloud-accounts?$top=20`</li><br><li>`$skip` - number of records you want to skip.<br>`/iaas/api/cloud-accounts?$skip=10`</li><br><li>`$select` - select a subset of properties to include in the response.<br>`/iaas/api/cloud-accounts?$select=id`</li><br><li>`$filter` - filter the results by a specified predicate expression. Operators: eq, ne, and, or.<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'ABC*'` - name starts with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC*'` - name contains 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC'` - name ends with 'ABC'<br><b>/iaas/api/projects</b> and <b>/iaas/api/deployments</b> support different format for partial match: <br>`/iaas/api/projects?$filter=startswith(name, 'ABC')` - name starts with 'ABC'<br>`/iaas/api/projects?$filter=substringof('ABC', name)` - name contains 'ABC'<br>`/iaas/api/projects?$filter=endswith(name, 'ABC')` - name ends with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20ne%20'example-cloud-account'%20or%20customProperties.isExternal%20eq%20'false'`</li><br><li>`$count` - flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.<br>`/iaas/api/cloud-accounts?$count=true`<br></li></ol>
+ */
+var FabricVsphereDatastoresService = /** @class */ (function () {
+    function FabricVsphereDatastoresService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Update Fabric vSphere Datastore. Only tag updates are supported.
+     * Endpoint URL: '/iaas/api/fabric-vsphere-datastores/{id}'
+     * Endpoint Method: 'patch'
+     * @param {string} id - The ID of the Fabric Datastore.
+     * @param {FabricVsphereDatastoreSpecification} body - Fabric vSphere Datastore Specification
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {UpdateFabricVsphereDatastoreHttpResponse} Http response (200)
+     */
+    FabricVsphereDatastoresService.prototype.updateFabricVsphereDatastore = function (parameters) {
+        var path = "/iaas/api/fabric-vsphere-datastores/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PATCH",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get fabric vSphere datastore with a given id
+     * Endpoint URL: '/iaas/api/fabric-vsphere-datastores/{id}'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the Fabric vSphere Datastore.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @param {string} $select - Select a subset of properties to include in the response.
+     * @return {GetFabricVSphereDatastoreHttpResponse} Http response (200)
+     */
+    FabricVsphereDatastoresService.prototype.getFabricVSphereDatastore = function (parameters) {
+        var path = "/iaas/api/fabric-vsphere-datastores/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        if (parameters["query_$select"] !== undefined) {
+            queryParameters["$select"] = parameters["query_$select"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get all fabric vSphere datastores.
+     * Endpoint URL: '/iaas/api/fabric-vsphere-datastores'
+     * Endpoint Method: 'get'
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @param {number} $top - Number of records you want to get.
+     * @param {number} $skip - Number of records you want to skip.
+     * @param {boolean} $count - Flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.
+     * @param {string} $select - Select a subset of properties to include in the response.
+     * @param {string} $filter - Filter the results by a specified predicate expression. Operators: eq, ne, and, or.
+     * @return {GetFabricVSphereDatastoresHttpResponse} Http response (200)
+     */
+    FabricVsphereDatastoresService.prototype.getFabricVSphereDatastores = function (parameters) {
+        var path = "/iaas/api/fabric-vsphere-datastores";
+        var queryParameters = {};
+        parameters = parameters || {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        if (parameters["query_$top"] !== undefined) {
+            queryParameters["$top"] = parameters["query_$top"];
+        }
+        if (parameters["query_$skip"] !== undefined) {
+            queryParameters["$skip"] = parameters["query_$skip"];
+        }
+        if (parameters["query_$count"] !== undefined) {
+            queryParameters["$count"] = parameters["query_$count"];
+        }
+        if (parameters["query_$select"] !== undefined) {
+            queryParameters["$select"] = parameters["query_$select"];
+        }
+        if (parameters["query_$filter"] !== undefined) {
+            queryParameters["$filter"] = parameters["query_$filter"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    FabricVsphereDatastoresService.METADATA = {
+        "license": {
+            "name": "Apache License",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0"
+        },
+        "description": "IAAS API is a RESTful service, which allows users to execute provisioning related UI actions via an API. <br><br>This page describes the RESTful APIs for IAAS API. The APIs facilitate CRUD operations on the various resources and entities used throughout Cloud Assembly(Cloud Accounts, Cloud zones, Computes, Mappings, etc.) and allows operations on them (creating a cloud account, patching a machine, creating image progile, etc.).<br><br>The APIs that list collections of resources  also support OData like implementation. Below query params can be used across different IAAS API endpoints<br><br><ol><li>`$orderby` -  returns a result with the rows being sorted by the values of provided attribute.<br>`/iaas/api/cloud-accounts?$orderby=name%20desc`</li><br><li>`$top` - number of records you want to get.<br>`/iaas/api/cloud-accounts?$top=20`</li><br><li>`$skip` - number of records you want to skip.<br>`/iaas/api/cloud-accounts?$skip=10`</li><br><li>`$select` - select a subset of properties to include in the response.<br>`/iaas/api/cloud-accounts?$select=id`</li><br><li>`$filter` - filter the results by a specified predicate expression. Operators: eq, ne, and, or.<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'ABC*'` - name starts with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC*'` - name contains 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC'` - name ends with 'ABC'<br><b>/iaas/api/projects</b> and <b>/iaas/api/deployments</b> support different format for partial match: <br>`/iaas/api/projects?$filter=startswith(name, 'ABC')` - name starts with 'ABC'<br>`/iaas/api/projects?$filter=substringof('ABC', name)` - name contains 'ABC'<br>`/iaas/api/projects?$filter=endswith(name, 'ABC')` - name ends with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20ne%20'example-cloud-account'%20or%20customProperties.isExternal%20eq%20'false'`</li><br><li>`$count` - flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.<br>`/iaas/api/cloud-accounts?$count=true`<br></li></ol>",
+        "title": "VMware Cloud Assembly IaaS API",
+        "version": "2021-07-15"
+    };
+    return FabricVsphereDatastoresService;
+}());
+exports.FabricVsphereDatastoresService = FabricVsphereDatastoresService;
+return exports;]]></script>
+</dunes-script-module>

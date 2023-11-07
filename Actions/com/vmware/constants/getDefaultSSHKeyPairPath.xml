@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getDefaultSSHKeyPairPath" result-type="Path" api-version="6.0.0" id="84808080808080808080808080808080588E808001297259131125b940b51f82d" version="1.0.0" allowed-operations="vef" category-name="com.vmware.constants">
+  <script encoded="false"><![CDATA[// Store in server conf directory
+if (new File("/var/lib/vco").exists) {
+    // vRO 7.6
+    return "/var/lib/vco/app-server/conf/vco_key";
+} else {
+    // vRO 8.x
+    return "/usr/lib/vco/app-server/conf/vco_key";
+}]]></script>
+</dunes-script-module>

@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Formatter" result-type="Any" api-version="6.0.0" id="ed1a8976-6f38-315d-bf88-260440c324e9" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.logging.format">
+  <script encoded="false"><![CDATA[var exports = {};
+var Formatter = /** @class */ (function () {
+    function Formatter(properties) {
+        var _this = this;
+        var context = properties && properties.context || "__vRODefaultContext";
+        this.pattern = properties && properties.pattern || "[ %p | %d | %t ] %m";
+        var loggerName = properties && properties.loggerName;
+        //each token is mapped to a replacement function. When a token is encountered in the pattern, it is replaced with the result, returned from the replace function.
+        //Replace functions are invoked on the global scope
+        this.tokens = {
+            "%d": {
+                replaceFunction: function () {
+                    return System.formatDate(new Date(), _this.dateFormat || "YYYY-MM-dd");
+                }
+            },
+            "%p": {
+                replaceFunction: function () { return _this.severity; }
+            },
+            "%t": {
+                replaceFunction: function () { return loggerName || "Default Logger"; }
+            },
+            "%m": {
+                replaceFunction: function () { return _this.message; }
+            },
+            "%c": {
+                replaceFunction: function () { return context; }
+            }
+        };
+        var dateRegex = /%d({[\w\d\-.\s:/]+})?/;
+        var dateMatch = dateRegex.exec(this.pattern);
+        // extract the date format, if existent, and remove it from the pattern
+        if (dateMatch && dateMatch[1]) {
+            this.dateFormat = dateMatch[1].replace("}", "");
+            this.dateFormat = this.dateFormat.replace("{", "");
+            this.pattern = this.pattern.replace(dateMatch[1], "");
+        }
+        var regexString = "(%[\"" + Object.keys(this.tokens).map(function (value) { return value.substring(1, 2); }).join("") + "\"])";
+        var tokenRegex = new RegExp(regexString, "g");
+        var matches;
+        this.replacementTokens = [];
+        //extract all existing tokens
+        matches = tokenRegex.exec(this.pattern);
+        while (matches !== null) {
+            this.replacementTokens.push(matches[1]);
+            matches = tokenRegex.exec(this.pattern);
+        }
+        //append message token, if it's missing from the pattern
+        if (this.replacementTokens.indexOf("%m") === -1) {
+            this.replacementTokens.push("%m");
+            this.pattern = this.pattern + " %m";
+        }
+    }
+    Formatter.prototype.format = function (severity, message) {
+        var _this = this;
+        this.message = message;
+        this.severity = severity;
+        var line = this.pattern;
+        this.replacementTokens.forEach(function (token) {
+            line = line.replace(token, _this.tokens[token].replaceFunction());
+        });
+        return line;
+    };
+    return Formatter;
+}());
+exports.Formatter = Formatter;
+return exports;
+]]></script>
+</dunes-script-module>

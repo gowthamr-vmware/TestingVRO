@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[Built by Build Tools for VMware Aria]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='10ce5249-60b5-4331-8269-90ab91601136'&dunesName='Action'&name='GetXaaSServices'&category='corp.local.new-demo']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='88f247d1-0463-487e-bdca-116fb9a76d47'&dunesName='Action'&name='GetServicesData'&category='corp.local.new-demo']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e6a66910-acdf-4a91-bd54-443f6ba389a2'&dunesName='Action'&name='GetServicesAsList'&category='corp.local.new-demo']]></elm>
+</package>

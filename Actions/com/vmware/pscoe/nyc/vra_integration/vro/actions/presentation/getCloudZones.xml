@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getCloudZones" result-type="Array/string" api-version="6.0.0" id="f4a50614-2abb-3216-8627-92921fb95517" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.presentation">
+  <param n="projectId" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var VraService_1 = VROES.importLazy("com.vmware.pscoe.nyc.vra_integration.vro.actions/services/VraService");
+if (!projectId) {
+    return [];
+}
+var vraService = new VraService_1._.VraService();
+return vraService.getCloudZones(projectId);]]></script>
+</dunes-script-module>

@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="configure" result-type="Any" api-version="6.0.0" id="e4bb1560-9e6a-4dda-8a66-44d6029177f6" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install">
+  <description><![CDATA[Configures the whole system based on the registered configurators. The configuration is idempotent and can be ran many times with the same effect.]]></description>
+  <param n="jsonString" t="string"><![CDATA[the input in JSON format or actual JS object instead.]]></param>
+  <param n="tags" t="string[]"><![CDATA[(Optional) whitelist tags to filter installation handlers. Use with caution!]]></param>
+  <param n="blacklist" t="string[]"><![CDATA[(Optional) blacklist tags to filter installation handlers. If the module contains the tag,]]></param>
+  <param n="environment" t="string"><![CDATA[(Optional) Name of the environment for which the installation will be run
+it will be skipped. Use with caution!]]></param>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var Input = Class.load("com.vmware.pscoe.library.install", "Input");
+var ConfiguratorFactory = Class.load("com.vmware.pscoe.library.install", "ConfiguratorFactory");
+var YAML = Class.load("com.vmware.pscoe.library.ts.yaml", "Yaml").Yaml;
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+    .getLogger("com.vmware.pscoe.library.install.configure");
+
+var json = jsonString;
+if (typeof jsonString === "string") {
+    logger.info("Parse configuration input...");
+    try {
+        json = JSON.parse(jsonString);
+    } catch (e) {
+        json = YAML.parse(jsonString);
+    }
+}
+
+logger.info("Initialize configuration framework...");
+var input = new Input();
+
+logger.info("Load configuration specifications...");
+var factory = new ConfiguratorFactory(tags, blacklist);
+factory.getConfigurators().forEach(function (configurator) {
+    configurator.configure(input, environment);
+});
+
+logger.info("Validate configuration input...");
+var validation = input.validate(json);
+if (validation.valid) {
+    logger.info("Process configuration input...");
+    input.process(json);
+    logger.info("Verify configuration...");
+    var verification = input.verify(json);
+    if (!verification.valid) {
+        logger.warn("Verification failed: " + verification.errors.join("\n"));
+    }
+    logger.info("Done. Configuration was successful.")
+} else {
+    logger.info("Configuration input is not valid:");
+    validation.errors.forEach(function (error) {
+        logger.error(error);
+    });
+    throw Error("Configuration input is not valid!");
+}]]></script>
+</dunes-script-module>

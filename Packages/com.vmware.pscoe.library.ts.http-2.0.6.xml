@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='31bc96e7-9ff4-3cd6-aba9-9a4b776a68ba'&dunesName='Action'&name='HttpClient'&category='com.vmware.pscoe.library.ts.http']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='3ab0c379-7217-3e91-9f7e-c0d54aef6cfa'&dunesName='Action'&name='BaseHttpClient'&category='com.vmware.pscoe.library.ts.http']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='41e24928-8656-38fa-b878-b0ba8a18e410'&dunesName='Action'&name='interface'&category='com.vmware.pscoe.library.ts.http']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='45f3f3ae-49c5-307e-b1fe-3a127c0f80e3'&dunesName='Action'&name='HttpClientBuilder'&category='com.vmware.pscoe.library.ts.http']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='b11fc83e-3735-3b95-8040-2f3e51c5c5d7'&dunesName='Action'&name='interface'&category='com.vmware.pscoe.library.ts.http.sample']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e454a494-cce0-3079-8557-4d45479881aa'&dunesName='Action'&name='redfish'&category='com.vmware.pscoe.library.ts.http.sample']]></elm>
+</package>

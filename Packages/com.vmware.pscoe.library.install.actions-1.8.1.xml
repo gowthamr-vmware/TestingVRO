@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[Built by Build Tools for VMware Aria]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='05c28907-8993-4ad8-b6d6-741d1efe3784'&dunesName='Action'&name='WorkflowInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='072486f5-af30-440f-9101-806ad76f2a73'&dunesName='Action'&name='RestHostInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='08db24dd-c9e8-482b-a638-89288c76ac48'&dunesName='Action'&name='PowerShellHostInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='21d485c4-7347-466c-b71b-74532f6b6736'&dunesName='Action'&name='RefInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='2b9f7c82-8892-45b4-b119-e750148100f7'&dunesName='Action'&name='SoapHostInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='5f04b1c6-ef71-4836-bae8-4cf0743e8cc8'&dunesName='Action'&name='ConfigSpecDecorator'&category='com.vmware.pscoe.library.install.spec.decorators']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='61e7aac4-0735-4aa7-80a7-4802df046a61'&dunesName='Action'&name='InputSpecBase'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='80d84e91-3847-434e-aa7f-3e669b625d6c'&dunesName='Action'&name='BooleanInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a30b3097-2bb2-4bb4-91e6-c63b655ef969'&dunesName='Action'&name='ResourceElementInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='d264545d-8e68-4f4b-abbb-387a87e5e68a'&dunesName='Action'&name='ConfiguratorFactory'&category='com.vmware.pscoe.library.install']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='d7b68f21-edac-4adb-9b11-1c1e40a46a43'&dunesName='Action'&name='NumberInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='df142a45-8bde-46e6-a635-c08ba5ce664b'&dunesName='Action'&name='StringInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e1316958-ca50-4f57-8ada-83525eb01a34'&dunesName='Action'&name='ListSpecDecorator'&category='com.vmware.pscoe.library.install.spec.decorators']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e202b50f-153d-49ed-b3f9-bfc1531ad2d7'&dunesName='Action'&name='Input'&category='com.vmware.pscoe.library.install']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e4bb1560-9e6a-4dda-8a66-44d6029177f6'&dunesName='Action'&name='configure'&category='com.vmware.pscoe.library.install']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='f8656d3c-5bf3-45b5-945b-9656a7496c14'&dunesName='Action'&name='SshHostInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='fcf5f68e-975a-4e0b-8930-278c5d5e25a0'&dunesName='Action'&name='CompositeInputSpec'&category='com.vmware.pscoe.library.install.spec']]></elm>
+</package>

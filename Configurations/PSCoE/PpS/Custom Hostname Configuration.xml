@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="119b0e4f-040d-4d1f-bb7a-07dbd5338347" version="1.0.0">
+  <display-name><![CDATA[Custom Hostname Configuration]]></display-name>
+  <atts>
+    <att name="startIndex" type="number" read-only="false"/>
+    <att name="shouldAutofillIndexes" type="boolean" read-only="false"/>
+    <att name="maxNameGenerationAttempts" type="number" read-only="false"/>
+  </atts>
+</config-element>

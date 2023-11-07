@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="PerExecutionResolver" result-type="Any" api-version="6.0.0" id="17038a40-0bf0-4e82-8f03-186ecc83b8b5" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging.appenders.resource.element.resolvers">
+  <description><![CDATA[Appender that prints it's input to a resource element]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+// Taking advantage of the load functionality of Class implementation
+// the resource element will be persisted in the context of the execution
+// so is no needed to search for the element every time the appender is created
+var resourceElement = null;
+
+return Class.define(function PerExecutionResolver(properties) {
+    //populate properties
+    var baseCategoryPath = properties.baseCategoryPath || "Logging";
+
+    this.getResourcesElement = function () {
+        if (resourceElement) {
+            return {
+                state: "resolved" ,
+                resourceElement: resourceElement 
+            };
+        }
+        var tokenId = null;
+        try {
+            tokenId = workflow.id; // Getting id of the current workflow token
+        } catch (error) {
+            // if workflow is not defined the code is not being executed in the context of a WF, skip the message
+            return { state: "unresolved" };
+        }
+
+        var dateString = System.formatDate(new Date(), "dd.MM.yyyy");
+        var timestamp = System.formatDate(new Date(), "dd.MM.yyyy HH:mm:ss");
+        var categoryPath = [baseCategoryPath, dateString, workflow.currentWorkflow.name].join("/");
+
+        var category = Server.getResourceElementCategoryWithPath(categoryPath);
+
+        var result = Server.query("ResourceElement", "categoryid='" + System.getObjectId(category)
+            + "' and name like '%" + tokenId + "%'");
+
+        if (result.length > 1) {
+            throw new Error("Found more than 1 resource element for the same context execution, tokenId: '" + tokenId
+                + "'. " + "This is not supported and indicates an inconsistency.");
+        }
+
+        resourceElement = result[0];
+        if (!resourceElement) {
+            var resourceElementName = timestamp + "_" + tokenId + ".log";
+
+            resourceElement = Server.createResourceElement(categoryPath, resourceElementName, null, "text/plain");
+        }
+
+        return {
+            state: "resolved" ,
+            resourceElement: resourceElement 
+        };
+    }.bind(this);
+}, null);]]></script>
+</dunes-script-module>

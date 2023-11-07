@@ -1,0 +1,42 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="b440e980-7874-4a8e-a6e2-93ebff3d561e" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[NYC Generate Custom Hostname]]></display-name><position y="50.0" x="100.0"/><input><param name="inputProperties" type="Properties"/></input><output><param name="resourceNames" type="Array/string"/></output><attrib name="configurationElementSeed" type="ConfigurationElement" read-only="false"><value encoded="n"><![CDATA[dunes://service.dunes.ch/ConfigurationElement?id='119b0e4f-040d-4d1f-bb7a-07dbd5338347'&dunesName='ConfigurationElement']]></value></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="50.0" x="380.0"/></workflow-item><workflow-item name="item1" out-name="item0" type="task"><display-name><![CDATA[Generate Hostnames]]></display-name><script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var HostnameGenerator_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname/actions/HostnameGenerator");
+var logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.custom-hostname.workflow');
+var templatePropertyName = 'customHostname.template';
+var minLengthPropertyName = 'customHostname.minLength';
+var maxLengthPropertyName = 'customHostname.maxLength';
+var sequencePropertyName = 'customHostname.sequence';
+var regexp = /^customHostname\.validation\.(.+)$/;
+var customProperties = inputProperties.get('customProperties') ? inputProperties.get('customProperties') : new Properties();
+var template = customProperties.get(templatePropertyName);
+var customizeVmName = customProperties.get('custom.customizeVmName');
+if (!template) {
+    throw new Error("Missing custom property \"" + templatePropertyName + "\".");
+}
+else {    
+    var minLength_1 = customProperties.get(minLengthPropertyName) ? parseInt(customProperties.get(minLengthPropertyName)) : null;
+    var maxLength_1 = customProperties.get(maxLengthPropertyName) ? parseInt(customProperties.get(maxLengthPropertyName)) : null;
+    var sequence_1 = customProperties.get(sequencePropertyName) ? customProperties.get(sequencePropertyName) : null;
+    var validationList_1 = [];
+    customProperties.keys.forEach(function (key) {
+        var regexMatchResult = regexp.exec(key);
+        if (regexMatchResult) {
+            var validationKey = regexMatchResult[1];
+            var validationRequired = customProperties.get(key) || 'false';
+            logger.debug("Validation " + validationKey + ": " + validationRequired);
+            if (validationRequired.toLowerCase() == 'true' || validationRequired.toLowerCase() == '1') {
+                var assertionModule = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.validation.Assertions/" + validationKey + "HostnameAssertion");
+                validationList_1.push(new assertionModule._[validationKey + "HostnameAssertion"]());
+            }
+        }
+    });
+        resourceNames = inputProperties.get('resourceNames').map(function () {
+            var hostnameGenerator = new HostnameGenerator_1._.HostnameGenerator(template, validationList_1, minLength_1, maxLength_1, configurationElementSeed, sequence_1);
+            return hostnameGenerator.getValidHostname();
+        });        
+
+    logger.info("Generated hostnames: " + JSON.stringify(resourceNames) + ".");
+}]]></script><in-binding><bind name="inputProperties" type="Properties" export-name="inputProperties"/><bind name="configurationElementSeed" type="ConfigurationElement" export-name="configurationElementSeed"/></in-binding><out-binding><bind name="resourceNames" type="Array/string" export-name="resourceNames"/></out-binding><position y="60.0" x="180.0"/></workflow-item><presentation/></workflow>

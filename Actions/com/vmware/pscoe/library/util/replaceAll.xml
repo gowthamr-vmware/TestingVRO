@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="replaceAll" result-type="Any" api-version="6.0.0" id="daf034ad-943d-466a-aed9-8f37ff07d040" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <param n="src" t="Any"><![CDATA[]]></param>
+  <param n="regex" t="Any"><![CDATA[]]></param>
+  <param n="repleacement" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var result = src;
+var newResult = src;
+while(true) {
+	result = newResult;
+	newResult = result.replace(regex, repleacement);
+	if (newResult == result) {
+		break;
+	}
+}
+return result;]]></script>
+</dunes-script-module>

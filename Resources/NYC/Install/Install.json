@@ -1,0 +1,112 @@
+{
+    "customhostname": {
+        "sites": [
+            { "00": "2 Metro Tech Center" },
+            { "55": "Stretched Cluster" },
+            { "30": "Azure Datacenter" },
+            { "20": "Weehawken" }
+        ],
+        "roles": [
+            { "APP": "APP - Application Server" },
+            { "ITK": "ITK - IIQ TASK" },
+            { "FTP": "FTP - File Server" },
+            { "PRT": "PRT - Print Server" },
+            { "IHS": "IHS - IBM HTTP Server" },
+            { "WEB": "WEB - IIS Web Server" },
+            { "IDB": "IDB - IBM DB2" },
+            { "TDI": "TDI - IBM Trivolli Directory Integrator" },
+            { "SQL": "SQL - Stand alone SQL Server" }
+        ],
+        "envtags": [
+            { "P": "prod" },
+            { "Q": "qa" },
+            { "S": "stg" },
+            { "D": "dev" },
+            { "Z": "dmz" }          
+        ],
+        "doeprojects": [
+            { "SES": "SES" },
+            { "DFS": "DFS" },
+            { "ESO": "ESO - Enterprises Server Operation" },
+            { "IDM": "IDM" },
+            { "SED": "SED" },
+            { "CMS": "CMS" },
+            { "OCL": "OCL" },
+            { "WST": "WST" },
+            { "SEM": "SEM" },
+            { "ADO": "ADO" },
+            { "CYB": "CYB" },
+            { "SCN": "SCN" }            
+        ],
+        "envdomains": [
+            { "P": "central.nyced.org" },
+            { "Q": "qa.appdev" } , 
+            { "S": "cstg.nstg.local" },
+            { "D": "ows.test.lab" },
+            { "Z": "no.domain.dmz" }            
+        ],
+        "environments": [
+            { "P": "Production" },
+            { "Q": "QA" },
+            { "S": "Staging" },
+            { "D": "Development" },
+            { "Z": "DMZ" }            
+        ],
+        "envous": [
+            { "P": "OU=VRA_Servers,OU=WO8ER2-2012R2,OU=Member Servers,OU=Central HQ,DC=central,DC=nyced,DC=org" },
+            { "Q": "OU=VRA_Servers,OU=Servers,DC=qa,DC=appdev" },
+            { "S": "OU=VRA Servrs,DC=CSTG,DC=nstg,DC=local" },
+            { "D": "OU=VRA_Servers,OU=Servers,DC=ows,DC=test,DC=lab" },
+            { "Z": "OU=no,DC=domain,DC=dmz" }            
+        ]
+    } ,
+    "rolesfiltered": {
+        "rolesos":  [
+            { "W": "APP,ITK,FTP,PRT,IHS,IDB,TDI,WEB,SQL" },
+            { "L": "APP,ITK,FTP,PRT,IHS,IDB,TDI" }        
+        ]
+    },
+    "storagepolicies": {
+        "envRoleMapping": [
+            {
+                "role": "SQL",
+                "policyName": "HighPerformance",
+                "env": "P"
+            },
+            {
+                "role": "SQL",
+                "policyName": "HighPerformance",
+                "env": "D"
+            },
+            {
+                "role": "SQL",
+                "policyName": "HighPerformance",
+                "env": "S"
+            },
+            {
+                "role": "SQL",
+                "policyName": "HighPerformance",
+                "env": "Q"
+            },
+            {
+                "role": "SQL",
+                "policyName": "HighPerformance",
+                "env": "Z"
+            }
+        ]
+    },
+    "customhostname_lib": {
+        "startindex": 1,
+        "shouldAutofillIndexes": false,
+        "maxNameGenerationAttempts": 3
+    },
+    "vra": {
+        "username": "configurationadmin",
+        "password": "VMware1!",
+        "isPersistent": true,
+        "hostname": "vra-l-01a.corp.local",
+        "port": 443,
+        "authPort": 443,
+        "authHostname": "vidm-l-01a.corp.local"
+    }        
+}

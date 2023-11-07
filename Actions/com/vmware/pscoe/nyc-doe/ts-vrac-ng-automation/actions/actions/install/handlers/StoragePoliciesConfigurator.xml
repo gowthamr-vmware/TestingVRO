@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="StoragePoliciesConfigurator" result-type="Any" api-version="6.0.0" id="88481425-8766-4dec-bf7d-74d42db37cdf" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.install.handlers">
+  <script encoded="false"><![CDATA[function StoragePoliciesConfigurator() { }
+StoragePoliciesConfigurator.prototype.configure = function (input) {
+    var configPath = "NYC/StoragePolicies";
+    input.readComposite("storagepolicies.envRoleMapping")
+        .polymorphic()
+        .list()
+        .config(configPath)
+        .set("envRoleMapping");
+};
+return StoragePoliciesConfigurator;]]></script>
+</dunes-script-module>

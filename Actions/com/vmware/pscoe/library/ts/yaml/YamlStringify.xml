@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="YamlStringify" result-type="Any" api-version="6.0.0" id="9fe630dd-5026-40c0-b854-644a9843b19a" version="1.0.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.yaml">
+  <script encoded="false"><![CDATA[/*-
+     * #%L
+     * yaml
+     * %%
+     * Copyright (C) 2023 VMware, WWCC CoE
+     * %%
+     * This program is licensed under Technical Preview License by VMware.
+     * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+     * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+     * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+     * You should have received a copy of the Technical Preview License along with this program.  If not, see
+     * <https://flings.vmware.com/vrealize-build-tools/license>
+     * #L%
+     */
+    var __global = System.getContext() || (function () {
+        return this;
+    }).call(null);
+    var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+    var YamlStringify = /** @class */ (function () {
+        function YamlStringify() {
+            // Prevent instantiation.
+        }
+        YamlStringify.stringify = function (yml, opts, initialIndentNumber, firstLineAlreadyIndented) {
+            if (opts === void 0) { opts = {}; }
+            if (initialIndentNumber === void 0) { initialIndentNumber = 0; }
+            if (firstLineAlreadyIndented === void 0) { firstLineAlreadyIndented = false; }
+            var indentsSpacesNumber = opts.indent || 2;
+            if (yml == null) {
+                return "null\n";
+            }
+            if (typeof yml == "number" || typeof yml == "boolean") {
+                return "" + yml + "\n";
+            }
+            var buf = [];
+            var initial = Array(initialIndentNumber + 1).join(" ");
+            var indent = Array(indentsSpacesNumber + 1).join(" ");
+            if (typeof yml == "string") {
+                var oneLine = YamlStringify.stringAsOneLine(yml, opts);
+                if (oneLine != null) {
+                    return oneLine + "\n";
+                }
+                var lines = yml.split("\n");
+                var firstLine = true;
+                var lastLine = false;
+                for (var i = 0; i < lines.length; i++) {
+                    lastLine = i == lines.length - 1;
+                    var prefix = firstLine && firstLineAlreadyIndented ? "" : initial;
+                    prefix = firstLine ? "\"" + prefix : prefix + indent + "\\";
+                    buf.push(prefix + YamlStringify.trimQuotes(JSON.stringify(lines[i])) + "\\n");
+                    var suffix = lastLine ? "\"\n" : "\\\n";
+                    buf.push(suffix);
+                    firstLine = false;
+                }
+            }
+            else if (yml instanceof Array) {
+                if (yml.length <= 0) {
+                    return "[]\n";
+                }
+                for (var i = 0; i < yml.length; i++) {
+                    var element = yml[i];
+                    var elementString = YamlStringify.stringify(element, opts, initialIndentNumber + indentsSpacesNumber, true);
+                    buf.push(initial + "- " + elementString);
+                }
+            }
+            else {
+                var atLeastOneItem = false;
+                var firstItem = true;
+                for (var index in yml) {
+                    var key = JSON.stringify(index);
+                    key = VROES.Shims.stringStartsWith(key, "\"") && VROES.Shims.stringEndsWith(key, "\"") && key.length > 2 ? key.substring(1, key.length - 1) : key;
+                    key = VROES.Shims.stringStartsWith(key, "\'") && VROES.Shims.stringEndsWith(key, "\'") && key.length > 2 ? key.substring(1, key.length - 1) : key;
+                    var value = yml[index];
+                    var canStartOnSameLine = YamlStringify.canObjectStartOnSameLine(value);
+                    var valueString = YamlStringify.stringify(value, opts, initialIndentNumber + indentsSpacesNumber, canStartOnSameLine);
+                    var prefix = firstItem && firstLineAlreadyIndented ? "" : initial;
+                    var suffix = canStartOnSameLine ? " " : "\n";
+                    buf.push(prefix + key + ":" + suffix + valueString);
+                    firstItem = false;
+                    atLeastOneItem = true;
+                }
+                if (!atLeastOneItem) {
+                    return "{}\n";
+                }
+            }
+            return buf.join("");
+        };
+        YamlStringify.stringAsOneLine = function (str, opts) {
+            if (str == null) {
+                return "";
+            }
+            if (str == "") {
+                return "\"\"";
+            }
+            if (str.indexOf("\n") != -1) {
+                return null;
+            }
+            if (VROES.Shims.stringStartsWith(str, " ") || VROES.Shims.stringStartsWith(str, "\t") || VROES.Shims.stringEndsWith(str, " ") || VROES.Shims.stringEndsWith(str, "\t") || YamlStringify.isNumber(str)) {
+                return JSON.stringify(str);
+            }
+            if (!!opts.quoteStrings) {
+                return JSON.stringify(str);
+            }
+            else {
+                return YamlStringify.trimQuotes(JSON.stringify(str));
+            }
+        };
+        YamlStringify.trimQuotes = function (str) {
+            if (str == null) {
+                return str;
+            }
+            str = VROES.Shims.stringStartsWith(str, "\"") && VROES.Shims.stringEndsWith(str, "\"") && str.length > 2 ? str.substring(1, str.length - 1) : str;
+            str = VROES.Shims.stringStartsWith(str, "\'") && VROES.Shims.stringEndsWith(str, "\'") && str.length > 2 ? str.substring(1, str.length - 1) : str;
+            return str;
+        };
+        YamlStringify.canObjectStartOnSameLine = function (value) {
+            if (value == null || typeof value == "string" || typeof value == "number" || typeof value == "boolean") {
+                return true;
+            }
+            if (value instanceof Array) {
+                return value.length <= 0;
+            }
+            for (var _key in value) {
+                return false;
+            }
+            return true;
+        };
+        YamlStringify.isNumber = function (line) {
+            var num;
+            if (line == null || line.trim() == "") {
+                return false;
+            }
+            try {
+                num = Number(line);
+            }
+            catch (notFloat) {
+            }
+            if (num != undefined && !isNaN(num)) {
+                return true;
+            }
+            return false;
+        };
+        return YamlStringify;
+    }());
+    exports.YamlStringify = YamlStringify;
+    return exports;]]></script>
+</dunes-script-module>

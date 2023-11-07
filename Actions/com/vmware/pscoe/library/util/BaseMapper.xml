@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="BaseMapper" result-type="Any" api-version="6.0.0" id="01da7ff0-5238-4ca6-bc84-666ba898e602" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Base mapper interface]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+  .getLogger("com.vmware.pscoe.library.util.BaseMapper");
+
+return Class.define(function BaseMapper() {
+
+    /**
+     * process - the function to process the data - should be overwritten by the pre or post processor as required.
+     * Returns a JSON with the format: { properties: <the JSON representation of
+     * the processed properties>, inputObjects: <the processed objects provided as input>}
+     */
+    this.map = function (jsonObj, objects, inputObjects) {
+    	logger.debug ("Preparing objects... jsonObj: " + JSON.stringify(jsonObj) +
+    	"\n objects: " + JSON.stringify(objects) + "\n inputObjects: " + JSON.stringify(inputObjects)  );
+    	return jsonObj;
+    };
+}, {});]]></script>
+</dunes-script-module>

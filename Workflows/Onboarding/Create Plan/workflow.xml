@@ -1,0 +1,34 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="56194641-4055-4bf6-91de-fa1dd205d34b" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Create Plan]]></display-name><position y="50.0" x="100.0"/><input><param name="inputSessionToken" type="string"/><param name="vraURL" type="string"/><param name="username" type="string"/><param name="password" type="SecureString"/><param name="projectID" type="string"/><param name="endpointID" type="string"/><param name="planName" type="string"/></input><output><param name="planID" type="string"/><param name="outputSessionToken" type="string"/></output><attrib name="sessionToken" type="string" read-only="false"><value encoded="n"/></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="50.0" x="540.0"/></workflow-item><workflow-item name="item1" out-name="item2" type="link" linked-workflow-id="3f40bb50-7b54-4735-bfd5-74412624256a"><display-name><![CDATA[Workflow element]]></display-name><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="username" type="string" export-name="username"/><bind name="password" type="SecureString" export-name="password"/><bind name="inputSessionToken" type="string" export-name="inputSessionToken"/></in-binding><out-binding><bind name="sessionToken" type="string" export-name="sessionToken"/></out-binding><description><![CDATA[]]></description><position y="60.0" x="180.0"/></workflow-item><workflow-item name="item2" out-name="item0" type="task"><display-name><![CDATA[Create Plan]]></display-name><script encoded="false"><![CDATA[outputSessionToken = sessionToken;
+var opUrl = '/relocation/onboarding/plan'
+var baseUrl = vraURL;
+var opMethod = 'POST'
+var urlParamValues = null;
+var headers = new Properties();
+headers.put('Authorization','Bearer ' + sessionToken);
+var contentType = 'application/json';
+
+var contentObj = new Object();
+contentObj.name = planName;
+contentObj.endpointId = endpointID;
+contentObj.projectId = projectID;
+
+var content = JSON.stringify(contentObj);
+System.log('Plan create content ' + content);
+var username = null;
+var password = null;
+
+response = System.getModule("com.vmware.pso.rest").executeTransientRESTOperation(baseUrl,username,password,opMethod,opUrl,urlParamValues,headers,contentType,content);
+
+System.log('responseString' + response.responseString)
+System.log('statusCode' + response.statusCode)
+
+if (response.statusCode == 200) {
+   foundMachines = response.responseString;
+} else {
+    throw 'Problem while retrieving machines.  Status code ' + response.statusCode
+}
+
+var jsonObj = JSON.parse(response.responseString);
+var selfLink = jsonObj.documentSelfLink;
+var selfLinkSplit = selfLink.split('/');
+planID = selfLinkSplit[selfLinkSplit.length-1];]]></script><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="sessionToken" type="string" export-name="sessionToken"/><bind name="planName" type="string" export-name="planName"/><bind name="endpointID" type="string" export-name="endpointID"/><bind name="projectID" type="string" export-name="projectID"/></in-binding><out-binding><bind name="planID" type="string" export-name="planID"/><bind name="outputSessionToken" type="string" export-name="outputSessionToken"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="320.0"/></workflow-item><presentation/></workflow>

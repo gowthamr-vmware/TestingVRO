@@ -1,0 +1,204 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Module" result-type="Any" api-version="6.0.0" id="200939d7-c7e6-44a1-a9cd-7b395e62ca4f" version="2.30.0" allowed-operations="vef" category-name="com.vmware.pscoe.library.ecmascript">
+  <script encoded="false"><![CDATA[/*-
+ * #%L
+ * ecmascript
+ * %%
+ * Copyright (C) 2023 VMware
+ * %%
+ * Build Tools for VMware Aria
+ * Copyright 2023 VMware, Inc.
+ *
+ * This product is licensed to you under the BSD-2 license (the "License"). You may not use this product except in compliance with the BSD-2 License.
+ *
+ * This product may include a number of subcomponents with separate copyright notices and license terms. Your use of these subcomponents is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
+ * #L%
+ */
+var GLOBAL = System.getContext() || (function () {
+    return this;
+}).call(null);
+var Import = function (specifiers) {
+    this.specifiers = specifiers || [];
+};
+Import.prototype.from = function (path, base) {
+    if (base) {
+        if (path[0] == ".") {
+            path = path.replace(/[\\]/g, "/");
+            if (path.indexOf("./") == 0) {
+                path = path.substring(2);
+            }
+            else {
+                while (path.indexOf("../") == 0) {
+                    path = path.substring(3);
+                    base = base.substring(0, base.lastIndexOf("."));
+                }
+            }
+            path = base + "." + path;
+        }
+        path = path.replace(/[\/]/g, ".");
+    }
+    var actionResult = loadActionOrModule(path);
+    var result = this.specifiers.map(function (name) { return (name == "*" ? actionResult : actionResult && actionResult[name]); });
+    return result.length > 1 ? result : result[0];
+};
+var Export = function () {
+    this.elements = {};
+};
+Export.prototype.named = function (name, element) {
+    this.elements[name] = element;
+    return this;
+};
+Export.prototype.default = function (element) {
+    this.elements["default"] = element;
+    return this;
+};
+Export.prototype.from = function (moduleName) {
+    var specifiers = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        specifiers[_i - 1] = arguments[_i];
+    }
+    var importNames = [];
+    var exportNames = [];
+    specifiers.forEach(function (specifier) {
+        if (Array.isArray(specifier)) {
+            exportNames.push(specifier[0]);
+            importNames.push(specifier[1]);
+        }
+        else {
+            exportNames.push(specifier);
+            importNames.push(specifier);
+        }
+    });
+    var values = loadActionOrModule(moduleName);
+    for (var i = 0; i < importNames.length; i++) {
+        var importName = importNames[i];
+        if (importName == "*") {
+            for (var propName in values) {
+                this.elements[propName] = values && values[propName];
+            }
+        }
+        else {
+            this.elements[exportNames[i]] = values && values[importName];
+        }
+    }
+    return this;
+};
+Export.prototype.build = function () {
+    return this.elements;
+};
+var Module = function () {
+    throw new Error("Private constructor");
+};
+Module.import = function () {
+    var specifiers = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        specifiers[_i] = arguments[_i];
+    }
+    return new Import(specifiers);
+};
+Module.export = function () {
+    return new Export();
+};
+Module.load = function (name) {
+    var moduleInfo = System.getModule(name);
+    return moduleInfo ? createModule(moduleInfo) : null;
+};
+function loadActionOrModule(path) {
+    var actionResults = GLOBAL.__actions__ = (GLOBAL.__actions__ || {});
+    var actionResult = actionResults[path];
+    if (actionResult === undefined) {
+        var loadStack = GLOBAL.__importStack__ = (GLOBAL.__importStack__ || []);
+        var indexOfPathInStack = loadStack.indexOf(path);
+        if (indexOfPathInStack >= 0) {
+            var circPath = loadStack.slice(indexOfPathInStack);
+            circPath.push(path);
+            loadStack = [];
+            throw new Error("Detected circular dependency in module loading. Path: " + JSON.stringify(circPath));
+        }
+        loadStack.push(path);
+        try {
+            actionResult = invokeActionOrModule(path);
+        }
+        finally {
+            loadStack.pop();
+        }
+        actionResults[path] = actionResult;
+    }
+    return actionResult;
+}
+function invokeActionOrModule(path) {
+    var classIndex = path.lastIndexOf(".");
+    var moduleName = path.substring(0, classIndex);
+    var actionName = path.substring(classIndex + 1);
+    var moduleInfo = System.getModule(moduleName);
+    if (moduleInfo && moduleInfo.actionDescriptions.some(function (a) { return a.name == actionName; })) {
+        return invokeAction(moduleInfo, actionName);
+    }
+    else {
+        moduleInfo = System.getModule(path);
+        if (moduleInfo) {
+            if (moduleInfo.actionDescriptions.some(function (a) { return a.name == "index"; })) {
+                return invokeAction(moduleInfo, "index");
+            }
+            else {
+                return createModule(moduleInfo);
+            }
+        }
+    }
+}
+function invokeAction(moduleInfo, actionName) {
+    // Use Class library cache for backward-compatibility.
+    var __classes__ = GLOBAL.__classes__ || (GLOBAL.__classes__ = {});
+    var classFqdn = moduleInfo.name + "/" + actionName;
+    var actionResult = __classes__[classFqdn];
+    if (!actionResult) {
+        actionResult = moduleInfo[actionName]();
+        __classes__[classFqdn] = actionResult;
+    }
+    // Handle default exports
+    if (typeof actionResult == "function") {
+        actionResult = {
+            default: actionResult,
+        };
+    }
+    // Handle class metadata
+    for (var propName in actionResult) {
+        var exportObject = actionResult[propName];
+        if (typeof exportObject == "function") {
+            var descriptor = exportObject.__descriptor || (exportObject.__descriptor = {});
+            descriptor.name = exportObject.name;
+            descriptor.module = moduleInfo.name;
+            descriptor.action = actionName;
+            descriptor.fullName = moduleInfo.name + "." + actionName + "/" + descriptor.name;
+        }
+    }
+    return actionResult;
+}
+function createModule(moduleInfo) {
+    var ModuleCtor = function () {
+        moduleInfo.actionDescriptions.forEach(function (actionInfo) {
+            Object.defineProperty(ModuleCtor.prototype, actionInfo.name, {
+                get: function () {
+                    return loadActionOrModule(moduleInfo.name + "." + actionInfo.name);
+                },
+                enumerable: true,
+                configurable: true
+            });
+        });
+        System.getAllModules()
+            .filter(function (m) { return 0 == m.name.indexOf(moduleInfo.name + "."); })
+            .forEach(function (childModuleInfo) {
+            var childModuleName = childModuleInfo.name.substring(childModuleInfo.name.lastIndexOf(".") + 1);
+            Object.defineProperty(ModuleCtor.prototype, childModuleName, {
+                get: function () {
+                    return loadActionOrModule(childModuleInfo.name);
+                },
+                enumerable: true,
+                configurable: true
+            });
+        });
+    };
+    return new ModuleCtor();
+}
+return Module;]]></script>
+</dunes-script-module>

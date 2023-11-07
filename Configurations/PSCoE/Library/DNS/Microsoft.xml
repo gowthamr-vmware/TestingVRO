@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="2330703b-33fd-33de-b904-273abf5804d5" version="1.0.5">
+  <display-name><![CDATA[Microsoft]]></display-name>
+  <atts>
+    <att name="powerShellHosts" type="Array/CompositeType(dnsZone:string,vCenterVm:VC:VirtualMachine,username:string,password:SecureString,dnsServers:Array/string):MicrosoftDnsPowershellHosts" read-only="false"/>
+  </atts>
+</config-element>

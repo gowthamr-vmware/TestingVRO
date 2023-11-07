@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CheckIDTokenControllerService" result-type="Any" api-version="6.0.0" id="6ffe6f37-0a7a-365e-afc3-eb699dcae108" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.identity.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * A list of identity, account and service management APIs.
+ */
+var CheckIDTokenControllerService = /** @class */ (function () {
+    function CheckIDTokenControllerService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Display the content of the given ID token with expanded claims if the token is valid.<br/>If the token is invalid or expired, an error will be returned.<br/>This endpoint should be used to expand the overflow claims in the ID token, if any (like the 'group_names' and 'group_ids' claim).<br/>Even though this endpoint can also be used to validate an ID token, it is expected that the client validates an ID token locally instead.
+     * Endpoint URL: '/oauth/check_id_token'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization - ID token in Bearer Authentication format i.e. 'Bearer XXX' where XXX is the content of an ID token
+     * @return {CheckIDTokenHttpResponse} Http response (200)
+     */
+    CheckIDTokenControllerService.prototype.checkIDToken = function (parameters) {
+        var path = "/oauth/check_id_token";
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    CheckIDTokenControllerService.METADATA = {
+        "description": "A list of identity, account and service management APIs.",
+        "title": "Identity Service API",
+        "version": "1.3.0"
+    };
+    return CheckIDTokenControllerService;
+}());
+exports.CheckIDTokenControllerService = CheckIDTokenControllerService;
+return exports;
+]]></script>
+</dunes-script-module>

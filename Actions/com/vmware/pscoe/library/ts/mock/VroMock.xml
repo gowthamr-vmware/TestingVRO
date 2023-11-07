@@ -1,0 +1,292 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VroMock" result-type="Any" api-version="6.0.0" id="8384c0db-8467-375f-b49b-5605ed27357f" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+/*
+ * #%L
+ * mock
+ * %%
+ * Copyright (C) 2020 VMWARE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var ResourceElementMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.ResourceElementMock");
+var ResourceElementCategoryMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.ResourceElementCategoryMock");
+var ConfigurationElementMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.ConfigurationElementMock");
+var ConfigurationElementCategoryMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.ConfigurationElementCategoryMock");
+var builder;
+var VroMock = /** @class */ (function () {
+    function VroMock() {
+        throw new Error("Private constructor");
+    }
+    VroMock.configure = function () {
+        return builder || (builder = new Builder());
+    };
+    return VroMock;
+}());
+exports.VroMock = VroMock;
+var Builder = /** @class */ (function () {
+    function Builder() {
+        this.modules = {};
+        this.configurationCategories = [];
+        this.resourceCategories = [];
+        this.wireSystem();
+        this.wireServer();
+    }
+    Builder.prototype.action = function (path, actionFunc) {
+        var index = path.lastIndexOf("/");
+        var moduleName = path.substring(0, index);
+        var actionName = path.substring(index + 1);
+        var module = this.modules[moduleName];
+        if (!module) {
+            module = {
+                actionDescriptions: [],
+                name: moduleName,
+                description: moduleName,
+            };
+            this.modules[moduleName] = module;
+            var originalModule_1 = this.originalSystem.getModule(moduleName);
+            if (originalModule_1) {
+                module.description = originalModule_1.description;
+                originalModule_1.actionDescriptions.forEach(function (actionInfo) {
+                    module[actionInfo.name] = originalModule_1[actionInfo.name];
+                    module.actionDescriptions.push({
+                        name: actionInfo.name,
+                        description: actionInfo.description,
+                        version: actionInfo.version,
+                        returnType: actionInfo.returnType,
+                        script: actionInfo.script,
+                        versionHistoryItems: [],
+                        parameters: actionInfo.parameters,
+                        module: module,
+                    });
+                });
+            }
+        }
+        module[actionName] = actionFunc;
+        if (!module.actionDescriptions.some(function (a) { return a.name == actionName; })) {
+            module.actionDescriptions.push({
+                name: actionName,
+                description: actionName,
+                version: "1.0.0",
+                returnType: "Any",
+                script: "",
+                versionHistoryItems: [],
+                parameters: [],
+                module: module,
+            });
+        }
+        return this;
+    };
+    Builder.prototype.resource = function (path, data, mimeType) {
+        var resourceElement = this.getResourceElement(path, true);
+        if (typeof data == "string") {
+            mimeType = mimeType || "text/plain";
+        }
+        else {
+            mimeType = mimeType || "text/json";
+            data = JSON.stringify(data, null, 2);
+        }
+        resourceElement.content = data;
+        resourceElement.contentSize = data.length;
+        resourceElement.mimeType = mimeType;
+        return this;
+    };
+    Builder.prototype.config = function (path, configData) {
+        var configElement = this.getConfigElement(path, true);
+        if (Array.isArray(configData)) {
+            configData.forEach(function (attr) {
+                configElement.setAttributeWithKey(attr.name, attr.value, attr.type);
+            });
+        }
+        else {
+            Object.keys(configData).forEach(function (name) {
+                configElement.setAttributeWithKey(name, configData[name]);
+            });
+        }
+        return this;
+    };
+    Builder.prototype.wireSystem = function () {
+        var _this = this;
+        this.originalSystem = System;
+        System = {
+            getModule: function (name) {
+                return _this.modules[name] || _this.originalSystem.getModule(name);
+            },
+            getAllModules: function () {
+                return _this.originalSystem.getAllModules();
+            },
+            getContext: function () {
+                return _this.originalSystem.getContext();
+            },
+            log: function (text) {
+                _this.originalSystem.log(text);
+            },
+            warn: function (text) {
+                _this.originalSystem.warn(text);
+            },
+            error: function (text) {
+                _this.originalSystem.error(text);
+            },
+            debug: function (text) {
+                _this.originalSystem.debug(text);
+            },
+            formatDate: function (date, format) {
+                return _this.originalSystem.formatDate(date, format);
+            },
+            nextUUID: function () { return _this.originalSystem.nextUUID(); },
+            getObjectId: function () { return 0; },
+            getObjectType: function (obj) { return typeof obj; }
+        };
+    };
+    Builder.prototype.wireServer = function () {
+        var _this = this;
+        this.originalServer = Server;
+        Server = {
+            log: function (text, info) {
+                _this.originalServer.log(text, info);
+            },
+            warn: function (text, info) {
+                _this.originalServer.warn(text, info);
+            },
+            error: function (text, info) {
+                _this.originalServer.error(text, info);
+            },
+            query: function (type, queryExp, maxCount) {
+                return [];
+            },
+            findForType: function (type, id) {
+                return null;
+            },
+            findAllForType: function (type, query) {
+                return [];
+            },
+            getConfigurationElementCategoryWithPath: function (path) {
+                return _this.getConfigCategory(path);
+            },
+            getResourceElementCategoryWithPath: function (path) {
+                return _this.getResourceCategory(path);
+            },
+            createConfigurationElement: function (categoryName, elementName) {
+                return _this.getConfigElement(categoryName + "/" + elementName, true);
+            },
+            createResourceElement: function (categoryName, elementName, mime) {
+                return _this.getResourceElement(categoryName + "/" + elementName, true);
+            }
+        };
+    };
+    Builder.prototype.getConfigElement = function (path, createIfMissing) {
+        var index = path.lastIndexOf("/");
+        var categoryPath = path.substring(0, index);
+        var elementName = path.substring(index + 1);
+        var configCategory = this.getConfigCategory(categoryPath, createIfMissing);
+        var configElement = null;
+        if (configCategory) {
+            configElement = VROES.Shims.arrayFind(configCategory.configurationElements, function (x) { return x.name == elementName; });
+            if (!configElement) {
+                if (!createIfMissing) {
+                    return null;
+                }
+                configElement = new ConfigurationElementMock_1._.ConfigurationElementMock();
+                configElement.name = elementName;
+                configElement.configurationElementCategory = configCategory;
+                configCategory.configurationElements.push(configElement);
+            }
+        }
+        return configElement;
+    };
+    Builder.prototype.getConfigCategory = function (path, createIfMissing) {
+        var category = null;
+        var fullPath = "";
+        var _loop_1 = function (categoryName) {
+            if (fullPath) {
+                fullPath += "/";
+            }
+            fullPath += categoryName;
+            var categories = category ? category.subCategories : this_1.configurationCategories;
+            var childCategory = VROES.Shims.arrayFind(categories, function (c) { return c.name == categoryName; });
+            if (!childCategory) {
+                if (!createIfMissing) {
+                    return { value: null };
+                }
+                childCategory = new ConfigurationElementCategoryMock_1._.ConfigurationElementCategoryMock();
+                childCategory.name = categoryName;
+                childCategory.path = fullPath;
+                childCategory.parent = category;
+                categories.push(childCategory);
+            }
+            category = childCategory;
+        };
+        var this_1 = this;
+        for (var _i = 0, _a = path.split("/"); _i < _a.length; _i++) {
+            var categoryName = _a[_i];
+            var state_1 = _loop_1(categoryName);
+            if (typeof state_1 === "object")
+                return state_1.value;
+        }
+        return category;
+    };
+    Builder.prototype.getResourceElement = function (path, createIfMissing) {
+        var index = path.lastIndexOf("/");
+        var categoryPath = path.substring(0, index);
+        var elementName = path.substring(index + 1);
+        var resourceCategory = this.getResourceCategory(categoryPath, createIfMissing);
+        var resourceElement = null;
+        if (resourceCategory) {
+            resourceElement = VROES.Shims.arrayFind(resourceCategory.resourceElements, function (x) { return x.name == elementName; });
+            if (!resourceElement) {
+                if (!createIfMissing) {
+                    return null;
+                }
+                resourceElement = new ResourceElementMock_1._.ResourceElementMock();
+                resourceElement.name = elementName;
+                resourceElement.category = resourceCategory;
+                resourceCategory.resourceElements.push(resourceElement);
+            }
+        }
+        return resourceElement;
+    };
+    Builder.prototype.getResourceCategory = function (path, createIfMissing) {
+        var category = null;
+        var fullPath = "";
+        var _loop_2 = function (categoryName) {
+            if (fullPath) {
+                fullPath += "/";
+            }
+            fullPath += categoryName;
+            var categories = category ? category.subCategories : this_2.resourceCategories;
+            var childCategory = VROES.Shims.arrayFind(categories, function (c) { return c.name == categoryName; });
+            if (!childCategory) {
+                if (!createIfMissing) {
+                    return { value: null };
+                }
+                childCategory = new ResourceElementCategoryMock_1._.ResourceElementCategoryMock();
+                childCategory.name = categoryName;
+                childCategory.path = fullPath;
+                childCategory.parent = category;
+                categories.push(childCategory);
+            }
+            category = childCategory;
+        };
+        var this_2 = this;
+        for (var _i = 0, _a = path.split("/"); _i < _a.length; _i++) {
+            var categoryName = _a[_i];
+            var state_2 = _loop_2(categoryName);
+            if (typeof state_2 === "object")
+                return state_2.value;
+        }
+        return category;
+    };
+    return Builder;
+}());
+return exports;
+]]></script>
+</dunes-script-module>

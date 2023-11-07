@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="OnErrorResumeNext" result-type="Any" api-version="6.0.0" id="3573e4ce-b7cf-4500-a5e4-b3abe834793e" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+function OnErrorResumeNext(logger) {
+    return function (target, propertyName, propertyDescriptor) {
+        propertyDescriptor = propertyDescriptor || Object.getOwnPropertyDescriptor(target, propertyName);
+        var method = propertyDescriptor.value;
+        propertyDescriptor.value = function () {
+            try {
+                return method.apply(this, arguments);
+            }
+            catch (err) {
+                logger(err);
+            }
+            return null;
+        };
+        target[propertyName] = propertyDescriptor.value;
+        return propertyDescriptor;
+    };
+}
+exports.OnErrorResumeNext = OnErrorResumeNext;
+return exports;]]></script>
+</dunes-script-module>

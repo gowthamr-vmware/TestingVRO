@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getAlbEndPoint" result-type="CompositeType(avi_endpoint:string,avi_username:string,avi_password:string,nsx_endpoint:string,nsx_username:string,nsx_password:string,cloud:string,tier1:string,segment:string,subnet:string):AlbEndPoint" api-version="6.0.0" id="78af7d00-fd0f-400d-bac9-522b2c823951" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi">
+  <param n="datacenter" t="string"><![CDATA[]]></param>
+  <param n="environment" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ConfigElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ConfigElementAccessor");
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var AlbConstants_1 = VROES.importLazy("com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions/avi/AlbConstants");
+function getCredential(fqdn, credentials) {
+    var cred;
+    credentials.forEach(function (credential) {
+        if (credential.fqdn === fqdn) {
+            cred = credential;
+        }
+    });
+    return cred;
+}
+if (!datacenter || !environment) {
+    throw new Error("Missing required input parameter. Got datacenter=" + datacenter + " enviroment=" + environment);
+}
+var logger = Logger_1._.Logger.getLogger("getAlbEndPoint");
+var configElement = new ConfigElementAccessor_1._.ConfigElementAccessor(AlbConstants_1._.AlbConstants.ALB_CONFIG_PATH);
+var endpoints = configElement.get('avi_nsx_endpoints');
+var aviCredentials = configElement.get('avi_credentials');
+var nsxCredentials = configElement.get('nsx_credentials');
+var avi_credential = null;
+var nsx_credential = null;
+endpoints.forEach(function (endpoint) {
+    if (endpoint.datacenter === datacenter && endpoint.environment === environment) {
+        avi_credential = getCredential(endpoint.avi_fqdn, aviCredentials);
+        nsx_credential = getCredential(endpoint.nsx_fqdn, nsxCredentials);
+    }
+});
+var cloud_mappings = configElement.get("cloud_mapping" + datacenter);
+var cloud_mapping = null;
+cloud_mappings.forEach(function (item) {
+    if (item.environment === environment) {
+        cloud_mapping = item;
+    }
+});
+var result = new Properties();
+if (cloud_mapping !== null && avi_credential !== null && nsx_credential !== null) {
+    result.put('avi_endpoint', avi_credential.ipAddress);
+    result.put('avi_username', avi_credential.username);
+    result.put('avi_password', avi_credential.password);
+    result.put('nsx_endpoint', nsx_credential.ipAddress);
+    result.put('nsx_username', nsx_credential.username);
+    result.put('nsx_password', nsx_credential.password);
+    result.put('cloud', cloud_mapping.cloud);
+    result.put('tier1', cloud_mapping.tier1);
+    result.put('segment', cloud_mapping.segment);
+    result.put('subnet', cloud_mapping.subnet);
+}
+return result;]]></script>
+</dunes-script-module>

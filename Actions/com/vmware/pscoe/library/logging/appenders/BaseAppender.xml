@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="BaseAppender" result-type="Any" api-version="6.0.0" id="f8f8aaa3-8570-4e29-bfaf-9f4f5288f661" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging.appenders">
+  <description><![CDATA[An appender is an object that takes logger messages and appends them to logging endpoints(server, file, output stream, etc.....)
+
+Base appender, cannot be instantiated explicitly and must be inherited by the implementing appenders
+Each implementing appender receives a properties object, with parameters as defined in the logger configuration
+Implementing appenders must override the append function]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var Formatter = Class.load("com.vmware.pscoe.library.logging.format", "Formatter");
+
+return Class.define(function BaseAppender(properties){
+	this.formatter = new Formatter(properties);
+	// Empty constructor
+}, {
+	/**
+	 * Append function is called internaly by the logger. It logs the message supplied to it according to the appender's implementation
+	 * param severity - severity level of the logged message. Valid severity levels are: DEBUG, INFO, WARN, ERROR
+	 * param message - message to be logged the respective appender
+	 */
+	append: function(severity, message) {
+		throw "You must override the append function in your Appender implementation!";
+	},
+	format: function(severity, message) {
+		return this.formatter.format(severity, message);
+	}
+});]]></script>
+</dunes-script-module>

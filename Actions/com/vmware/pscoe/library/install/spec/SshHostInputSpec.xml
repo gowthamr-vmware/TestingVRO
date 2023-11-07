@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="SshHostInputSpec" result-type="Any" api-version="6.0.0" id="f8656d3c-5bf3-45b5-945b-9656a7496c14" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[SshHost input specificator. Allows the operator to specify a rest host object as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var RefInputSpec = Class.load("com.vmware.pscoe.library.install.spec", "RefInputSpec");
+var InputSpecBase = Class.load("com.vmware.pscoe.library.install.spec", "InputSpecBase");
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+    .getLogger("com.vmware.pscoe.library.install.spec.SshHostInputSpec");
+
+return Class.define(function SshHostInputSpec(path) {
+    InputSpecBase.apply(this, arguments);
+    this.refType = "SSH:Host";
+    this.validators.push(function (val) {
+        return (val && (val.hostname || val.id || val.host || val.hostName)) ? null : ("no 'host' or 'hostname' or 'hostName' or 'id' property found for SSH host " + JSON.stringify(val) + " in path: \"" + path + "\".");
+    });
+}, {
+    reachable: function (timeout) {
+        timeout = timeout || 60;
+        this.validators.push(function (value) {
+            if (!value.host && !value.hostName && !value.hostname) {
+                logger.warn("Reachable method require 'host' or 'hostName' or 'hostname' parameter to be passed. Validation is considered as successful.");
+                return null;
+            }
+            var host;
+            if (value.host == null) {
+                host = value.hostname == null ? value.hostName : value.hostname;
+            } else {
+                host = value.host
+            }
+            var isHostReachable = System.isHostReachable(host, timeout);
+            return !isHostReachable ? "Ssh Host '" + host + "' is not reachable. " : null;
+        });
+        return this;
+    },
+    execute: function (value, context) {
+        var deref = this.dereference(value)[0];
+        return InputSpecBase.prototype.execute.apply(this, [deref, context]);
+    },
+
+    /**
+     * Finds a SSH:Host object in vRO. First-level properties:
+     * -id
+     * -name
+     * -url
+     * -host or hostName
+     * -port
+     * -authentication
+     * -type
+     * -transportProtocol
+     * -username
+     * -password
+     * -acceptAllCertificates
+     * -shellCodePage
+     * -idleTimeout
+     * -sessionMode
+     * -customProperties (optional) - setting custom properties on the vRO SSHHost
+     *
+     * @param {Any} value - JSON criteria
+     * @returns {PowerShell:PowerShellHost}
+     */
+    dereference: function (value) {
+        var dereferenceCriteria = buildDereferenceCriteria(value);
+        var hosts = RefInputSpec.prototype.dereference.apply(this, [dereferenceCriteria]);
+        if (!value.id) {
+            if ((hosts && hosts.length == 1) && (value.overwrite)) {
+                removeSshHost(hosts[0]);
+                hosts = [createSshHost(value)];
+                value.override = false;
+                value.overwrite = false;
+            }
+            if (!hosts || hosts.length < 1) {
+                hosts = [createSshHost(value)];
+            }
+        }
+        return hosts;
+    }
+}, InputSpecBase);
+
+
+function buildDereferenceCriteria(value) {
+    var criteria = {};
+    if (value.id) {
+        criteria.id = value.id;
+    } else {
+        var validKeys = ["name", "host", "hostname", "hostName", "username", "port"];
+        Object.keys(value).forEach(function (key) {
+            if (validKeys.indexOf(key) > -1) {
+                if (key == "host" || key == "hostname" || key == "hostName") {
+                    criteria["hostname"] = value[key];
+                } else {
+                    criteria[key] = value[key];
+                }
+            }
+        });
+    }
+    return criteria;
+}
+
+function createSshHost(options) {
+    logger.info("Creating a new SSH host with options: " + JSON.stringify(options));
+    var path = Server.getWorkflowCategoryWithPath("Library/SSH/Configuration");
+    var workflows = path.workflows.filter(function (workflow) {return ("" +workflow.name).toLowerCase() == "add ssh host";});
+    var wf = workflows[0];
+
+    var inputs = new Properties();
+
+    inputs.put("hostname",               options.hostname || options.host || options.hostName);
+    inputs.put("port",                   options.port || 22);
+    inputs.put("rootFolders",            options.rootFolders);
+    inputs.put("passwordAuthentication", options.passwordAuthentication);
+    inputs.put("username",               options.username);
+    inputs.put("password",               options.password);
+    inputs.put("certificatePath",        options.certificatePath);
+    inputs.put("passphrase",             options.passphrase);
+
+
+    var token = wf.execute(inputs);
+    var output = System.getModule("com.vmware.pscoe.library.util").waitForWorkflowToComplete(token, 1, 30);
+    var sshHost = output.get("sshHost");
+    if (!!options.customProperties) {
+        var inSpecDummy = new InputSpecBase("dummy");
+        Object.keys(options.customProperties).forEach(function (key) {
+            inSpecDummy.setCustomProperty(sshHost, key, options.customProperties[key]);
+        }, this);
+    }
+    return sshHost;
+}
+
+function removeSshHost(host) {
+    SSHHostManager.removeSshHost(host);
+    logger.info("SSH Host with '" + host.username + "@" +host.hostname + ":" + host.port + "' has been deleted.");
+}]]></script>
+</dunes-script-module>

@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ADHostnameExtractor" result-type="Any" api-version="6.0.0" id="0c87f9e1-bdbd-4415-92a4-57b58a791cf6" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.autofill.extractor">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var ExtractorUtil_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.autofill/extractor/ExtractorUtil");
+var ADHostnameExtractor = /** @class */ (function () {
+    function ADHostnameExtractor(machinePrefix, machineSuffix) {
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.autofill.extractor.ADHostnameExtractor');
+        this.prefix = machinePrefix;
+        this.postfix = machineSuffix;
+    }
+    ADHostnameExtractor.prototype.extract = function () {
+        this.logger.debug("Extracting AD computers for prefix " + this.prefix + " and suffix: " + this.postfix + "...");
+        var comps = Server.findAllForType('AD:ComputerAD', this.prefix);
+        return comps
+            .filter(function (comp) {
+            var compPrefix = ExtractorUtil_1._.ExtractorUtil.getExtractedVmPrefix(comp.name);
+            var compSuffix = ExtractorUtil_1._.ExtractorUtil.getExtractedVmSuffix(comp.name, this.postfix);
+            return compPrefix === this.prefix && compSuffix === this.postfix;
+        }, this)
+            .map(function (c) {
+            return parseInt(c.name.replace(this.prefix, ''), 10);
+        }, this);
+    };
+    return ADHostnameExtractor;
+}());
+exports.ADHostnameExtractor = ADHostnameExtractor;
+return exports;]]></script>
+</dunes-script-module>

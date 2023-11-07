@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ifelse" result-type="string" api-version="6.0.0" id="c87eba23-a8f9-3c6f-ac2f-fdffd6bc7589" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.presentation">
+  <param n="operand1" t="string"><![CDATA[]]></param>
+  <param n="logicOperation" t="string"><![CDATA[]]></param>
+  <param n="operand2" t="string"><![CDATA[]]></param>
+  <param n="thenvalue" t="string"><![CDATA[]]></param>
+  <param n="elsevalue" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var result = '';
+switch (logicOperation) {
+    case '=':
+        if (operand1 == operand2)
+            result = thenvalue;
+        else
+            result = elsevalue;
+        break;
+    case '!=':
+        if (operand1 != operand2)
+            result = thenvalue;
+        else
+            result = elsevalue;
+        break;
+}
+return result;]]></script>
+</dunes-script-module>

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getVmFolders" result-type="Array/string" api-version="6.0.0" id="ad5dbaf2-941e-32cb-88a3-4c1baa2c50c9" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.presentation">
+  <param n="cloudZoneName" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var FolderService_1 = VROES.importLazy("com.vmware.pscoe.nyc.vra_integration.vro.actions/services/FolderService");
+return FolderService_1._.FolderService.getFolderByCloudZoneName(cloudZoneName);]]></script>
+</dunes-script-module>

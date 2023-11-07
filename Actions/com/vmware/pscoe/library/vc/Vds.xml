@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Vds" result-type="Any" api-version="6.0.0" id="40dbadbd-b0f5-417b-95c5-6dfb346f5149" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+    .getLogger("com.vmware.pscoe.library.vc/Vds");
+
+/**
+ * @param {VC:DistributedVirtualSwitch} vds
+ */
+return Class.define(function Vds(vds) {
+    this.id = vds.id;
+    this.name = vds.name;
+
+    var portgroups = vds.portgroup;
+
+    /**
+     * Creates dvPortgroup on the VDS
+     * @param {VcDVPortgroupConfigSpec} configSpec
+     */
+    this.createPortgroup = function (configSpec) {
+        this.validateConfigSpec(configSpec);
+
+        var portgroupName = configSpec.name;
+        logger.debug("Creating DV Portgroup '" + portgroupName + "' on VDS '" + this.name + "'.");
+
+        var portgroupCreationTask = vds.addDVPortgroup_Task([configSpec]);
+        System.getModule("com.vmware.library.vc.basic").vim3WaitTaskEnd(portgroupCreationTask, true, 3);
+
+        logger.debug("DV Portgroup '" + portgroupName + "' created successfully!")
+    };
+
+    /**
+     * Checks whether VLAN with given ID exists on the VDS.
+     * @param {string} id
+     * @returns {boolean}
+     */
+    this.vlanExists = function (id) {
+        for (var i in portgroups) {
+            // Check if portgroup is an Uplink Portgroup
+            if (portgroups[i].config.uplink) {
+                continue;
+            }
+            var vdsVlan = portgroups[i].config.defaultPortConfig.vlan;
+            var vlanId = vdsVlan.vlanId;
+            var pvlanId = vdsVlan.pvlanId;
+            if (vlanId == id || pvlanId == id) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    /**
+     * Gets a child portgroup by name.
+     * @param {string} portgroupName
+     * @returns {VC:DistributedVirtualPortgroup}
+     */
+    this.getPortgroupByName = function (portgroupName) {
+        for (var i in portgroups) {
+            if (portgroups[i].config.name == portgroupName) {
+                return portgroups[i];
+            }
+        }
+
+        return null;
+    };
+
+    /**
+     * Verifies whether a Portgroup with identical name or vlan existings.
+     * @param {VcDVPortgroupConfigSpec} configSpec
+     */
+    this.validateConfigSpec = function (configSpec) {
+        var portgroupName = configSpec.name;
+
+        if (this.getPortgroupByName(portgroupName)) {
+            throw new Error("Portgroup with name: '" + portgroupName + "' already exists.");
+        }
+
+        if (configSpec.defaultPortConfig && configSpec.defaultPortConfig.vlan
+            && this.vlanExists(configSpec.defaultPortConfig.vlan.vlanId)) {
+            throw new Error("VLAN with ID: '" + configSpec.defaultPortConfig.vlan.vlanId + "' already exists.")
+        }
+    }
+});]]></script>
+</dunes-script-module>

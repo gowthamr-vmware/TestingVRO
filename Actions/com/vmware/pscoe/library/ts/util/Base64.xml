@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Base64" result-type="Any" api-version="6.0.0" id="52b793a9-39e4-4e54-b35d-810d8c718acc" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+function encode(input) {
+    return _byteToAscii(_utf8_encode(input));
+}
+exports.encode = encode;
+function btoa(input) {
+    return _byteToAscii(input);
+}
+exports.btoa = btoa;
+function decode(input) {
+    return _utf8_decode(_asciiToByte(input));
+}
+exports.decode = decode;
+function atob(input) {
+    return _asciiToByte(input);
+}
+exports.atob = atob;
+function decodeUri(input) {
+    return _utf8_decode(_asciiToByte(input.replace(/-/g, "+").replace(/_/g, "/")));
+}
+exports.decodeUri = decodeUri;
+function encodeUri(input) {
+    return _byteToAscii(_utf8_encode(input)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, '');
+}
+exports.encodeUri = encodeUri;
+// private method for UTF-8 encoding
+function _utf8_encode(string) {
+    string = string.replace(/\r\n/g, "\n");
+    var utftext = "";
+    for (var n = 0; n < string.length; n++) {
+        var c = string.charCodeAt(n);
+        // Some vROs crash when using "+=" operator to concatenate strings with 2000+ symbols. Using ".concat()" instead
+        if (c < 128) {
+            utftext = utftext.concat(String.fromCharCode(c));
+        }
+        else if ((c > 127) && (c < 2048)) {
+            utftext = utftext.concat(String.fromCharCode((c >> 6) | 192));
+            utftext = utftext.concat(String.fromCharCode((c & 63) | 128));
+        }
+        else {
+            utftext = utftext.concat(String.fromCharCode((c >> 12) | 224));
+            utftext = utftext.concat(String.fromCharCode(((c >> 6) & 63) | 128));
+            utftext = utftext.concat(String.fromCharCode((c & 63) | 128));
+        }
+    }
+    return utftext;
+}
+// private method for UTF-8 decoding
+function _utf8_decode(utftext) {
+    var string = "";
+    var i = 0;
+    var c = 0, c3 = 0, c2 = 0;
+    while (i < utftext.length) {
+        c = utftext.charCodeAt(i);
+        if (c < 128) {
+            string = string.concat(String.fromCharCode(c));
+            i++;
+        }
+        else if ((c > 191) && (c < 224)) {
+            c2 = utftext.charCodeAt(i + 1);
+            string = string.concat(String.fromCharCode(((c & 31) << 6) | (c2 & 63)));
+            i += 2;
+        }
+        else {
+            c2 = utftext.charCodeAt(i + 1);
+            c3 = utftext.charCodeAt(i + 2);
+            string = string.concat(String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63)));
+            i += 3;
+        }
+    }
+    return string;
+}
+// base64 character set, plus padding character (=)
+var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+// Regular expression to check formal correctness of base64 encoded strings
+var b64re = /^(?:[A-Za-z\d+\/]{4})*?(?:[A-Za-z\d+\/]{2}(?:==)?|[A-Za-z\d+\/]{3}=?)?$/;
+var _byteToAscii = function (string) {
+    string = String(string);
+    var bitmap, a, b, c, result = "", i = 0;
+    var rest = string.length % 3; // To determine the final padding
+    while (i < string.length) {
+        a = string.charCodeAt(i);
+        i++;
+        b = string.charCodeAt(i);
+        i++;
+        c = string.charCodeAt(i);
+        i++;
+        if (a > 255 || b > 255 || c > 255) {
+            throw new TypeError("Failed to execute 'btoa': The string to be encoded contains characters outside of the Latin1 range.");
+        }
+        bitmap = (a << 16) | (b << 8) | c;
+        result = result.concat(b64.charAt(bitmap >> 18 & 63) + b64.charAt(bitmap >> 12 & 63) +
+            b64.charAt(bitmap >> 6 & 63) + b64.charAt(bitmap & 63));
+    }
+    // If there's need of padding, replace the last 'A's with equal signs
+    return rest ? result.slice(0, rest - 3) + "===".substring(rest) : result;
+};
+var _asciiToByte = function (string) {
+    // atob can work with strings with whitespaces, even inside the encoded part,
+    // but only \t, \n, \f, \r and ' ', which can be stripped.
+    string = String(string).replace(/[\t\n\f\r ]+/g, "");
+    if (!b64re.test(string)) {
+        throw new TypeError("Failed to execute 'atob': The string to be decoded is not correctly encoded.");
+    }
+    // Adding the padding if missing, for semplicity
+    string += "==".slice(2 - (string.length & 3));
+    var bitmap, result = "", r1, r2, i = 0;
+    while (i < string.length) {
+        bitmap = b64.indexOf(string.charAt(i + 0)) << 18 | b64.indexOf(string.charAt(i + 1)) << 12 |
+            (r1 = b64.indexOf(string.charAt(i + 2))) << 6 | (r2 = b64.indexOf(string.charAt(i + 3)));
+        i = i + 4;
+        result = result.concat(r1 === 64 ? String.fromCharCode(bitmap >> 16 & 255) :
+            r2 === 64 ? String.fromCharCode(bitmap >> 16 & 255, bitmap >> 8 & 255) :
+                String.fromCharCode(bitmap >> 16 & 255, bitmap >> 8 & 255, bitmap & 255));
+    }
+    return result;
+};
+return exports;]]></script>
+</dunes-script-module>

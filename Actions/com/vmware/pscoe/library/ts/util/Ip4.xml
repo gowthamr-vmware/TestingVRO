@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Ip4" result-type="Any" api-version="6.0.0" id="3125709a-49f0-4ff8-bffa-fd5f70393add" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var Ip4 = /** @class */ (function () {
+    function Ip4() {
+    }
+    Ip4.ip4ToInt = function (ip) {
+        return ip.split(".").reduce(function (int, oct) { return (int << 8) + parseInt(oct, 10); }, 0) >>> 0;
+    };
+    Ip4.intToIp4 = function (int) {
+        return [(int >>> 24) & 0xff, (int >>> 16) & 0xff, (int >>> 8) & 0xff, int & 0xff].join(".");
+    };
+    /**
+     * Converts Subnet Prefix to Subnet Mask
+     * @param prefix - an integer/string representation of the Subnet Prefix
+     * @return a string representation of the Subnet Mask
+     * Ex: 24 -> 255.255.255.0
+     */
+    Ip4.prefixToMask = function (prefix) {
+        if (typeof prefix !== "number") {
+            if (!/^\d+$/.test(prefix) ||
+                parseInt(prefix) < 0 ||
+                parseInt(prefix) > 32) {
+                throw new Error("Prefix should be numeric value between 0 and 32.");
+            }
+            prefix = parseInt(prefix);
+        }
+        var binaryMask = "";
+        for (var i = 0; i < 32; i++) {
+            binaryMask += i < prefix ? "1" : "0";
+        }
+        var intMask = parseInt(binaryMask, 2);
+        return Ip4.numberToIpInt(intMask);
+    };
+    /**
+     * Convert Subnet Mask to Subnet Prefix
+     * @param {string} mask - a string representation of the Subnet Mask
+     * @return {number} - a number representation of the Subnet Prefix
+     * Example: 255.255.0.0 -> 16
+     */
+    Ip4.maskToPrefix = function (mask) {
+        var separated = mask.split(".");
+        var temp = "";
+        separated.forEach(function (octet) {
+            temp += parseInt(octet, 10).toString(2);
+        });
+        temp = temp.substring(0, temp.lastIndexOf("1") + 1);
+        return temp.length;
+    };
+    Ip4.numberToIpInt = function (number) {
+        var d = (number % 256).toString();
+        for (var i = 3; i > 0; i--) {
+            number = Math.floor(number / 256);
+            d = number % 256 + "." + d;
+        }
+        return d;
+    };
+    /**
+     * Checks whether string is a valid IP address
+     *
+     * @param ipAddress string
+     * @return boolean
+     */
+    Ip4.isValid = function (ipAddress) {
+        var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
+        return ipPattern.test(ipAddress);
+    };
+    /**  Extract all ips in a text
+     * @param text ramdom text
+     * @return {string[]} Extracted list of ips v4 from the text
+     */
+    Ip4.extractIpsV4 = function (text) {
+        var regexp = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/gi;
+        var matches_array = text.match(regexp);
+        return matches_array;
+    };
+    /**
+     * Calculates the Subnet
+     * @param {string} network - a string representation of the Subnet
+     * @param {string} mask - a string representation of the Subnet Mask
+     * @return a string representation of the Subnet
+     * Ex: 10.26.50.1, 255.255.0.0 -> 10.26.0.0
+     */
+    Ip4.calculateSubnet = function (network, mask) {
+        var subnetArray = [0, 0, 0, 0];
+        for (var i = 0; i < 4; i++) {
+            subnetArray[i] = parseInt(network.split(".")[i]) & parseInt(mask.split(".")[i]);
+        }
+        return subnetArray.join(".");
+    };
+    /**
+     * Calculates the CIDR Range
+     * @param {string} cidr - a string CIDR
+     * @param {string} mask - a string representation of the Subnet Mask
+     * @return {string[]} a string representation of the Subnet
+     * Ex: 10.26.0.0/24 - > [10.26.0.1,10.26.0.24]
+     */
+    Ip4.prototype.calculateCidrRange = function (cidr) {
+        var _a = cidr.split("/"), range = _a[0], bits = _a[1];
+        var intBits = parseInt(bits);
+        var mask = ~(Math.pow(2, (32 - intBits)) - 1);
+        return [Ip4.intToIp4(Ip4.ip4ToInt(range) & mask), Ip4.intToIp4(Ip4.ip4ToInt(range) | ~mask)];
+    };
+    /**
+     * Check if a given ip belongs to one of the cidrs
+     * @param {string} ip - IPv4
+     * @param {string[]} cidrs - List of CIDR's'
+     * @return {boolean}
+     */
+    Ip4.prototype.isIp4InCidrs = function (ip, cidrs) {
+        var belongs = cidrs.some(function (cidr) { return Ip4.isIp4InCidr(ip, cidr); });
+        return belongs;
+    };
+    /**
+     * Check if a given ip belongs to a cidr
+     * @param {string} ip - IPv4
+     * @param {string} cidr - CIDR
+     * @return {boolean}
+     */
+    Ip4.isIp4InCidr = function (ip, cidr) {
+        var _a = cidr.split("/"), range = _a[0], bitsStr = _a[1];
+        var bits = bitsStr ? parseInt(bitsStr) : 32;
+        var mask = ~(Math.pow(2, (32 - bits)) - 1);
+        return (Ip4.ip4ToInt(ip) & mask) === (Ip4.ip4ToInt(range) & mask);
+    };
+    return Ip4;
+}());
+exports.Ip4 = Ip4;
+return exports;]]></script>
+</dunes-script-module>

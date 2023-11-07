@@ -1,0 +1,1 @@
+#[#deleteResourceAfterRun#=#boolean#true#+#scriptWorkingDirectory#=#string##+#scriptContent#=#string##Powershell script to assign IP#+#scriptRefreshTime#=#number#60.0#+#scriptType#=#string#powershell#+#resourceSearchReplace#=#boolean#false#+#scriptInteractiveSession#=#boolean#false#+#scriptTimeOut#=#number#120.0#+#copyResource#=#boolean#false#]#

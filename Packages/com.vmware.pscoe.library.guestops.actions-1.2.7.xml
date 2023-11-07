@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[Built by Build Tools for VMware Aria]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='76db9b47-8a33-47ab-8a30-c8d99d13f1a9'&dunesName='Action'&name='AsyncProcess'&category='com.vmware.pscoe.library.guestops']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e71753b5-2684-45ac-8ab9-86778d6e86fd'&dunesName='Action'&name='GuestOperations'&category='com.vmware.pscoe.library.guestops']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e76fedf6-1eb2-448b-bd7f-f67c5c6fed7e'&dunesName='Action'&name='Guest'&category='com.vmware.pscoe.library.guestops']]></elm>
+</package>

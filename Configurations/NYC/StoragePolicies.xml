@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="482c00ba-002b-43c6-9ad8-1f5a5e87f286" version="1.0.0">
+  <display-name><![CDATA[StoragePolicies]]></display-name>
+  <atts>
+    <att name="envRoleMapping" type="Array/CompositeType(env:string,role:string,policyName:string):envRoleMap" read-only="false"/>
+  </atts>
+</config-element>

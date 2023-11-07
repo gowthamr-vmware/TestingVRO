@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CSVFile" result-type="Any" api-version="6.0.0" id="0ba90d50-1fef-40ac-950f-2aca10f3cde2" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var removeQuotesAndTrim = function (value, newLine) {
+	var result = value.replace(new RegExp("\"", "g"), "");//remove quotes from value
+	if (newLine) {
+		result = result.replace(new RegExp(newLine, "g"), "");//remove newLine delimiter from value
+	}
+	return result.trim(); //remove empty spaces from start and end of value
+};
+
+var CSVFile = function (headers, lines, delimiter, newLine, options) {
+	this.headers = headers;
+	this.lines = lines;
+	this.delimiter = delimiter;
+	this.newLine = newLine;
+	this.options = options;
+
+	this.toJson = function () {
+
+		var jsonData = [];
+		for (var i = 0; i < this.lines.length; i++) {
+			var currentLine = this.lines[i];
+
+			var currentLineObject = {};
+			for (var j = 0; j < this.headers.length; j++) {
+				var strriped = removeQuotesAndTrim(this.headers[j]);
+				currentLineObject[strriped] = currentLine[j];
+			}
+			jsonData.push(currentLineObject);
+
+		}
+		return jsonData;
+	};
+
+	this.toString = function () {
+		var strLines = [this.headers.join(this.delimiter)];
+		strLines = strLines.concat(this.lines.join(this.delimiter));
+		return strLines.join(this.newLine);
+	};
+};
+
+CSVFile.parse = function (content, options) {
+	var delimiter = ",";
+	var newLine = "\r\n";
+	var match = null;
+	if (options) {
+		if (options.delimiter) {
+			delimiter = options.delimiter;
+		}
+		if (options.newLine) {
+			newLine = options.newLine;
+		}
+		if (options.match) {
+			match = options.match;
+		}
+	}
+	var lines = match ? content.match(match) : content.split(newLine);
+	var headers = lines[0].split(delimiter);
+	var parsedLines = [];
+	for (var i = 1; i < lines.length; i++) {
+		if (lines[i]) {//added by MM
+			parsedLines.push(lines[i].split(delimiter));
+		}
+	}
+
+	return new CSVFile(headers, parsedLines, delimiter, newLine, options);
+};
+
+CSVFile.fromJson = function (jsonArray, options) {
+	var delimiter = ",";
+	var newLine = "\r\n";
+	var emptyValue = null;
+	var opts = null;
+	if (options) {
+		if (options.delimiter) {
+			delimiter = options.delimiter;
+		}
+		if (options.newLine) {
+			newLine = options.newLine;
+		}
+		if (options.hasOwnProperty("emptyValue")) {
+			//Obtain empty value - user controlled
+			emptyValue = options.emptyValue;
+		}
+		if (options.options) {
+			opts = options.options;
+		}
+	}
+
+	if (jsonArray instanceof Array) {
+		//Make sure of consistency of array
+		var maxFieldsIndx = (-1);
+		var maxFields = 0;
+		for (var p in jsonArray) {
+			var objKeys = Object.keys(jsonArray[p]);
+			if (objKeys.length > maxFields) { //get object with most keys
+				maxFields = objKeys.length;
+				maxFieldsIndx = p; //get index of the object with most keys
+			}
+		}
+
+		//Generate headers
+		var headers = [];
+		var allKeys = Object.keys(jsonArray[maxFieldsIndx]);
+		allKeys.forEach(function (key) {
+			var head = removeQuotesAndTrim(key, newLine);
+			headers.push(head);
+		});
+
+		//Generate lines
+		var lines = [];
+		for (var i in jsonArray) {
+			var obj = jsonArray[i];
+			var lin = [];
+			allKeys.forEach(function (key) {
+				if (obj.hasOwnProperty(key)) {
+					var value = obj[key];
+					var strriped = !value ? emptyValue : (removeQuotesAndTrim((value+""), newLine));
+					lin.push(strriped);
+				} else {
+					lin.push(emptyValue);
+				}
+			});
+			lines.push(lin);
+		}
+
+		return new CSVFile(headers, lines, delimiter, newLine, opts);
+	} else {
+		throw new Error("Provided JSON is not of type array");
+	}
+};
+
+return CSVFile;]]></script>
+</dunes-script-module>

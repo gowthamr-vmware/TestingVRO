@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RESTMock" result-type="Any" api-version="6.0.0" id="ec54069c-3b05-309d-81ab-3e36f5172ebf" version="2.0.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock.rest">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var RESTHostMockBuilder_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.rest.RESTHostMockBuilder");
+var RESTMock = /** @class */ (function () {
+    function RESTMock() {
+        throw new Error("Private constructor");
+    }
+    RESTMock.createHost = function () {
+        return new RESTHostMockBuilder_1._.RESTHostMockBuilder();
+    };
+    return RESTMock;
+}());
+exports.RESTMock = RESTMock;
+return exports;
+]]></script>
+</dunes-script-module>

@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CustomHostNameLibConfigurator" result-type="Any" api-version="6.0.0" id="0c963387-b8a7-4f5d-9c52-136703a9afd7" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.install.handlers">
+  <script encoded="false"><![CDATA[function CustomHostNameLibConfigurator() { }
+CustomHostNameLibConfigurator.prototype.configure = function (input) {
+    var configPath = "PSCoE/PpS/Custom Hostname Configuration";
+    input.readNumber("customhostname_lib.startindex").default(1).config(configPath).set("startindex");
+    input.readBoolean("customhostname_lib.shouldAutofillIndexes").default(false).config(configPath).set("shouldAutofillIndexes");
+    input.readNumber("customhostname_lib.maxNameGenerationAttempts").default(3).config(configPath).set("maxNameGenerationAttempts");
+};
+return CustomHostNameLibConfigurator;]]></script>
+</dunes-script-module>

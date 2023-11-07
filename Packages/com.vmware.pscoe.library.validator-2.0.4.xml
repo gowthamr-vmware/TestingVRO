@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[Built by Build Tools for VMware Aria]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='34eb6791-bc34-4f53-b86e-afdc75a4ee16'&dunesName='Action'&name='Validator'&category='com.vmware.pscoe.library.validator']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='b15cfce6-0848-4356-bea5-9dbbb749552a'&dunesName='Action'&name='MsgValidator'&category='com.vmware.pscoe.library.validator']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='c0c3dc5e-4234-4907-945a-6c3e8247f25d'&dunesName='Action'&name='AssertValidator'&category='com.vmware.pscoe.library.validator']]></elm>
+</package>

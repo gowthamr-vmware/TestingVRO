@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getFileName" result-type="Path" api-version="6.0.0" id="848080808080808080808080808080808784808001297259131125b940b51f82d" version="1.0.0" allowed-operations="vef" category-name="com.vmware.basic">
+  <param n="fileName" t="Path"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if ( fileName != null )  {
+	var index = fileName.lastIndexOf( "/" );
+	return fileName.substring( index+1, fileName.length );
+}
+return null;]]></script>
+</dunes-script-module>

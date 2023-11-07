@@ -1,0 +1,425 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="OrgsService" result-type="Any" api-version="6.0.0" id="a0909907-edbe-35ec-9445-f4c506b4d03c" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.identity.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * A list of identity, account and service management APIs.
+ */
+var OrgsService = /** @class */ (function () {
+    function OrgsService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Read an organization.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}'
+     * Endpoint Method: 'get'
+     * @param {string} orgId
+     * @return {GetByIdHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.getById = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"];
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * NOTE: At the moment we only allow for displayName change.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}'
+     * Endpoint Method: 'patch'
+     * @param {string} orgId
+     * @param {OrganizationResponse} body
+     * @return {PatchOrgHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.patchOrg = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"];
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PATCH",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Perfroms a search for groups in the organization.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/groups-search'
+     * Endpoint Method: 'get'
+     * @param {string} orgId
+     * @param {string} groupSearchTerm
+     * @return {SearchOrgGroupsHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.searchOrgGroups = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/groups-search";
+        var queryParameters = {};
+        if (parameters["query_groupSearchTerm"] !== undefined) {
+            queryParameters["groupSearchTerm"] = parameters["query_groupSearchTerm"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Deletes an organization scoped OAuth2 client.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/oauth-apps'
+     * Endpoint Method: 'delete'
+     * @param {string} orgId
+     * @param {DeleteClientsRequest} body
+     * @return {DeleteOrgScopedOAuthClientHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.deleteOrgScopedOAuthClient = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/oauth-apps";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "DELETE",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Creates an organization scoped OAuth2 client.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/oauth-apps'
+     * Endpoint Method: 'post'
+     * @param {string} orgId - The organization ID.
+     * @param {OrgOAuthAppRequest} body
+     * @return {CreateOrgScopedOAuthClientHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.createOrgScopedOAuthClient = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/oauth-apps";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get Organization Managed OAuth App that was created and is owned by the organization.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/oauth-apps/{oauthAppId}'
+     * Endpoint Method: 'get'
+     * @param {string} orgId
+     * @param {string} oauthAppId
+     * @return {GetOrgScopedOAuthClientHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.getOrgScopedOAuthClient = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/oauth-apps/" + parameters["path_oauthAppId"];
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Edit roles.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/roles'
+     * Endpoint Method: 'patch'
+     * @param {string} orgId
+     * @param {UsersRolesPatchRequest} body
+     * @return {PatchOrgRolesHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.patchOrgRoles = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/roles";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PATCH",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Read a role.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/roles/{roleId}'
+     * Endpoint Method: 'get'
+     * @param {string} orgId
+     * @param {string} roleId
+     * @return {GetRoleByOrgIdAndRoleIdHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.getRoleByOrgIdAndRoleId = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/roles/" + parameters["path_roleId"];
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Returns all sub organizations for the passed Org ID. The user needs to be either organization owner or a platform operator in order to get a result.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/sub-orgs'
+     * Endpoint Method: 'get'
+     * @param {string} orgId
+     * @return {GetOrgSubOrgsHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.getOrgSubOrgs = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/sub-orgs";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     *  Get response encapsulating organization users.
+
+Fetched page is according to the page start and page limit passed as optional parameters. Defaults to page size of 20 and start from the first page. Note that <code>pageStart</code> is 1-based index.
+
+We are currently not supporting the optional <code>serviceDefinitionId</code> which is to filter users having access to a service in CSP.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/users'
+     * Endpoint Method: 'get'
+     * @param {string} orgId
+     * @param {string} serviceDefinitionId
+     * @param {number} pageStart
+     * @param {number} pageLimit
+     * @param {string} expandProfile
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @return {GetPaginatedOrgUsersInfo1HttpResponse} Http response (200)
+     */
+    OrgsService.prototype.getPaginatedOrgUsersInfo1 = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/users";
+        var queryParameters = {};
+        if (parameters["query_serviceDefinitionId"] !== undefined) {
+            queryParameters["serviceDefinitionId"] = parameters["query_serviceDefinitionId"];
+        }
+        if (parameters["query_pageStart"] !== undefined) {
+            queryParameters["pageStart"] = parameters["query_pageStart"];
+        }
+        if (parameters["query_pageLimit"] !== undefined) {
+            queryParameters["pageLimit"] = parameters["query_pageLimit"];
+        }
+        if (parameters["query_expandProfile"] !== undefined) {
+            queryParameters["expandProfile"] = parameters["query_expandProfile"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Search users in organization having username, firstName, lastName or email which "contains" search term e.g. search for "test" will return test@vmware.com if test@vmware.com is part of the organization.
+
+Search results limited to first 20 results. Please refine the search term for accurate results. Organization members will receive basic user information. Organization owners will additionally receive role details of the users.
+     * Endpoint URL: '/csp/gateway/am/api/orgs/{orgId}/users/search'
+     * Endpoint Method: 'get'
+     * @param {string} orgId
+     * @param {string} userSearchTerm
+     * @param {string} expandProfile
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @return {SearchUsersHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.searchUsers = function (parameters) {
+        var path = "/csp/gateway/am/api/orgs/" + parameters["path_orgId"] + "/users/search";
+        var queryParameters = {};
+        if (parameters["query_userSearchTerm"] !== undefined) {
+            queryParameters["userSearchTerm"] = parameters["query_userSearchTerm"];
+        }
+        if (parameters["query_expandProfile"] !== undefined) {
+            queryParameters["expandProfile"] = parameters["query_expandProfile"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Deprecated: Get all service definitions the organization has access to.
+     * Endpoint URL: '/csp/gateway/slc/api/orgs/{orgId}/services'
+     * Endpoint Method: 'get'
+     * @param {string} orgId
+     * @param {boolean} excludeUngated
+     * @param {string} locale
+     * @return {GetAllByOrgServiceDefinitionsHttpResponse} Http response (200)
+     */
+    OrgsService.prototype.getAllByOrgServiceDefinitions = function (parameters) {
+        var path = "/csp/gateway/slc/api/orgs/" + parameters["path_orgId"] + "/services";
+        var queryParameters = {};
+        if (parameters["query_excludeUngated"] !== undefined) {
+            queryParameters["excludeUngated"] = parameters["query_excludeUngated"];
+        }
+        if (parameters["query_locale"] !== undefined) {
+            queryParameters["locale"] = parameters["query_locale"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    OrgsService.METADATA = {
+        "description": "A list of identity, account and service management APIs.",
+        "title": "Identity Service API",
+        "version": "1.3.0"
+    };
+    return OrgsService;
+}());
+exports.OrgsService = OrgsService;
+return exports;
+]]></script>
+</dunes-script-module>

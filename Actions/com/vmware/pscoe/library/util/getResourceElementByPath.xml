@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getResourceElementByPath" result-type="ResourceElement" api-version="6.0.0" id="be3aba26-a2e5-423f-aab9-9001f3c43779" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[This action is deprecated.]]></description>
+  <param n="categoryPath" t="string"><![CDATA[]]></param>
+  <param n="elementName" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.util.getResourceElementByPath");
+
+logger.warn("This action is deprecated. Please use ResourceElementAccessor.");
+
+var ResourceElementAccessor = System.getModule("com.vmware.pscoe.library.util").ResourceElementAccessor();
+return ResourceElementAccessor.getByPath(categoryPath, elementName).getElement();]]></script>
+</dunes-script-module>

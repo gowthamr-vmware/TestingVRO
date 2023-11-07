@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[This package is automatically generated from a Swagger definition. API Version 1.3.0]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='12e65287-94bb-3ae6-841d-bff38ca727f8'&dunesName='Action'&name='DefinitionsService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='15a28165-17c6-3101-8e92-aca03c97359f'&dunesName='Action'&name='GroupsService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='17864190-6059-368f-9b63-968e08bcd8ca'&dunesName='Action'&name='UsersService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='40f16c7b-9b08-3611-8404-f8b1559c0098'&dunesName='Action'&name='LoginService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='6ffe6f37-0a7a-365e-afc3-eb699dcae108'&dunesName='Action'&name='CheckIDTokenControllerService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='8c1215e9-3dfa-3c98-b1db-46ce6686f862'&dunesName='Action'&name='v3Service'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a0909907-edbe-35ec-9445-f4c506b4d03c'&dunesName='Action'&name='OrgsService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a2147ca1-9535-3774-84a0-64d9d7d27da2'&dunesName='Action'&name='AuthService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e6f16db4-edcb-31ff-873d-b86b9719e5c0'&dunesName='Action'&name='LoggedinService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e789dbc5-c9af-31cf-b7e3-c8690b78a0f0'&dunesName='Action'&name='UserinfoService'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='ee456de3-0273-37c4-afb1-7711b87343e2'&dunesName='Action'&name='v2Service'&category='com.vmware.pscoe.ts.vra.identity.services']]></elm>
+</package>

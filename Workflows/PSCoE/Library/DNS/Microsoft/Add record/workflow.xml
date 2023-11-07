@@ -1,0 +1,14 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="1d1be9d9-b21a-3f72-9c2d-d9b0aeda0614" version="1.0.5" api-version="6.0.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Add record]]></display-name><position x="105" y="45.90909090909091"/><input><param name="dnsZone" type="string"/><param name="type" type="string"/><param name="name" type="string"/><param name="ipAddress" type="string"/><param name="dnsServers" type="string"/><param name="isPTR" type="boolean"/></input><output><param name="result" type="Any"/></output><workflow-item name="item0" type="end" end-mode="0"><position x="425.0" y="45.40909090909091"/></workflow-item><workflow-item name="item1" out-name="item0" type="task"><display-name><![CDATA[AddRecord]]></display-name><script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var DNSOperations_1 = VROES.importLazy("com.vmware.pscoe.library.ts.dns.actions/DNSOperations");
+var MicrosoftDNS_1 = VROES.importLazy("com.vmware.pscoe.library.ts.dns.actions/provider/ms/MicrosoftDNS");
+var data = {
+    inputs: workflow.getInputParameters(),
+    context: System.getContext()
+};
+System.log("Input data: " + JSON.stringify(data, null, 3));
+var dnsServerList = dnsServers.split(",");
+var operations = new DNSOperations_1._.DNSOperations(new MicrosoftDNS_1._.MicrosoftDNS(dnsZone));
+operations.addRecord(name, ipAddress, type, dnsZone, dnsServerList, isPTR);]]></script><in-binding><bind name="dnsZone" type="string" export-name="dnsZone"/><bind name="type" type="string" export-name="type"/><bind name="name" type="string" export-name="name"/><bind name="ipAddress" type="string" export-name="ipAddress"/><bind name="dnsServers" type="string" export-name="dnsServers"/><bind name="isPTR" type="boolean" export-name="isPTR"/></in-binding><out-binding><bind name="result" type="Any" export-name="result"/></out-binding><position x="225.0" y="55.40909090909091"/></workflow-item><presentation><p-param name="dnsZone"><desc><![CDATA[dnsZone]]></desc></p-param><p-param name="type"><desc><![CDATA[type]]></desc></p-param><p-param name="name"><desc><![CDATA[name]]></desc></p-param><p-param name="ipAddress"><desc><![CDATA[ipAddress]]></desc></p-param><p-param name="dnsServers"><desc><![CDATA[dnsServers]]></desc></p-param><p-param name="isPTR"><desc><![CDATA[isPTR]]></desc></p-param></presentation></workflow>

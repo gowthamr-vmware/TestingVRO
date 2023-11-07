@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ResourceElementInputSpec" result-type="Any" api-version="6.0.0" id="a30b3097-2bb2-4bb4-91e6-c63b655ef969" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[ResourceElement input specificator. Allows the operator to specify a rest host object as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var InputSpecBase = Class.load("com.vmware.pscoe.library.install.spec", "InputSpecBase");
+var YAML = Class.load("com.vmware.pscoe.library.ts.yaml", "Yaml").Yaml;
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+    .getLogger("com.vmware.pscoe.library.install.spec.ResourceElementInputSpec");
+
+return Class.define(function ResourceElementInputSpec(path) {
+    InputSpecBase.apply(this, arguments);
+    this.refType = "ResourceElement";
+    this.path = path;
+    this.validators.push(function (val) {
+        return (val && (val.path || val.id)) ? null : ("no 'path' or 'id' property found for ResourceElement " + JSON.stringify(val) + " in path: \"" + path + "\".");
+    });
+}, {
+    exists: function () {
+        this.validators.push(function (value) {
+            if (value.path != null && value.name != null) {
+                var path = Server.getResourceElementCategoryWithPath(value.path);
+                if (path == null || path.resourceElements == null) {
+                    return "Non existant vRO Configuration Path \"" + value.path + "\"";
+                }
+                for (var i = 0; i < path.resourceElements.length; i++) {
+                    var resourceElement = path.resourceElements[i];
+                    if (resourceElement.name == value.name) {
+                        return null;
+                    }
+                }
+                return "Non existant vRO Configuration element \"" + value.name + "\" under path \"" + value.path + "\".";
+            }
+            return null;
+        });
+        return this;
+    },
+    execute: function (value, context) {
+        var deref = this.dereference(value)[0];
+        return InputSpecBase.prototype.execute.apply(this, [deref, context]);
+    },
+
+    /**
+     * Finds a ResourceElement object in vRO. First-level properties:
+     * -id
+     * -path
+     * -name
+     * -mimeType
+     * -content
+     *
+     * @param {Any} value - JSON criteria
+     * @returns {ResourceElement}
+     */
+    dereference: function (value) {
+        var exists = false;
+        var result = null;
+        var path = Server.getResourceElementCategoryWithPath(value.path);
+        if (path != null && path.resourceElements != null) {
+            for (var i = 0; i < path.resourceElements.length; i++) {
+                var resourceElement = path.resourceElements[i];
+                if (resourceElement.name == value.name) {
+                    result = resourceElement;
+                    exists = true;
+                }
+            }
+        }
+        var results = [];
+        if (!value.id) {
+            if (exists && (value.overwrite)) {
+                removeResourceElement(result);
+                exists = false;
+                value.overwrite = false;
+            }
+            if (!exists) {
+                results = [createResourceElement(value)];
+            } else {
+                results = [result];
+            }
+        }
+        return results;
+    }
+}, InputSpecBase);
+
+function createResourceElement(options) {
+    logger.info("Creating a new ResourceElement with options: " + JSON.stringify(options));
+    var dirpath = options.path;
+    var dirs = dirpath.split("/");
+    var dir = "";
+    var i;
+    for (i = 0; i < dirs.length; i++) {
+        var parentPath = dir;
+        dir = dir + ( i == 0 ? "" : "/") + dirs[i];
+        var category = Server.getResourceElementCategoryWithPath(dir);
+        if (category == null) {
+            var parent = Server.getResourceElementCategoryWithPath(parentPath);
+            var child = new ResourceElementCategory();
+            child.parent = parent;          child.name = dirs[i];
+            child.path = dir;               child.description = dirs[i];
+            child.resourceElements = [];    child.allResourceElements = [];
+            child.subCategories = [];
+            parent.subCategories.push(child)
+            category = Server.getResourceElementCategoryWithPath(dir);
+            if (category == null) {
+                throw new Error("Resource Element (Category) path \"" + dir + "\" does not exist. ");
+            }
+        }
+    }
+    var path = Server.getResourceElementCategoryWithPath(options.path);
+    var mimeType = options.mimeType || ( options.mime || "text/plain");
+    var name = options.name || options.id;
+    var content = options.content;
+    if (mimeType == "application/json") {
+        content = JSON.stringify(content);
+    } else if (mimeType == "application/yaml") {
+        content = YAML.stringify(content);
+    } else if (mimeType == "text/plain") {
+        content = "" + content;
+    } else {
+        content = "" + content;
+    }
+    var attachment = new MimeAttachment();
+    attachment.content = content;
+    attachment.mimeType = mimeType;
+    attachment.name = name;
+
+    var exists = false;
+    var resourceElement = null;
+    if (path != null && path.resourceElements != null) {
+        for (i =0; i < path.resourceElements.length; i++) {
+            resourceElement = path.resourceElements[i];
+            if (name != null && name == resourceElement.name) {
+                exists = true;
+            }
+        }
+    }
+    var result = null;
+    if (exists) {
+        resourceElement.setContentFromMimeAttachment(attachment);
+        result = resourceElement;
+    } else {
+        result = Server.createResourceElement(path, name, attachment, mimeType);
+    }
+    return result;
+}
+
+function removeResourceElement(re) {
+    Server.removeResourceElement(re);
+    logger.info("ResourceElement '" + re.getResourceElementCategory().path + "/" + re.name + "' has been deleted.");
+}]]></script>
+</dunes-script-module>

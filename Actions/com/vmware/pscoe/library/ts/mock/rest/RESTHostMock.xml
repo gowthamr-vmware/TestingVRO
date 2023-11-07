@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RESTHostMock" result-type="Any" api-version="6.0.0" id="9f54c2cb-9cd4-3535-84cd-86a7d5555cc8" version="2.0.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock.rest">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var RESTRequestMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.rest.RESTRequestMock");
+var RESTHostMock = /** @class */ (function () {
+    function RESTHostMock(id, handlers) {
+        this.id = id;
+        this.handlers = handlers;
+        this.operations = [];
+    }
+    RESTHostMock.prototype.createRequest = function (method, url, content) {
+        var request = new RESTRequestMock_1._.RESTRequestMock(url, method, content, this.handlers);
+        request.fullUrl = this.url ? (this.url + url) : url;
+        return request;
+    };
+    RESTHostMock.prototype.clone = function () {
+        var newHost = new RESTHostMock(System.nextUUID(), this.handlers);
+        newHost.name = this.name;
+        newHost.authentication = this.authentication;
+        newHost.proxyAuthentication = this.proxyAuthentication;
+        newHost.connectionTimeout = this.connectionTimeout;
+        newHost.operationTimeout = this.operationTimeout;
+        newHost.hostVerification = this.hostVerification;
+        newHost.proxyHost = this.proxyHost;
+        newHost.proxyPort = this.proxyPort;
+        newHost.privateKeyId = this.privateKeyId;
+        newHost.autoRedirectEnabled = this.autoRedirectEnabled;
+        newHost.operations = this.operations;
+        return newHost;
+    };
+    RESTHostMock.prototype.newHostFromThis = function () {
+        return this.clone();
+    };
+    RESTHostMock.prototype.addOperation = function (operation) {
+        this.operations.push(operation);
+        return operation;
+    };
+    RESTHostMock.prototype.updateOperation = function (operation) {
+        var index = VROES.Shims.arrayFindIndex(this.operations, function (x) { return x.id == operation.id; });
+        this.operations[index] = operation;
+        return operation;
+    };
+    RESTHostMock.prototype.getOperation = function (id) {
+        return VROES.Shims.arrayFind(this.operations, function (x) { return x.id == id; });
+    };
+    RESTHostMock.prototype.removeOperation = function (id) {
+        var index = VROES.Shims.arrayFindIndex(this.operations, function (x) { return x.id == operation.id; });
+        var operation = this.operations[index];
+        this.operations.splice(index, 1);
+        return operation;
+    };
+    RESTHostMock.prototype.getOperations = function () {
+        return this.operations.map(function (x) { return x.id; });
+    };
+    RESTHostMock.prototype.addSchemaFromUrl = function (url) {
+        return [];
+    };
+    RESTHostMock.prototype.addSchemaFromXmlString = function (xml) {
+        return [];
+    };
+    RESTHostMock.prototype.removeAllSchemas = function () {
+    };
+    RESTHostMock.prototype.getSchemaElements = function (namespace) {
+        return [];
+    };
+    RESTHostMock.prototype.getSchemaNamespaces = function () {
+        return [];
+    };
+    RESTHostMock.prototype.setAutoUrlRedirect = function (autoRedirectEnabled) {
+        this.autoRedirectEnabled = autoRedirectEnabled;
+    };
+    RESTHostMock.prototype.getAutoUrlRedirectEnabled = function () {
+        return this.autoRedirectEnabled;
+    };
+    RESTHostMock.prototype.executeRequestWithCredentials = function (method, url, content, user, pass) {
+        return this.createRequest(method, url, content).executeWithCredentials(user, pass);
+    };
+    return RESTHostMock;
+}());
+exports.RESTHostMock = RESTHostMock;
+return exports;
+]]></script>
+</dunes-script-module>

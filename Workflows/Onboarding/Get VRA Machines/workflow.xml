@@ -1,0 +1,37 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="6f43f41b-cd27-4f4e-9a16-7be47f1b4675" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Get VRA Machines]]></display-name><position y="30.0" x="20.0"/><input><param name="inputSessionToken" type="string"/><param name="vraURL" type="string"/><param name="username" type="string"/><param name="password" type="SecureString"/><param name="machineNames" type="Array/string"/></input><output><param name="foundMachines" type="Array/string"/></output><attrib name="sessionToken" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="counter" type="number" read-only="false"><value encoded="n"><![CDATA[0.0]]></value></attrib><attrib name="thisMachineName" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="localFoundMachines" type="Array/string" read-only="false"><value encoded="n"><![CDATA[[]]]></value></attrib><attrib name="err_0" type="string" read-only="false"><value encoded="n"><![CDATA[Not all machine names found]]></value></attrib><workflow-item name="item1" out-name="item9" type="link" linked-workflow-id="3f40bb50-7b54-4735-bfd5-74412624256a"><display-name><![CDATA[Get Or Create VRA Session Token]]></display-name><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="username" type="string" export-name="username"/><bind name="password" type="SecureString" export-name="password"/><bind name="inputSessionToken" type="string" export-name="inputSessionToken"/></in-binding><out-binding><bind name="sessionToken" type="string" export-name="sessionToken"/></out-binding><description><![CDATA[]]></description><position y="40.0" x="80.0"/></workflow-item><workflow-item name="item2" out-name="item10" type="task"><display-name><![CDATA[Get Machines]]></display-name><script encoded="false"><![CDATA[//var opUrl = '/iaas/api/machines/';
+var opUrl = '/iaas/api/machines?expand&$filter=((type%20eq%20%27VM_GUEST%27)%20and%20(name%20eq%20%27*' + thisMachineName + '*%27))&$orderby=name%20asc&$top=20&$skip=0'
+
+var baseUrl = vraURL;
+var opMethod = 'GET'
+var urlParamValues = null;
+var headers = new Properties();
+headers.put('Authorization','Bearer ' + sessionToken);
+var contentType = null;
+var content = null;
+var username = null;
+var password = null;
+
+response = System.getModule("com.vmware.pso.rest").executeTransientRESTOperation(baseUrl,username,password,opMethod,opUrl,urlParamValues,headers,contentType,content);
+
+//
+System.log('responseString' + response.responseString)
+System.log('statusCode' + response.statusCode)
+
+if (response.statusCode == 200) {
+   var jsonObj = JSON.parse(response.responseString);
+   var content = jsonObj.content;
+   if (content && content.length > 0) {
+
+       for (var j = 0; j < content.length; j++) {
+           if (thisMachineName == content[j].name) {
+               localFoundMachines.push(content[j].id);
+               break;
+           }
+       }
+   }
+} else {
+    throw 'Problem while retrieving machines.  Status code ' + response.statusCode
+}]]></script><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="sessionToken" type="string" export-name="sessionToken"/><bind name="thisMachineName" type="string" export-name="thisMachineName"/><bind name="localFoundMachines" type="Array/string" export-name="localFoundMachines"/></in-binding><out-binding><bind name="localFoundMachines" type="Array/string" export-name="localFoundMachines"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="40.0" x="440.0"/></workflow-item><workflow-item name="item3" out-name="item2" type="task"><display-name><![CDATA[Loop Machine Names]]></display-name><script encoded="false"><![CDATA[thisMachineName = machineNames[counter];]]></script><in-binding><bind name="machineNames" type="Array/string" export-name="machineNames"/><bind name="counter" type="number" export-name="counter"/></in-binding><out-binding><bind name="thisMachineName" type="string" export-name="thisMachineName"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="40.0" x="300.0"/></workflow-item><workflow-item name="item4" type="end" end-mode="0"><in-binding/><position y="30.0" x="640.0"/></workflow-item><workflow-item name="item5" out-name="item3" type="custom-condition" alt-out-name="item7"><display-name><![CDATA[Exit Loop]]></display-name><script encoded="false"><![CDATA[return (counter < machineNames.length);]]></script><in-binding><bind name="counter" type="number" export-name="counter"/><bind name="machineNames" type="Array/string" export-name="machineNames"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="150.0" x="300.0"/></workflow-item><workflow-item name="item6" throw-bind-name="err_0" type="end" end-mode="1"><in-binding/><position y="230.0" x="640.0"/></workflow-item><workflow-item name="item7" out-name="item8" type="custom-condition" alt-out-name="item6"><display-name><![CDATA[Machine Count OK]]></display-name><script encoded="false"><![CDATA[return (localFoundMachines && localFoundMachines.length == machineNames.length);]]></script><in-binding><bind name="machineNames" type="Array/string" export-name="machineNames"/><bind name="localFoundMachines" type="Array/string" export-name="localFoundMachines"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="150.0" x="600.0"/></workflow-item><workflow-item name="item8" out-name="item4" type="task"><display-name><![CDATA[Assign Output]]></display-name><script encoded="false"><![CDATA[foundMachines = localFoundMachines;
+
+System.debug('Found all the expected machine IDs');]]></script><in-binding><bind name="localFoundMachines" type="Array/string" export-name="localFoundMachines"/></in-binding><out-binding><bind name="foundMachines" type="Array/string" export-name="foundMachines"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="90.0" x="600.0"/></workflow-item><workflow-item name="item9" out-name="item3" type="task"><display-name><![CDATA[Setup]]></display-name><script encoded="false"><![CDATA[localFoundMachines = new Array();]]></script><in-binding/><out-binding><bind name="localFoundMachines" type="Array/string" export-name="localFoundMachines"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="40.0" x="180.0"/></workflow-item><workflow-item name="item10" prototype-id="increase-counter" out-name="item5" content-mode="x" type="task"><display-name><![CDATA[Increase counter]]></display-name><script encoded="false"><![CDATA[//Auto-generated script
+counter = counter + 1;]]></script><in-binding><bind name="counter" type="number" export-name="counter"><description><![CDATA[Item to increase]]></description></bind></in-binding><out-binding><bind name="counter" type="number" export-name="counter"><description><![CDATA[Increased item]]></description></bind></out-binding><description><![CDATA[Increment a counter by one.]]></description><position y="110.0" x="440.0"/></workflow-item><presentation/></workflow>

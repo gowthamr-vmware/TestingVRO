@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="8f352b82-d8ec-3c50-a117-d1da5de0d8b8" version="1.0.0">
+  <display-name><![CDATA[Alb]]></display-name>
+  <atts>
+    <att name="avi_credentials" type="Array/CompositeType(ipAddress:string,fqdn:string,username:string,password:SecureString):AlbCredential" read-only="false">
+      <value encoded="n"><![CDATA[[231:CompositeType(ipAddress:string,fqdn:string,username:string,password:SecureString):AlbCredential#{8:21:password=SecureString#__NULL__
+4:24:fqdn=string#avicon.corp.local
+9:19:ipAddress=string#192.168.57.1
+8:12:username=string#admin
+}]]]></value>
+    </att>
+    <att name="nsx_credentials" type="Array/CompositeType(ipAddress:string,fqdn:string,username:string,password:SecureString):AlbCredential" read-only="false">
+      <value encoded="n"><![CDATA[[228:CompositeType(ipAddress:string,fqdn:string,username:string,password:SecureString):AlbCredential#{8:21:password=SecureString#__NULL__
+4:21:fqdn=string#nsx.corp.local
+9:19:ipAddress=string#192.168.50.1
+8:12:username=string#admin
+}]]]></value>
+    </att>
+    <att name="avi_nsx_endpoints" type="Array/CompositeType(datacenter:string,environment:string,avi_fqdn:string,nsx_fqdn:string):AlbEndPointMapping" read-only="false">
+      <value encoded="n"><![CDATA[[232:CompositeType(datacenter:string,environment:string,avi_fqdn:string,nsx_fqdn:string):AlbEndPointMapping#{11:8:environment=string#P
+8:24:avi_fqdn=string#avicon.corp.local
+10:9:datacenter=string#00
+8:21:nsx_fqdn=string#nsx.corp.local
+},232:CompositeType(datacenter:string,environment:string,avi_fqdn:string,nsx_fqdn:string):AlbEndPointMapping#{11:8:environment=string#D
+8:24:avi_fqdn=string#avicon.corp.local
+10:9:datacenter=string#00
+8:21:nsx_fqdn=string#nsx.corp.local
+},232:CompositeType(datacenter:string,environment:string,avi_fqdn:string,nsx_fqdn:string):AlbEndPointMapping#{11:8:environment=string#P
+8:24:avi_fqdn=string#avicon.corp.local
+10:9:datacenter=string#20
+8:21:nsx_fqdn=string#nsx.corp.local
+},232:CompositeType(datacenter:string,environment:string,avi_fqdn:string,nsx_fqdn:string):AlbEndPointMapping#{11:8:environment=string#D
+8:24:avi_fqdn=string#avicon.corp.local
+10:9:datacenter=string#20
+8:21:nsx_fqdn=string#nsx.corp.local
+},232:CompositeType(datacenter:string,environment:string,avi_fqdn:string,nsx_fqdn:string):AlbEndPointMapping#{11:8:environment=string#Q
+8:24:avi_fqdn=string#avicon.corp.local
+10:9:datacenter=string#20
+8:21:nsx_fqdn=string#nsx.corp.local
+},232:CompositeType(datacenter:string,environment:string,avi_fqdn:string,nsx_fqdn:string):AlbEndPointMapping#{11:8:environment=string#Q
+8:24:avi_fqdn=string#avicon.corp.local
+10:9:datacenter=string#00
+8:21:nsx_fqdn=string#nsx.corp.local
+}]]]></value>
+    </att>
+    <att name="cloud_mapping00" type="Array/CompositeType(environment:string,cloud:string,tier1:string,segment:string,vrf:string,subnet:string):AlbCloudMapping" read-only="false">
+      <value encoded="n"><![CDATA[[312:CompositeType(environment:string,cloud:string,tier1:string,segment:string,vrf:string,subnet:string):AlbCloudMapping#{5:10:cloud=string#NSX
+6:20:subnet=string#10.99.62.1/24
+11:8:environment=string#P
+7:20:segment=string#WLD1-Segment3
+3:25:vrf=string#es00-w1-p-avi03-t1
+5:32:tier1=string#/infra/tier-1s/WLD1-T1-03
+},312:CompositeType(environment:string,cloud:string,tier1:string,segment:string,vrf:string,subnet:string):AlbCloudMapping#{5:10:cloud=string#NSX
+6:20:subnet=string#10.99.60.1/24
+11:8:environment=string#D
+7:20:segment=string#WLD1-Segment1
+3:25:vrf=string#es00-w1-d-avi01-t1
+5:32:tier1=string#/infra/tier-1s/WLD1-T1-01
+},312:CompositeType(environment:string,cloud:string,tier1:string,segment:string,vrf:string,subnet:string):AlbCloudMapping#{5:10:cloud=string#NSX
+6:20:subnet=string#10.99.61.1/24
+11:8:environment=string#Q
+7:20:segment=string#WLD1-Segment2
+3:25:vrf=string#es00-w1-q-avi02-t1
+5:32:tier1=string#/infra/tier-1s/WLD1-T1-02
+}]]]></value>
+    </att>
+    <att name="cloud_mapping20" type="Array/CompositeType(environment:string,cloud:string,tier1:string,segment:string,vrf:string,subnet:string):AlbCloudMapping" read-only="false">
+      <value encoded="n"><![CDATA[[322:CompositeType(environment:string,cloud:string,tier1:string,segment:string,vrf:string,subnet:string):AlbCloudMapping#{5:10:cloud=string#NSX
+6:20:subnet=string#10.99.65.1/24
+11:8:environment=string#P
+7:20:segment=string#WLD2-Segment3
+3:25:vrf=string#es20-w1-p-avi03-t1
+5:42:tier1=string#/infra/tier-1s/WLD2-T1-02-mKaNDBBlt
+},312:CompositeType(environment:string,cloud:string,tier1:string,segment:string,vrf:string,subnet:string):AlbCloudMapping#{5:10:cloud=string#NSX
+6:20:subnet=string#10.99.64.1/24
+11:8:environment=string#Q
+7:20:segment=string#WLD2-Segment2
+3:25:vrf=string#es20-w2-q-avi02-t1
+5:32:tier1=string#/infra/tier-1s/WLD2-T1-02
+},312:CompositeType(environment:string,cloud:string,tier1:string,segment:string,vrf:string,subnet:string):AlbCloudMapping#{5:10:cloud=string#NSX
+6:20:subnet=string#10.99.63.1/24
+11:8:environment=string#D
+7:20:segment=string#WLD2-Segment1
+3:25:vrf=string#es20-w2-d-avi01-t1
+5:32:tier1=string#/infra/tier-1s/WLD2-T1-01
+}]]]></value>
+    </att>
+  </atts>
+</config-element>

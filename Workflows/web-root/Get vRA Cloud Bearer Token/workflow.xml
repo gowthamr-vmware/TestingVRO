@@ -1,0 +1,23 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="681d977d-9a67-42a8-a7ce-b97cada93971" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Get vRA Cloud Bearer Token]]></display-name><position y="50.0" x="100.0"/><output><param name="token2" type="string"/></output><attrib name="token1" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="baseUrl" type="string" read-only="false"><value encoded="n"><![CDATA[https://api.mgmt.cloud.vmware.com/]]></value></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="50.0" x="340.0"/></workflow-item><workflow-item name="item1" out-name="item0" type="task"><display-name><![CDATA[Scriptable task]]></display-name><script encoded="false"><![CDATA[var opUrl = 'iaas/api/login';
+var opMethod = 'POST'
+var urlParamValues = null;
+var headers = null;
+var contentType = 'application/json';
+var username = null;
+var password = null;
+
+var contentObject = new Object();
+contentObject.refreshToken = token1;
+
+
+var content = JSON.stringify(contentObject);
+
+response = System.getModule("com.vmware.pso.rest").executeTransientRESTOperation(baseUrl,username,password,opMethod,opUrl,urlParamValues,headers,contentType,content);
+
+var jsonObj = JSON.parse(response.responseString)
+System.log('responseString' + jsonObj.responseString)
+System.log('statusCode' + jsonObj.statusCode)
+
+statusCode = jsonObj.statusCode;
+
+token2 = jsonObj.token]]></script><in-binding><bind name="baseUrl" type="string" export-name="baseUrl"/><bind name="token1" type="string" export-name="token1"/></in-binding><out-binding><bind name="token2" type="string" export-name="token2"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="180.0"/></workflow-item><presentation/></workflow>

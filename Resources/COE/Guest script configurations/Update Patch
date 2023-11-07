@@ -1,0 +1,1 @@
+#[#deleteResourceAfterRun#=#boolean#true#+#scriptWorkingDirectory#=#string##+#scriptContent#=#string##Powershell script to update patch#+#scriptRefreshTime#=#number#60.0#+#scriptType#=#string#powershell#+#resourceSearchReplace#=#boolean#false#+#scriptInteractiveSession#=#boolean#false#+#scriptTimeOut#=#number#1000.0#+#copyResource#=#boolean#false#]#

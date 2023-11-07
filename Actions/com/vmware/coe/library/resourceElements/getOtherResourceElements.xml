@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getOtherResourceElements" result-type="Array/ResourceElement" api-version="6.0.0" id="e0c755a0-fc79-47fe-aa67-b4ea893e9e7e" version="1.0.0" allowed-operations="vef" category-name="com.vmware.coe.library.resourceElements">
+  <param n="resource" t="ResourceElement"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (resource == null) return null;
+var allElements = resource.getResourceElementCategory().resourceElements;
+
+var elements = new Array();
+
+for each (var element in allElements) {
+	if (element != resource) elements.push(element);
+}
+
+return elements;]]></script>
+</dunes-script-module>

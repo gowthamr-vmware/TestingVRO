@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="5477703e-f0be-4626-b3c1-d78d94fcf99b" version="1.0.0">
+  <display-name><![CDATA[Host Security Hardening Options]]></display-name>
+  <atts>
+    <att name="enforceNTP" type="boolean" read-only="false"/>
+    <att name="enforceSsh" type="boolean" read-only="false"/>
+    <att name="enforceDcui" type="boolean" read-only="false"/>
+    <att name="enforceSyslog" type="boolean" read-only="false"/>
+    <att name="enforcePasswords" type="boolean" read-only="false"/>
+    <att name="enforceBpdu" type="boolean" read-only="false"/>
+    <att name="enforceESXiShellTimeouts" type="boolean" read-only="false"/>
+    <att name="enforceLockout" type="boolean" read-only="false"/>
+    <att name="enforceJoinHostToAd" type="boolean" read-only="false"/>
+    <att name="enforceHostImage" type="boolean" read-only="false"/>
+    <att name="enforceTps" type="boolean" read-only="false"/>
+    <att name="enforceDisableMob" type="boolean" read-only="false"/>
+    <att name="enforcePersistentLogs" type="boolean" read-only="false"/>
+    <att name="enforceDvFilter" type="boolean" read-only="false"/>
+    <att name="enforceRejectMacChanges" type="boolean" read-only="false"/>
+    <att name="enforceRejectPromMode" type="boolean" read-only="false"/>
+    <att name="enforceRejectForgedTrans" type="boolean" read-only="false"/>
+    <att name="emailNotification" type="boolean" read-only="false"/>
+    <att name="vropsREST" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="vropsUser" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="vropsPassword" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="vropsIgnoreSslWarnings" type="boolean" read-only="false"/>
+    <att name="authSource" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+  </atts>
+</config-element>

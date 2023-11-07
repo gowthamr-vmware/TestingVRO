@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getCloudAccounts" result-type="Properties" api-version="6.0.0" id="2b9701c0-9af6-3f02-8d8c-776a38c9876c" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.presentation">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var VraService_1 = VROES.importLazy("com.vmware.pscoe.nyc.vra_integration.vro.actions/services/VraService");
+var vraService = new VraService_1._.VraService();
+return vraService.getCloudAccounts();]]></script>
+</dunes-script-module>

@@ -1,0 +1,465 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="BlockDevicesService" result-type="Any" api-version="6.0.0" id="ab7e31a6-5187-4ea9-9e9a-9d0e095575aa" version="8.8.223597" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.iaas.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * IAAS API is a RESTful service, which allows users to execute provisioning related UI actions via an API. <br><br>This page describes the RESTful APIs for IAAS API. The APIs facilitate CRUD operations on the various resources and entities used throughout Cloud Assembly(Cloud Accounts, Cloud zones, Computes, Mappings, etc.) and allows operations on them (creating a cloud account, patching a machine, creating image progile, etc.).<br><br>The APIs that list collections of resources  also support OData like implementation. Below query params can be used across different IAAS API endpoints<br><br><ol><li>`$orderby` -  returns a result with the rows being sorted by the values of provided attribute.<br>`/iaas/api/cloud-accounts?$orderby=name%20desc`</li><br><li>`$top` - number of records you want to get.<br>`/iaas/api/cloud-accounts?$top=20`</li><br><li>`$skip` - number of records you want to skip.<br>`/iaas/api/cloud-accounts?$skip=10`</li><br><li>`$select` - select a subset of properties to include in the response.<br>`/iaas/api/cloud-accounts?$select=id`</li><br><li>`$filter` - filter the results by a specified predicate expression. Operators: eq, ne, and, or.<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'ABC*'` - name starts with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC*'` - name contains 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC'` - name ends with 'ABC'<br><b>/iaas/api/projects</b> and <b>/iaas/api/deployments</b> support different format for partial match: <br>`/iaas/api/projects?$filter=startswith(name, 'ABC')` - name starts with 'ABC'<br>`/iaas/api/projects?$filter=substringof('ABC', name)` - name contains 'ABC'<br>`/iaas/api/projects?$filter=endswith(name, 'ABC')` - name ends with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20ne%20'example-cloud-account'%20or%20customProperties.isExternal%20eq%20'false'`</li><br><li>`$count` - flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.<br>`/iaas/api/cloud-accounts?$count=true`<br></li></ol>
+ */
+var BlockDevicesService = /** @class */ (function () {
+    function BlockDevicesService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Second day promote operation on disk. Applicable for vSphere Block Devices only
+     * Endpoint URL: '/iaas/api/block-devices/{id}/operations/promote'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Disk.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {PromoteDiskHttpResponse} Http response (202)
+     */
+    BlockDevicesService.prototype.promoteDisk = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"] + "/operations/promote";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day create snapshot operation for Block device
+     * Endpoint URL: '/iaas/api/block-devices/{id}/operations/snapshots'
+     * Endpoint Method: 'post'
+     * @param {string} id - The ID of the block device.
+     * @param {DiskSnapshotSpecification} body - Disk Snapshot Specification details
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {CreateBlockDeviceSnapshotHttpResponse} Http response (202, 204)
+     */
+    BlockDevicesService.prototype.createBlockDeviceSnapshot = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"] + "/operations/snapshots";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get snapshot with a given id for specific disk
+     * Endpoint URL: '/iaas/api/block-devices/{id}/snapshots/{id1}'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the disk.
+     * @param {string} id1 - The ID of the snapshot.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetDiskSnapshotHttpResponse} Http response (200)
+     */
+    BlockDevicesService.prototype.getDiskSnapshot = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"] + "/snapshots/" + parameters["path_id1"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day delete snapshot operation for Block device
+     * Endpoint URL: '/iaas/api/block-devices/{id}/snapshots/{id1}'
+     * Endpoint Method: 'delete'
+     * @param {string} id - The ID of the block device.
+     * @param {string} id1 - Snapshot id to delete.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {DeleteBlockDeviceSnapshotHttpResponse} Http response (202, 204)
+     */
+    BlockDevicesService.prototype.deleteBlockDeviceSnapshot = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"] + "/snapshots/" + parameters["path_id1"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "DELETE",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day revert snapshot operation for Block device
+     * Endpoint URL: '/iaas/api/block-devices/{id}/operations/revert'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Disk.
+     * @param {string} id - Snapshot id to revert.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {RevertDiskSnapshotHttpResponse} Http response (202)
+     */
+    BlockDevicesService.prototype.revertDiskSnapshot = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"] + "/operations/revert";
+        var queryParameters = {};
+        if (parameters["query_id"] !== undefined) {
+            queryParameters["id"] = parameters["query_id"];
+        }
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Following disk custom properties can be passed while creating a block device:
+
+
+    1. dataStore: Defines name of the datastore in which the disk has to be provisioned.
+
+    2. storagePolicy: Defines name of the storage policy in which the disk has to be provisioned. If name of the datastore is specified in the custom properties then, datastore takes precedence.
+
+    3. provisioningType: Defines the type of provisioning. For eg. thick/thin.
+
+    4. resourceGroupName: Defines the Azure resource group name where the disk needs to be provisioned.
+     * Endpoint URL: '/iaas/api/block-devices'
+     * Endpoint Method: 'post'
+     * @param {BlockDeviceSpecification} body - Disk Specification instance
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {CreateBlockDeviceHttpResponse} Http response (202)
+     */
+    BlockDevicesService.prototype.createBlockDevice = function (parameters) {
+        var path = "/iaas/api/block-devices";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get all BlockDevices
+     * Endpoint URL: '/iaas/api/block-devices'
+     * Endpoint Method: 'get'
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @param {number} $top - Number of records you want to get.
+     * @param {number} $skip - Number of records you want to skip.
+     * @param {boolean} $count - Flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.
+     * @param {string} $filter - Filter the results by a specified predicate expression. Operators: eq, ne, and, or.
+     * @return {GetBlockDevicesHttpResponse} Http response (200)
+     */
+    BlockDevicesService.prototype.getBlockDevices = function (parameters) {
+        var path = "/iaas/api/block-devices";
+        var queryParameters = {};
+        parameters = parameters || {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        if (parameters["query_$top"] !== undefined) {
+            queryParameters["$top"] = parameters["query_$top"];
+        }
+        if (parameters["query_$skip"] !== undefined) {
+            queryParameters["$skip"] = parameters["query_$skip"];
+        }
+        if (parameters["query_$count"] !== undefined) {
+            queryParameters["$count"] = parameters["query_$count"];
+        }
+        if (parameters["query_$filter"] !== undefined) {
+            queryParameters["$filter"] = parameters["query_$filter"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Resize operation on block device.
+     * Endpoint URL: '/iaas/api/block-devices/{id}'
+     * Endpoint Method: 'post'
+     * @param {string} id - The ID of the block device.
+     * @param {number} capacityInGB - Resize Capacity in GB
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {ResizeBlockDeviceHttpResponse} Http response (202, 204)
+     */
+    BlockDevicesService.prototype.resizeBlockDevice = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_capacityInGB"] !== undefined) {
+            queryParameters["capacityInGB"] = parameters["query_capacityInGB"];
+        }
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get a single BlockDevice
+     * Endpoint URL: '/iaas/api/block-devices/{id}'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the block device.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetBlockDeviceHttpResponse} Http response (200)
+     */
+    BlockDevicesService.prototype.getBlockDevice = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Delete a BlockDevice
+
+1. A block device cannot be deleted when attached to a machine.
+
+2. A block device with persistent property set to 'false' is deleted.
+
+3. A block device with persistent property set to 'true' needs an additional parameter 'purge' to be set to true, for deletion.
+     * Endpoint URL: '/iaas/api/block-devices/{id}'
+     * Endpoint Method: 'delete'
+     * @param {string} id - The ID of the block device.
+     * @param {boolean} purge - Indicates if the disk has to be completely destroyed or should be kept in the system. Valid only for block devices with 'persistent' set to true.
+     * @param {boolean} forceDelete - Controls whether this is a force delete operation. If true, best effort is made for deleting this block device. Use with caution as force deleting may cause inconsistencies between the cloud provider and vRA.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {DeleteBlockDeviceHttpResponse} Http response (202, 204)
+     */
+    BlockDevicesService.prototype.deleteBlockDevice = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_purge"] !== undefined) {
+            queryParameters["purge"] = parameters["query_purge"];
+        }
+        if (parameters["query_forceDelete"] !== undefined) {
+            queryParameters["forceDelete"] = parameters["query_forceDelete"];
+        }
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "DELETE",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get disk snapshots information
+     * Endpoint URL: '/iaas/api/block-devices/{id}/snapshots'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the disk.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetDiskSnapshotsHttpResponse} Http response (200)
+     */
+    BlockDevicesService.prototype.getDiskSnapshots = function (parameters) {
+        var path = "/iaas/api/block-devices/" + parameters["path_id"] + "/snapshots";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    BlockDevicesService.METADATA = {
+        "license": {
+            "name": "Apache License",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0"
+        },
+        "description": "IAAS API is a RESTful service, which allows users to execute provisioning related UI actions via an API. <br><br>This page describes the RESTful APIs for IAAS API. The APIs facilitate CRUD operations on the various resources and entities used throughout Cloud Assembly(Cloud Accounts, Cloud zones, Computes, Mappings, etc.) and allows operations on them (creating a cloud account, patching a machine, creating image progile, etc.).<br><br>The APIs that list collections of resources  also support OData like implementation. Below query params can be used across different IAAS API endpoints<br><br><ol><li>`$orderby` -  returns a result with the rows being sorted by the values of provided attribute.<br>`/iaas/api/cloud-accounts?$orderby=name%20desc`</li><br><li>`$top` - number of records you want to get.<br>`/iaas/api/cloud-accounts?$top=20`</li><br><li>`$skip` - number of records you want to skip.<br>`/iaas/api/cloud-accounts?$skip=10`</li><br><li>`$select` - select a subset of properties to include in the response.<br>`/iaas/api/cloud-accounts?$select=id`</li><br><li>`$filter` - filter the results by a specified predicate expression. Operators: eq, ne, and, or.<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'ABC*'` - name starts with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC*'` - name contains 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC'` - name ends with 'ABC'<br><b>/iaas/api/projects</b> and <b>/iaas/api/deployments</b> support different format for partial match: <br>`/iaas/api/projects?$filter=startswith(name, 'ABC')` - name starts with 'ABC'<br>`/iaas/api/projects?$filter=substringof('ABC', name)` - name contains 'ABC'<br>`/iaas/api/projects?$filter=endswith(name, 'ABC')` - name ends with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20ne%20'example-cloud-account'%20or%20customProperties.isExternal%20eq%20'false'`</li><br><li>`$count` - flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.<br>`/iaas/api/cloud-accounts?$count=true`<br></li></ol>",
+        "title": "VMware Cloud Assembly IaaS API",
+        "version": "2021-07-15"
+    };
+    return BlockDevicesService;
+}());
+exports.BlockDevicesService = BlockDevicesService;
+return exports;]]></script>
+</dunes-script-module>

@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getVmGuestFamily" result-type="string" api-version="6.0.0" id="ea3073e6-1c60-4ae3-a7c6-679fba073f62" version="1.0.0" allowed-operations="vef" category-name="com.vmware.coe.vcenter.vm.guest">
+  <param n="vm" t="VC:VirtualMachine"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[return vm.guest.guestFamily;]]></script>
+</dunes-script-module>

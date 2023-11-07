@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="WorkflowWrapper" result-type="Any" api-version="6.0.0" id="650c21f8-8eca-4591-bc78-72fe2affcd70" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Wrapps the default Workflow object and provides a handy way of running/schedulling workflows.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var WorkflowWrapper = function WorkflowWrapper(idOrWorkflow, username, password, sleepTime, timeout) {
+	var wf = (typeof idOrWorkflow === "string") ? Server.getWorkflowWithId(idOrWorkflow) : idOrWorkflow;
+
+	if (!wf) {
+		throw new Error("No Workflow specified!");
+	}
+
+	var vroUsername = username;
+	var vroPassword = password;
+	var defaultSleepTime = sleepTime ? sleepTime : 5;
+	var defaultTimeoutSeconds = timeout ? timeout : 60;
+
+	this.getWorkflow = function () {
+		return wf;
+	};
+
+	this.getVroUsername = function () {
+		return vroUsername;
+	};
+
+	this.getVroPassword = function () {
+		return vroPassword;
+	};
+
+	this.getSleepTime = function () {
+		return defaultSleepTime;
+	};
+
+	this.getTimeout = function () {
+		return defaultTimeoutSeconds;
+	};
+};
+
+var prototype = {
+	/**
+	 * Schedules the workflow at the specified Date.
+	 * @param {Date} scheduleDate
+	 * @param {Properties} wfProps
+	 * @returns {Task}
+	 */
+	schedule: function (scheduleDate, inputParams) {
+		return this.getWorkflow().schedule(inputParams, scheduleDate, this.getVroUsername(), this.getVroPassword());
+	},
+
+	/**
+	 * Schedule a recurrent execution of the WF on a fixed period.
+	 *
+	 * @param {Properties} inputParams - parameters to run the WF with.
+	 * @param {number} period - the amount of time between runs
+	 * @param {string} optPeriodUnit - the unit of time (i.e. 's','m','h'), if not provided assumes seconds ('s')
+	 * @param {Date} optStartDate - the delayed start date if needed, otherwise fall-back to Date.now()
+	 * @param {Date} optEndDate - when the recurrance ends? Leave undefined for never
+	 */
+	scheduleRecurrently: function (inputParams, period, optPeriodUnit, optStartDate, optEndDate) {
+		var periodUnit = optPeriodUnit || 's';
+		var startDate = optStartDate || new Date();
+
+		var incrementMs = 0;
+		// calculate the time of day
+		switch (periodUnit) {
+			case 's':
+				incrementMs = period * 1000;
+				break;
+			case 'm':
+				incrementMs = period * 60 * 1000;
+				break;
+			case 'h':
+				incrementMs = period * 60 * 60 * 1000;
+				break;
+			default:
+				throw "Unexpected period unit specified: '" + periodUnit + "'";
+		}
+
+		var startTime = startDate.getTime();
+		var atTimes = [];
+		var tomorrow = startTime + (1 * 24 * 60 * 60 * 1000); // same time tomorrow
+		var nextRun = startTime + incrementMs;
+
+		while (nextRun <= tomorrow) {
+			atTimes.push(new Date(nextRun));
+			nextRun += incrementMs;
+		}
+
+		if (!atTimes.length) {
+			throw new Error("Period specified is larger than 1 day");
+		}
+
+		// WORKAROUND: make sure the list is sorted before outputting as string for the WF as otherwise the WF might have gaps in the schedule
+		var timesOfDayStr = atTimes.sort().map(function (date) {
+			return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+		}).join(", ");
+
+		return this.getWorkflow().scheduleRecurrently(inputParams, timesOfDayStr, "every-days", startDate, optEndDate, this.getVroUsername(), this.getVroPassword());
+	},
+
+	/**
+	 * Cancels a scheduled workflow.
+	 * @param {Task} task
+	 * @param {function} predicate
+	 */
+	cancelScheduled: function (task) {
+		task.cancel();
+	},
+
+	/**
+	 * Re-schedules the workflow for a new Date.
+	 * @param {Task} task
+	 * @param {Date} newScheduleDate
+	 * @param {Properties} inputParams
+	 */
+	reschedule: function (task, newScheduleDate, inputParams) {
+		this.cancelScheduled(task);
+		return this.schedule(newScheduleDate, inputParams);
+	},
+
+	/**
+	 * Runs the workflow and waits for it to finish.
+	 * @param {Properties} inputParams
+	 * @returns {Properties}
+	 */
+	runSync: function (inputParams) {
+		var token = this.runAsync(inputParams);
+		return System.getModule("com.vmware.pscoe.library.util").waitForWorkflowToComplete(token, this.getSleepTime(), this.getTimeout());
+	},
+
+	/**
+	 * Runs the workflow without waiting for execution to finish.
+	 * @param {Properties} inputParams
+	 * @returns {WorkflowToken}
+	 */
+	runAsync: function (inputParams) {
+		return this.getWorkflow().execute(inputParams, this.getVroUsername(), this.getVroPassword());
+	},
+
+	/**
+	 * Cancels a running workflow.
+	 * @param {WorkflowToken} token
+	 */
+	cancelRunning: function (token) {
+		token.cancel();
+	},
+
+	/**
+	 * If predicate == true => schedules the workflow.
+	 * if predicate == false => runs the workflow synchronously.
+	 * @param {Date} scheduleDate
+	 * @param {Properties} inputParams
+	 * @param {function} predicate
+	 * @returns {Any}
+	 */
+	scheduleOrRun: function (scheduleDate, inputParams, predicate) {
+		if (!predicate) {
+			throw new Error("No predicate specified!");
+		}
+
+		if (typeof predicate !== "function") {
+			throw new TypeError("Predicate must be a function!");
+		}
+
+		if (predicate()) {
+			return this.schedule(scheduleDate, inputParams);
+		} else {
+			return this.runSync(inputParams);
+		}
+	},
+};
+
+return Class.define(WorkflowWrapper, prototype);]]></script>
+</dunes-script-module>

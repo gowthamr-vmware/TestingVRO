@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AssertValidator" result-type="Any" api-version="6.0.0" id="c0c3dc5e-4234-4907-945a-6c3e8247f25d" version="2.0.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.validator">
+  <description><![CDATA[Wrapper around the Validator. Provides custom error messages to be thrown if the validation fails.]]></description>
+  <script encoded="false"><![CDATA[return function() {
+	var Validator = System.getModule("com.vmware.pscoe.library.validator").Validator();
+	var validator = new Validator();
+	for  (var key in validator) {
+		
+		this[key] = function(funcName) {
+			return function() {
+				
+				var errMsg = Array.prototype.pop.call(arguments);
+				var result = validator[funcName].apply(validator, arguments);
+				if(!result) {
+					throw errMsg;
+				}
+			};
+		}(key);
+	}
+};]]></script>
+</dunes-script-module>

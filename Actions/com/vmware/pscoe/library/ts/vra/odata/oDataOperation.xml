@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="oDataOperation" result-type="Any" api-version="6.0.0" id="99976d84-95df-4c1b-972a-e0d8f2148588" version="8.8.223597" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.vra.odata">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), tslib_1 = VROES.tslib, exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var HttpStatusCode_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.odata.enums/HttpStatusCode");
+var ODataOperation = /** @class */ (function () {
+    function ODataOperation(_service, _params) {
+        if (_params === void 0) { _params = {}; }
+        this._service = _service;
+        this._params = _params;
+    }
+    ODataOperation.prototype.handleResponse = function (entity) {
+        return this.extractData(entity);
+    };
+    ODataOperation.prototype.extractData = function (res) {
+        if (res.status < HttpStatusCode_1._.HttpStatusCode.OK || res.status >= HttpStatusCode_1._.HttpStatusCode.MULTIPLE_CHOICES) {
+            var logger = Logger_1._.Logger.getLogger('dnat');
+            logger.debug(JSON.stringify(res));
+            logger.error(JSON.stringify(res.status));
+            throw new Error("Bad response status: " + res.status);
+        }
+        var body = res.body;
+        return body || {};
+    };
+    return ODataOperation;
+}());
+exports.ODataOperation = ODataOperation;
+var OperationWithKey = /** @class */ (function (_super) {
+    tslib_1.__extends(OperationWithKey, _super);
+    function OperationWithKey(_service, entityKey, params) {
+        if (params === void 0) { params = {}; }
+        var _this = _super.call(this, _service, params) || this;
+        _this._service = _service;
+        _this.entityKey = entityKey;
+        _this.params = params;
+        return _this;
+    }
+    OperationWithKey.prototype.getEntityUri = function () {
+        return this.entityKey;
+    };
+    return OperationWithKey;
+}(ODataOperation));
+exports.OperationWithKey = OperationWithKey;
+var GetOperation = /** @class */ (function (_super) {
+    tslib_1.__extends(GetOperation, _super);
+    function GetOperation() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    GetOperation.prototype.exec = function () {
+        if (this._service[this.getEntityUri()]) {
+            var response = this._service[this.getEntityUri()](this._params);
+            return _super.prototype.handleResponse.call(this, response);
+        }
+        else {
+            throw new Error("There is no such entity: " + this.getEntityUri());
+        }
+    };
+    GetOperation.prototype.execPaginatedRequest = function () {
+        if (this._service[this.getEntityUri()]) {
+            var response = this._service[this.getEntityUri()](this.params);
+            var data = _super.prototype.handleResponse.call(this, response);
+            var tempResponse = null;
+            var tempData = null;
+            var top = data['content'].length;
+            while (data['totalElements'] > data['content'].length) {
+                this.params['query_$top'] = top;
+                this.params['query_$skip'] = data['content'].length;
+                tempResponse = this._service[this.getEntityUri()](this.params);
+                tempData = _super.prototype.handleResponse.call(this, tempResponse);
+                data['content'] = data['content'].concat(tempData['content']);
+            }
+            return _super.prototype.handleResponse.call(this, response);
+        }
+        else {
+            throw new Error("There is no such entity: " + this.getEntityUri());
+        }
+    };
+    return GetOperation;
+}(OperationWithKey));
+exports.GetOperation = GetOperation;
+return exports;]]></script>
+</dunes-script-module>

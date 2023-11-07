@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Datacenter" result-type="Any" api-version="6.0.0" id="7e2915a2-e5c9-4707-9de6-b9c12b0e02ad" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var Vds = Class.load("com.vmware.pscoe.library.vc", "Vds");
+
+/**
+ * @param {VC:Datacenter} vcDatacenter
+ */
+var Datacenter = Class.define(function Datacenter(vcDatacenter) {
+    this.id = vcDatacenter.id;
+    this.name = vcDatacenter.name;
+
+    /**
+     * Returns all Network Folders for the current Datacenter
+     * @returns {Array/VC:NetworkFolder}
+     */
+    this.getNetworkFolders = function () {
+        return [vcDatacenter.networkFolder].concat(getChildFolders(vcDatacenter.networkFolder));
+    };
+
+    /**
+     * Returns all DV Switches for the current Datacenter
+     * @returns {Array/VC:DistributedVirtualSwitch}
+     */
+    this.getDvSwitches = function () {
+        var switches = [];
+
+        this.getNetworkFolders()
+            .forEach(function (folder) {
+                (folder.distributedVirtualSwitch_VmwareDistributedVirtualSwitch || []).forEach(function (dvs) {
+                    switches.push(dvs);
+                });
+            });
+
+        return switches;
+    }
+
+    /**
+     * Finds all DV Switch filtered by name and returns a Vds array object
+     * @param {string} switchName
+     * @returns {VC:DistributedVirtualSwitch[]}
+     */
+    this.getDvSwitchesByName = function (switchName) {
+        return this.getDvSwitches()
+            .filter(function (dvSwitch) {
+                return dvSwitch.name == switchName;
+            }).map(function (dvSwitch) {
+                return new Vds(dvSwitch);
+            });
+    }
+
+    function getChildFolders(networkFolder) {
+        var folders = [];
+
+        networkFolder
+            .childEntity
+            .filter(function (entity) {
+                return entity.type == "Folder";
+            }).forEach(function (folder) {
+                folders.push(folder);
+                folders = folders.concat(getChildFolders(folder));
+            });
+
+        return folders;
+    }
+});
+
+/**
+ * @param {string} id
+ * @returns {any}
+ */
+Datacenter.get = function (id) {
+    return Datacenter.getByProperty("id", id);
+}
+
+/**
+ * @param {string} name
+ * @returns {any}
+ */
+Datacenter.getByName = function (name) {
+    return Datacenter.getByProperty("name", name);
+};
+
+/**
+ * @param {string} propertyName
+ * @param {any} propertyValue
+ * @returns {any}
+ */
+Datacenter.getByProperty = function (propertyName, propertyValue) {
+    var query = "xpath:matches(" + propertyName + ", '" + propertyValue + "')";
+    var datacenters = VcPlugin.getAllDatacenters(null, query);
+
+    var dc = (datacenters || []).filter(function (datacenter) {
+        return datacenter[propertyName] == propertyValue;
+    })[0];
+
+    if (!dc) {
+        return null;
+    }
+
+    return new Datacenter(dc);
+};
+
+return Datacenter;]]></script>
+</dunes-script-module>

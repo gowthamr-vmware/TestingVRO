@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="sample" result-type="Any" api-version="6.0.0" id="921cdcfe-f72d-420c-a59f-14e86dbca9e7" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions">
+  <script encoded="false"><![CDATA[var exports = {};
+/*-
+ * #%L
+ * actions
+ * %%
+ * Copyright (C) 2023 VMWARE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var SampleClass = /** @class */ (function () {
+    function SampleClass() {
+    }
+    SampleClass.prototype.sum = function (x, y) {
+        return x + y;
+    };
+    return SampleClass;
+}());
+exports.SampleClass = SampleClass;
+return exports;]]></script>
+</dunes-script-module>

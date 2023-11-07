@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Markup" result-type="Any" api-version="6.0.0" id="117b7381-8641-43f8-bfe1-b3e64f3666bd" version="2.0.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.templates.engines">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var Markup = Class.define(function Markup() {
+	// empty body
+});
+
+/**
+ * @param {string} template
+ * @param {any} context
+ * @param {any} options
+ */
+Markup.mark = function (template, context, options) {
+	return System.getModule("com.vmware.pscoe.library.templates.engines").mark(template, context, options);
+};
+
+return Markup;]]></script>
+</dunes-script-module>

@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="validateInput" result-type="Any" api-version="6.0.0" id="b2c217ba-0579-4f55-8080-9b6b64a80d0e" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <param n="inp" t="Any"><![CDATA[]]></param>
+  <param n="msg" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (inp === null || inp === undefined) {
+	throw msg;
+}]]></script>
+</dunes-script-module>

@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getTierForApp" result-type="string" api-version="6.0.0" id="3594bd22-7433-4db0-9bd8-ac4717cb8e4a" version="1.0.0" allowed-operations="vef" category-name="com.doe.formfields">
+  <param n="appName" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (appName && appName.trim() != '') {
+    System.log('starting')
+ 
+   var path = 'web-root';
+   var reName = 'appcriticality.csv';
+
+   var resourceElement = System.getModule("com.vmware.o11n.plugin.dynamictypes.configuration").getResourceElementByName(path + "/" + reName)
+   var rawInput = resourceElement.getContentAsMimeAttachment().content;
+
+   var csv = rawInput.split(/\r?\n/)
+   var first = csv[0];
+   first = first.replace(/\s/g, '');
+   System.log('First ' + first);
+   var firstRow = first.split(',');
+
+   for (var i = 1; i < csv.length; i++) {
+       var aRow = csv[i].split(',');
+
+       if (aRow[0].trim() == appName.trim()) {
+           var tempTier = aRow[1];
+           var splitTier = tempTier.split('-');
+           return 'Tier' + splitTier[0].trim();
+       } 
+   }
+}
+
+return '';]]></script>
+</dunes-script-module>

@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RefInputSpec" result-type="Any" api-version="6.0.0" id="21d485c4-7347-466c-b71b-74532f6b6736" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[Reference input specificator. Allows the operator to specify a reference to vRO inventory object, e.g. rest host, vCenter endpoint,
+vCAC Cafe host etc. as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var InputSpecBase = System.getModule("com.vmware.pscoe.library.install.spec").InputSpecBase();
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.install.spec.RefInputSpec");
+
+
+return Class.define(function RefInputSpec(path) {
+	InputSpecBase.apply(this, arguments);
+}, {
+	type: function (type) {
+		this.refType = type;
+		return this;
+	},
+
+	validate: function (value) {
+		var result = [];
+		if (value) {
+			result = this.dereference(value);
+			if (result.length > 1) {
+				return {
+					valid: false,
+					errors: ["value " + JSON.stringify(value) + " does not uniqeuly identify an item: found " + result.length + " possibilities."]
+				}
+			} else if (result.length == 0) {
+				return {
+					valid: false,
+					errors: ["no item found for " + JSON.stringify(value)]
+				}
+			}
+		}
+		return InputSpecBase.prototype.validate.apply(this, [result[0]]);
+	},
+
+	/**
+	 * Finds all inventory plug-in objects in vRO that match the given criteria, e.g. by name, id, url or several first-level properties.
+	 *
+	 * @param {*} value - JSON criteria
+	 */
+	dereference: function (value) {
+		if (System.getObjectType(value) === this.refType) {
+			logger.debug("Dereferencing to object: " + value);
+			return [value];
+		}
+
+		logger.debug("Dereferencing: " + JSON.stringify(value));
+		if (!this.refType) {
+			throw new Error(this.path + " input spec does not have a reference type.");
+		}
+
+		var criteriaKeys = Object.keys(value);
+		var results = null;
+		if (value.hasOwnProperty("id")) {
+			logger.debug("Fetching " + this.refType + " by id " + value.id);
+			results = Server.findAllForType(this.refType, value.id);
+		} else if (value.hasOwnProperty("name")) {
+			logger.debug("Fetching " + this.refType + " by name " + value.name);
+			results = Server.findAllForType(this.refType, value.name);
+			if (results.length == 0) {
+				logger.warn("Could not query " + this.refType + " by name. Falling back to fetching all objects. Consider using different criteria for the reference (e.g. id).")
+				results = Server.findAllForType(this.refType);
+			}
+		} else if (criteriaKeys.length == 1) {
+			var singleCriteria = criteriaKeys[0];
+			results = Server.findAllForType(this.refType, value[singleCriteria]);
+			if (results.length == 0) {
+				logger.warn("Could not query " + this.refType + " by " + singleCriteria +
+					". Falling back to fetching all objects. Consider using different criteria for the reference (e.g. id).");
+				results = Server.findAllForType(this.refType);
+			}
+		} else {
+			logger.warn("Fetching all objects of type " + this.refType + ". Consider using different criteria for the reference (e.g. id).")
+			results = Server.findAllForType(this.refType);
+		}
+
+		return results.filter(function (item) {
+			var match = true;
+			criteriaKeys.forEach(function (key) {
+				if (item.hasOwnProperty(key)) {
+					match = match && item[key] == value[key];
+					var resultMsg = item[key] == value[key] ? "YES" : "NO";
+					logger.debug(key + "?: " + item[key] + " == " + value[key] + " [" + resultMsg + "]");
+				} else {
+					logger.debug("ignore " + key);
+				}
+			});
+			return match;
+		});
+	},
+	execute: function (value, context) {
+		var deref = this.dereference(value)[0];
+		return InputSpecBase.prototype.execute.apply(this, [deref, context]);
+	}
+}, InputSpecBase);]]></script>
+</dunes-script-module>

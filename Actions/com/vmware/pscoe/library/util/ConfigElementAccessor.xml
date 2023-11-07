@@ -1,0 +1,186 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ConfigElementAccessor" result-type="Any" api-version="6.0.0" id="0eeb1fc0-afe5-4d90-80c3-0314eaa327d7" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Handles working with configuration elements. Provides out of the box getting
+setting attributes of the configuration element as well as an array of all
+attributes and the configuration element itself.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger(
+	"com.vmware.pscoe.library.util.ConfigElementAccessor");
+
+function validateType(attribute, valueType) {
+	if(!attribute) {
+		return;
+	}
+	//Consider the string JS type the same as vRO type SecureString
+	var notSecureString = !(attribute.type === "SecureString" && valueType === "string");
+	
+	//Consider the Array JS type the same as vRO type Array/<primitive or Any>
+	var notArray = !(attribute.type.indexOf("Array") > -1 && valueType === "Array");
+	if (attribute.type !== valueType && notSecureString && notArray) {
+		logger.warn("Type mismatch: Trying to set attribute " + attribute.name + " of type " + attribute.type + " with value of type " + valueType);
+	}
+}
+return Class.define(function ConfigElementAccessor(categoryPath, elementName, createIfMissing, options) {
+	this.options = options;
+
+	var category = Server.getConfigurationElementCategoryWithPath(categoryPath);
+	if (category === null) {
+		if (createIfMissing) {
+			this.configElement = Server.createConfigurationElement(categoryPath, elementName);
+		}
+	} else {
+		var result = Server.query("ConfigurationElement", "categoryid='" + System.getObjectId(category) +
+			"' and name='" + elementName + "'");
+
+		if (result.length > 1) {
+			throw "Found more than 1 configuration elements with path '" + categoryPath + "' and name '" + elementName +
+			"'. " + "This is not supported and indicates an inconsistency.";
+		}
+		this.configElement = result[0];
+
+		if (!this.configElement &&
+			createIfMissing) {
+			this.configElement = Server.createConfigurationElement(categoryPath, elementName);
+		}
+	}
+
+	if (this.configElement == null) {
+		throw "Configuration element " + elementName + " with path " + categoryPath + " not found";
+	}
+}, {
+	/**
+	 * @param {string} attrName The key of the attribute to return.
+	 * @param {string} defaultValue The default value of the attribute
+	 * 								in case the value is null or not defined.
+	 * @return The value of the attrName attribute if not null or undefined.
+	 */
+	get: function (attrName, defaultValue) {
+		try {
+			this.configElement.reload();
+			var attrib = this.configElement.getAttributeWithKey(attrName);
+			if (attrib == null) {
+				return defaultValue;
+			}
+			var value = attrib.value;
+			var valType = System.getObjectType(value);
+			switch (valType) {
+				case "string":
+					if (value.length > 0) {
+						return value;
+					}
+					break;
+				case "boolean":
+					return value;
+				default:
+					if (value !== null && value !== undefined) {
+						return value;
+					}
+			}
+			if (!this.options || this.options.enableLog) {
+				logger.debug("Value for attribute '" + attrName + "' not found. Returning default value: " + defaultValue);
+			}
+			return defaultValue;
+		} catch (err) {
+			logger.error("Error retrieving configuration value: " + err);
+			return defaultValue;
+		}
+	},
+
+	/**
+	 * @param {string} attrName The key of the attribute whose value to set.
+	 * @param {Any} value The new value of the attribute.
+	 * @param {string} typeHint is an optional parameter that allows you to specify the desired type of the configuration attribute. 
+ 	 * @param {boolean} saveToVersionRepository - try to save to internal VRO git repo, default true
+	 * Note: The typeHint must be passed to the method as a String otherwise the execution will fail. 
+	 * All vRO objects e.g. 'SecureString' are valid types to be used as the optional parameters.
+	 */
+	set: function (attrName, value, typeHint, saveToVersionRepository) {
+		// Validation to ensure we do not log SecureString values
+		this.configElement.reload();
+		var attribute = this.configElement.getAttributeWithKey(attrName);
+		var initialValue = attribute ? attribute.value : "(attribute does not exist yet)";
+		var valueToLog = value;
+		var valueType = System.getObjectType(value);
+		if(attribute) {
+			logger.debug(attribute.name + " " + attribute.value + " " + attribute.type);
+		}
+		if (attribute && attribute.type == "SecureString") {
+			initialValue = "Secure string - not displayed";
+			valueToLog = "Secure string - not displayed";
+		} else if (valueType == "SecureString") {
+			valueToLog = "Secure string - not displayed";
+		}
+		if (!this.options || this.options.enableLog) {
+			logger.debug("Setting value for attribute '" + attrName + "' with current value: '" + initialValue + "' to a new value: '" + valueToLog + "'");
+		}
+
+		validateType(attribute, valueType);
+		if(typeHint) {
+			this.configElement.setAttributeWithKey(attrName, value, typeHint);
+		} else {
+			this.configElement.setAttributeWithKey(attrName, value);
+		}
+		// This method is required for vRA8, as it is expected to have an issue with RE and CE when upgrading to vRA 8.2
+		// saveToVersionRepository threat null as true - default value
+		if(saveToVersionRepository !== false && this.configElement.saveToVersionRepository && typeof this.configElement.saveToVersionRepository === "function"){
+			this.configElement.saveToVersionRepository();
+		}
+	},
+
+	/**
+	 * Remove an attribute.
+	 * @param {string} attrName The key of the attribute to remove.
+	 */
+	remove: function (attrName) {
+		if (!this.options || this.options.enableLog) {
+			logger.debug("Removing value for attribute '" + attrName + "'");
+		}
+		this.configElement.removeAttributeWithKey(attrName);
+	},
+
+	/**
+	 * @return The ConfigurationElement itself.
+	 */
+	getElement: function () {
+		return this.configElement;
+	},
+
+	/**
+	 * @deprecated use getElement.
+	 * @return The ConfigurationElement itself.
+	 */
+	element: function () {
+		return this.getElement();
+	},
+
+	/**
+	 * @return An array of the attributes of the ConfigurationElement.
+	 */
+	getAttributes: function () {
+		return this.configElement.attributes;
+	},
+
+	/**
+	 * @deprecated use getAttributes.
+	 * @return An array of the attributes of the ConfigurationElement.
+	 */
+	attributes: function () {
+		return this.getAttributes();
+	},
+
+	/**
+	 * Converts the configuration element into JSON.
+	 * @return JSON representation of the ConfigurationElement
+	 */
+	toJson: function () {
+		this.configElement.reload();
+
+		var json = {};
+		(this.configElement.attributes || []).forEach(function (attr) {
+			json[attr.name] = attr.value;
+		});
+
+		return json;
+	}
+});]]></script>
+</dunes-script-module>

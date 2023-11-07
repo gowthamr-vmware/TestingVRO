@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="validateCompositeArray" result-type="Any" api-version="6.0.0" id="e2c34695-c657-45f9-a275-328912b2dc8d" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Validates an array for empty values.
+It can also validate a passed Array of CompositeTypes if one or more of the composite types is empty.]]></description>
+  <param n="inputArray" t="Any"><![CDATA[]]></param>
+  <param n="propertiesToCheck" t="Any"><![CDATA[]]></param>
+  <param n="errorMessage" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if(inputArray==undefined){
+	/*If the array is undefined return success since there is nothing to validate.*/
+	return "";
+}else if(inputArray.length==0){
+	return "Input array is empty or undefined!";
+}
+
+var defaultCompositeErrorMessage = "Key-Value pair is not entered for one or more elements";
+
+for(var ind in inputArray){
+	for(var propName in propertiesToCheck){
+		if( Object.prototype.toString.call(inputArray[ind][propertiesToCheck[propName]]) == '[object String]'
+			&& !inputArray[ind][propertiesToCheck[propName]].trim()
+			|| inputArray[ind][propertiesToCheck[propName]]==undefined
+			|| inputArray[ind][propertiesToCheck[propName]]==null){
+			return errorMessage ?  errorMessage : 
+				defaultCompositeErrorMessage + " [Column: " + propertiesToCheck[propName] + "]";
+		}
+	}
+}
+
+return "";]]></script>
+</dunes-script-module>

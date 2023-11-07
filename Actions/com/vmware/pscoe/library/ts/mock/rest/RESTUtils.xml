@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RESTUtils" result-type="Any" api-version="6.0.0" id="3a7cf6c0-6e01-31f9-bfdf-342276a14357" version="2.0.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock.rest">
+  <script encoded="false"><![CDATA[var exports = {};
+var RESTUtils = /** @class */ (function () {
+    function RESTUtils() {
+        throw new Error("Private constructor");
+    }
+    RESTUtils.parseUrl = function (path) {
+        var queryString;
+        var queryIndex = path.indexOf("?");
+        if (queryIndex > 0) {
+            queryString = {};
+            path.substring(queryIndex + 1)
+                .split("&")
+                .forEach(function (keyValue) {
+                var keyValueSepIndex = keyValue.indexOf("=");
+                if (keyValueSepIndex) {
+                    queryString[keyValue.substring(0, keyValueSepIndex)] = keyValue.substring(keyValueSepIndex + 1);
+                }
+                else {
+                    queryString[keyValue] = null;
+                }
+            });
+            path = path.substring(0, queryIndex);
+        }
+        return {
+            path: path,
+            parts: path.split("/"),
+            queryString: queryString,
+        };
+    };
+    return RESTUtils;
+}());
+exports.RESTUtils = RESTUtils;
+return exports;
+]]></script>
+</dunes-script-module>

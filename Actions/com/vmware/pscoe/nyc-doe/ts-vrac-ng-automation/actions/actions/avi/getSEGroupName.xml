@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getSEGroupName" result-type="string" api-version="6.0.0" id="5dd2e13c-f2ab-4426-8231-83a541ec7dbf" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi">
+  <param n="datacenter" t="string"><![CDATA[]]></param>
+  <param n="environment" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+if (!datacenter || !environment) {
+    throw new Error("Missing required input parameter. Got datacenter=" + datacenter + " enviroment=" + environment);
+}
+var logger = Logger_1._.Logger.getLogger("getSEGroupName");
+var prefix1 = "ALB-I";
+var prefix2 = (environment === 'D' || environment === 'Q') ? 'DQ' : 'PS';
+var env = '';
+switch (environment) {
+    case 'P':
+        env = "PROD";
+        break;
+    case 'S':
+        env = "STAGE";
+        break;
+    case 'Q':
+        env = "QA";
+        break;
+    case 'D':
+        env = "DEV";
+        break;
+}
+return "" + prefix1 + prefix2 + "-" + datacenter + env;]]></script>
+</dunes-script-module>

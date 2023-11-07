@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="InputSpecBase" result-type="Any" api-version="6.0.0" id="61e7aac4-0735-4aa7-80a7-4802df046a61" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[Class to serve as a base for input specificators, e.g. a reference, a string, a rest host etc.
+It will decorate itself with all decorators defined under com.vmware.pscoe.library.install.spec.decorators.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.install.Input");
+
+var moduleName = "com.vmware.pscoe.library.install.spec.decorators";
+var mod = System.getModule(moduleName);
+var regex = /SpecDecorator$/i; // Only classes that end with SpecDecorator
+var classes = mod.actionDescriptions.filter(function (act) {
+	return !!regex.exec(act.name);
+}).map(function (act) {
+	return Class.load(moduleName, act.name);
+});
+
+var base = Class.define(function InputSpecBase(path) {
+	this.validators = [];
+	this.verifications = [];
+	this.path = path;
+	this.deps = [];
+}, {
+	then: function (fn) {
+		this.fn = fn;
+		return this;
+	},
+	required: function () {
+		this.validators.unshift(function (value) {
+			return value !== undefined && value !== null && value !== "" ? null : "value is required."
+		});
+		return this;
+	},
+	seed: function () {
+		return undefined;
+	},
+	default: function (value) {
+		this.defaultValue = value;
+		return this;
+	},
+
+	dependsOn: function (path) {
+		this.deps.push(path);
+		return this;
+	},
+
+	getDependencies: function () {
+		return [].concat(this.deps);
+	},
+
+	execute: function (value, context) {
+		if (this.fn) {
+			var dependantValues = this.getDependencies().map(function (dep) {
+				return context[dep];
+			});
+			var args = [value].concat(dependantValues);
+			this.fn.apply(this, args);
+			return value;
+		} else {
+			throw new Error(this.path + " input spec does not have a value handling function");
+		}
+	},
+
+	validate: function (value) {
+		var errors = this.validators
+			.map(function (validator) {
+				return validator(value);
+			})
+			.filter(function (err) {
+				return !!err;
+			}); // empty validation response means no error
+		return {
+			valid: !errors.length,
+			errors: errors
+		}
+	},
+
+	verify: function (obj, value) {
+		var errors = this.verifications
+			.map(function (verification) {
+				return verification(value, obj);
+			})
+			.filter(function (err) {
+				return !!err
+			}); // empty verification response means no error
+		return {
+			valid: !errors.length,
+			errors: errors
+		}
+	},
+
+	getDefault: function () {
+		return this.defaultValue;
+	},
+
+	process: function (value, context) {
+		var validation = this.validate(value);
+		if (!validation.valid) {
+			throw new Error("The provided value is not valid: " + validation.errors.join("\n"));
+		}
+		value = value === undefined ? this.getDefault() : value;
+		if (value !== undefined) {
+			return this.execute(value, context);
+		} else {
+			return undefined;
+		}
+	},
+	/**
+	 * Set custom properties on vRO supported object.
+	 * If the object, key or value is not defined or empty, the property won't be set
+	 * @param {Any} vroObj - vRO plugin supported object
+	 * @param {string} key - name of the property to be set
+	 * @param {Any} value - value of the property
+	 */
+	setCustomProperty: function (vroObj, key, value) {
+		if (!!vroObj && !!value && !!key) {
+			Server.setCustomProperty(vroObj, key, value)
+		}
+	}
+});
+
+classes.forEach(function (cls) {
+	var className = cls.prototype.constructor.name;
+	var functionName = className.replace(regex, "");
+	functionName = functionName.charAt(0).toLowerCase() + functionName.substring(1);
+	logger.debug("dec " + className + " -> " + functionName);
+
+	base.prototype[functionName] = function () {
+		var args = [this];
+		for (var i = 0; i < arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+		cls.apply(this, args);
+		return this;
+	}
+});
+
+return base;]]></script>
+</dunes-script-module>

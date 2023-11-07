@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[This package is licensed under https://flings.vmware.com/vrealize-build-tools/license]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='0c963387-b8a7-4f5d-9c52-136703a9afd7'&dunesName='Action'&name='CustomHostNameLibConfigurator'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.install.handlers']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='126685d4-d5a6-43b3-9e77-1bd349e9a9e8'&dunesName='Action'&name='validateAlbSubnets'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.presentations']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='362ce432-faf8-4eb6-bc33-9417bbe874be'&dunesName='Action'&name='getAlbEndPointInfo'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='4152ea60-9a25-4035-b043-c3719e1ce188'&dunesName='Action'&name='ip-range'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.util']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ConfigurationElement?id='609f7b66-d9e6-3da7-9abd-73e7842ac9c5'&dunesName='ConfigurationElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='78fbde12-4545-4ba6-a57d-cfbd28082a9a'&dunesName='Action'&name='getSEGroupName'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='7bfba3cd-6ae8-4dc9-bdd8-101274e05464'&dunesName='Action'&name='validateDuplicateMountPath'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.presentations']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='7ec6d744-27d8-473b-9826-6600de09dc46'&dunesName='Action'&name='NycCustomHostNameConfigurator'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.install.handlers']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='88481425-8766-4dec-bf7d-74d42db37cdf'&dunesName='Action'&name='StoragePoliciesConfigurator'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.install.handlers']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='892eb08c-5661-43af-a7aa-51fd3da5a438'&dunesName='Action'&name='getInstanceUUIDs'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ConfigurationElement?id='8d7fd8d3-c0e0-391b-9ded-fcfd4282a33d'&dunesName='ConfigurationElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ConfigurationElement?id='8f352b82-d8ec-3c50-a117-d1da5de0d8b8'&dunesName='ConfigurationElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='921cdcfe-f72d-420c-a59f-14e86dbca9e7'&dunesName='Action'&name='sample'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='99ed26f6-daab-40ac-ba3f-6ac4a8e542fc'&dunesName='Action'&name='CommonIpUtil'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.util']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ResourceElement?id='a3e33c27-d6f2-32c3-af75-370e9712ffe1'&dunesName='ResourceElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='ab8b960b-02de-43ce-a329-73580ce7ba08'&dunesName='Action'&name='AlbConstants'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='b7ef4056-cc36-4e11-b8f6-7dc2774227bf'&dunesName='Action'&name='actionSample'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='be14495f-8633-4723-a6b8-2190c33a6d38'&dunesName='Action'&name='getRolesByOs'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.presentations']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='be50b48d-10f9-4bd4-ade2-f1f76f1c02fc'&dunesName='Action'&name='generateAlbResourceName'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='c3bae90d-6218-43d9-b128-a0c161e7dda7'&dunesName='Action'&name='generateGslbResourceName'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='ceaf1e6c-40a3-4530-892b-fc178e8dc531'&dunesName='Action'&name='getVmAddresses'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='d4a5b4f1-cfbe-4f27-87cf-0328829578b7'&dunesName='Action'&name='RolesFilteredConfigurator'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.install.handlers']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ResourceElement?id='ed8bff8c-ab1f-39dc-8cea-d8cadcdd7c3b'&dunesName='ResourceElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='fb083aa3-1837-48ac-bb48-1ec8dbc35a83'&dunesName='Action'&name='getAlbEndPoint'&category='com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ConfigurationElement?id='fb433a63-0b47-30e3-8609-e513a0f34f82'&dunesName='ConfigurationElement']]></elm>
+</package>

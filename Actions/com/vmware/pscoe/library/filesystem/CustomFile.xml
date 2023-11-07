@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CustomFile" result-type="Any" api-version="6.0.0" id="0be28c78-818c-4a33-a213-9f7ad7635f93" version="1.1.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.filesystem">
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.fs");
+var CustomFile = function(path) {
+    this.path = path;
+    this.file = new File(path);
+
+    this.read = function() {
+        var fr = null;
+        try {
+            fr = new FileReader(this.path);
+            fr.open();
+            return fr.readAll();
+        } finally {
+            try {
+                fr.close();
+            } catch(e1) {
+                logger.error("Unable to close the file. " + e1.message);
+            }
+        }
+    };
+
+    this.write = function(content, options) {
+        var f = new File(this.path);
+        var override = true;
+        var createParent = true;
+        if (options) {
+            if (options.override != undefined) {
+                override = options.override;
+            }
+            if (options.createParent != undefined) {
+                createParent = options.createParent;
+            }
+        }
+        if (createParent && !f.exists) {
+            f.createFile();
+        }
+        var fw = null;
+        try {
+            fw = new FileWriter(this.path);
+            fw.open();
+            if (override) {
+                fw.clean();
+            }
+            fw.write(content);
+        } finally {
+            try {
+                fw.close();
+            } catch(e1) {
+                logger.error("Unable to close the file. " + e1.message);
+            }
+        }
+    };
+
+    this.deleteFile = function() {
+    	try {
+    		this.file.deleteFile();
+    	} catch (e) {
+    		logger.error("Unable to delete file. " + e.message);
+    	}
+    }
+
+    this.list = function(ext) {
+        var dir = new File(this.path);
+        var files = [];
+
+        if(dir.isDir && dir.exists) {
+            var filesList = dir.list(ext);
+            for(var i=0; i<filesList.length; i++) {
+                var f = filesList[i];
+                files.push(new CustomFile(this.path + "/" + f));
+            }
+        } else {
+            throw "Invalid folder: " + this.path;
+        }
+        return files;
+    };
+};
+
+return CustomFile;]]></script>
+</dunes-script-module>

@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="objectsFactory" result-type="Any" api-version="6.0.0" id="2d8e0f45-6607-4e6c-80a8-278971da7ba0" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[A factory class that builds objects defined in the input properties (if prefix specified, only the properties with this prefix are considered).
+The properties must contain the corresponding classes to build the objects with (in property __class).]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.util.objectsFactory");
+var PropertiesWrapper = Class.load("com.vmware.pscoe.library.util", "PropertiesWrapper");
+var ObjectWrapper = Class.load("com.vmware.pscoe.library.util", "ObjectWrapper");
+
+/**
+ * Constructor for the objectsfactory
+ * @param {string} constructorArgs - default parameters to be passed in to the objects' constructor functions
+ * @param {string} prefixRelevantProperties - prefix for properties (in inputProperties) relevant for this factory
+ * @param {Properties} inputProperties - all input properties - containing properties with defined prefix
+ * @param {string} baseResourceElementFolder - the resource element category containing the JSON templates for the different objects (if required)
+ * @param {string} objectsCollectionName - name of the collection of object definitions within the input properties (e.g. object definitions are defined as <prefixRelevantProperties>.<objectsCollectionName>.objectDefinition
+ */
+return function(constructorArgs, prefixRelevantProperties, inputProperties, baseResourceElementFolder, objectsCollectionName) {
+	var allInputPropertiesJson = new PropertiesWrapper(inputProperties, true).toJson();
+
+	this.createObjects = function () {
+		var resultObjects = [];
+
+		try {
+			var preProcessResult = preProcessObjects (allInputPropertiesJson);
+			var processedPropertiesJson = preProcessResult.properties;
+			var relevantProperties = processedPropertiesJson[prefixRelevantProperties];
+			if (relevantProperties) {
+				var objects = relevantProperties;
+				if (relevantProperties.hasOwnProperty(objectsCollectionName)) {
+					objects = relevantProperties[objectsCollectionName];
+				}
+				for (var i in objects) {
+					if (objects[i] && objects[i] instanceof Object) {
+						resultObjects = processObject (objects, i, resultObjects, relevantProperties)
+					}
+				}
+	
+				var postProcessResult = postProcessObjects (processedPropertiesJson, resultObjects);
+				resultObjects = postProcessResult.resultObjects;
+			} else {
+				throw "No properties defined with prefix '" + prefixRelevantProperties + "'.";
+			}
+		} catch (e) {
+			logger.error("Failed while creating objects: " + e);
+			logger.error(e.stack);
+			logger.info("Rolling back...");
+			for (var k = resultObjects.length - 1; k >= 0; k--) {
+				if (resultObjects[k].fullPath) {
+					resultObjects[k].delete();
+				}
+			}
+			throw e;
+		}
+		return resultObjects;
+	};
+
+function processObject (objects, i, resultObjects, relevantProperties) {
+
+	if (!relevantProperties) {
+		relevantProperties = objects;
+	}
+	var baseResourceElementName = "base.json";
+	if (objects[i].hasOwnProperty("__baseResourceElementName")) {
+		baseResourceElementName = objects[i].__baseResourceElementName;
+		delete objects[i].__baseResourceElementName;
+	}
+	var packageName;
+	var className;
+	if (objects[i].hasOwnProperty("__class")) {
+		var classId = objects[i].__class;
+		packageName = classId.split("/")[0];
+		className = classId.split("/")[1];
+		delete objects[i].__class;
+	} else {
+		logger.error("__class property not found on object: " + JSON.stringify(objects[i], null, 2));
+		return resultObjects;
+	}
+	var baseResourceElement = null;
+	try {
+		baseResourceElement = System.getModule("com.vmware.pscoe.library.util").getResourceElementByPath(
+			 baseResourceElementFolder + className,
+			baseResourceElementName
+		);
+	} catch (e) {
+		logger.warn("Failed to load base config: " + e);
+	}
+	var baseObj = {};
+	if (baseResourceElement) {
+		baseObj = JSON.parse(baseResourceElement.getContentAsMimeAttachment().content);
+	}
+	logger.debug(JSON.stringify(baseObj));
+	var objWrapper = new ObjectWrapper(baseObj);
+	var jsonObj = objWrapper.merge(objects[i]).obj;
+
+	//Determine class arguments
+	var additionalConstructorArgs = [];
+	if (jsonObj.hasOwnProperty("__classArgs")) {
+		var classArgs = jsonObj.__classArgs.split(",");
+		for (var j in classArgs) {
+			logger.debug("Found class arg '" + classArgs[j] + "' with value: " + jsonObj[classArgs[j]]);
+			additionalConstructorArgs.push(jsonObj[classArgs[j]]);
+		}
+		delete jsonObj.__classArgs;
+	}
+
+	if (jsonObj.hasOwnProperty("__mapper")) {
+		var MapperClass = Class.load(jsonObj.__mapper.split("/")[0], jsonObj.__mapper.split("/")[1]);
+		delete jsonObj.__mapper;
+		jsonObj = new MapperClass().map(jsonObj, relevantProperties, resultObjects);
+	}
+
+	var constructorArguments = [];
+	for (var constrArgsIdx in constructorArgs) {
+		   constructorArguments.push(constructorArgs[constrArgsIdx]);
+	}
+	constructorArguments.push(jsonObj);
+	for (var argIndex in additionalConstructorArgs) {
+		constructorArguments.push(additionalConstructorArgs[argIndex]);
+	}
+	logger.debug("Instantiating class " + className +
+		" with constructor arguments: " + JSON.stringify(constructorArguments));
+
+	logger.debug(JSON.stringify(jsonObj));
+	var ObjectClass = Class.load(packageName, className);
+
+	var ObjectClassWrapper = System.getModule("com.vmware.pscoe.library.util").ConstructorWrapper(ObjectClass);
+	var objectInstance = new ObjectClassWrapper(constructorArguments);
+
+	objectInstance.create();
+	resultObjects.push(objectInstance);
+
+	return resultObjects;
+}
+
+	function preProcessObjects (inputPropertiesJson, resultObjects) {
+		logger.debug("Checking for pre processor'");
+		var result = {properties: inputPropertiesJson, resultObjects: resultObjects};
+		// if a preprocessor action has been specified, this action should be called to process the JSON object.
+		if (inputPropertiesJson && inputPropertiesJson[prefixRelevantProperties]
+	&& inputPropertiesJson[prefixRelevantProperties].hasOwnProperty("__preprocessor")) {
+
+	var preprocessor = inputPropertiesJson[prefixRelevantProperties]["__preprocessor"];
+			logger.debug("Running pre processor: " + preprocessor);
+			var PreProcessorClass = Class.load(preprocessor.split("/")[0], preprocessor.split("/")[1]);
+			result = new PreProcessorClass().process(inputPropertiesJson, resultObjects);
+		}
+		logger.debug("Pre processor executed.'");
+		return result;
+	}
+
+	function postProcessObjects (inputPropertiesJson, resultObjects) {
+		logger.debug("Checking for post processor'");
+		var result = {properties: inputPropertiesJson, resultObjects: resultObjects};
+		// if a postprocessor action has been specified,
+		// this action should be called to process the objects after everything was created.
+		if (inputPropertiesJson && inputPropertiesJson[prefixRelevantProperties]
+	&& inputPropertiesJson[prefixRelevantProperties].hasOwnProperty("__postprocessor")) {
+
+	var postprocessor = inputPropertiesJson[prefixRelevantProperties]["__postprocessor"];
+			logger.debug("Running post processor: " + postprocessor);
+			var PostProcessorClass = Class.load(postprocessor.split("/")[0], postprocessor.split("/")[1]);
+			result = new PostProcessorClass().process(inputPropertiesJson, resultObjects);
+		}
+		logger.debug("Post processor executed.'");
+		return result;
+	}
+};]]></script>
+</dunes-script-module>

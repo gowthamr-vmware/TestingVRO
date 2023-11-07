@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="runFunctionWithRetry" result-type="Any" api-version="6.0.0" id="981da96a-5421-4964-a631-094f23e9b198" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <param n="func" t="Any"><![CDATA[]]></param>
+  <param n="retryIfCondition" t="Any"><![CDATA[]]></param>
+  <param n="totalRetries" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var retryCount = 0;
+while (retryCount < totalRetries) {
+	try {
+
+		return func();
+	} catch (e) {
+		if (retryIfCondition(e)) {
+			System.log("Retrying function call...");
+			retryCount++;
+			System.sleep(500);
+		} else {
+			throw e;
+		}
+	}
+}
+throw "Unable to execute function within " + totalRetries + " retries";]]></script>
+</dunes-script-module>

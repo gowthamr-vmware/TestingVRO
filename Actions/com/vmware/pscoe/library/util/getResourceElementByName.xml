@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getResourceElementByName" result-type="ResourceElement" api-version="6.0.0" id="28f6a177-5a7c-4f86-96de-ff090dee0239" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[This action is deprecated.]]></description>
+  <param n="name" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.util.getResourceElementByName");
+
+logger.warn("This action is deprecated. Please use ResourceElementAccessor.");
+
+var ResourceElementAccessor = System.getModule("com.vmware.pscoe.library.util").ResourceElementAccessor();
+var results = ResourceElementAccessor.getByName(name);
+if (results.length > 1) {
+	throw new Error("More than one ResourceElement with name " + name);
+} else {
+	return results.length ? results[0].getElement() : null;
+}]]></script>
+</dunes-script-module>

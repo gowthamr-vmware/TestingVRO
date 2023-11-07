@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getPropertyList" result-type="Properties" api-version="6.0.0" id="9b6034df-cc84-35f6-8e38-42e33d8ff73b" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.presentation">
+  <param n="configurationPath" t="string"><![CDATA[]]></param>
+  <param n="listName" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var utils_1 = VROES.importLazy("com.vmware.pscoe.nyc.vra_integration.vro.actions/utils/utils");
+var config = utils_1._.Utils.getConfig(configurationPath);
+return config.get(listName);]]></script>
+</dunes-script-module>

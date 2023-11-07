@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getLogger" result-type="Any" api-version="6.0.0" id="a30f5667-bf51-330a-9e5a-861966c1ca32" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.logging">
+  <param n="name" t="string"><![CDATA[]]></param>
+  <param n="options" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging.Logger");
+return Logger_1._.Logger.getLogger(name, options);
+]]></script>
+</dunes-script-module>

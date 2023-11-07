@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ObfuscatorAppender" result-type="Any" api-version="6.0.0" id="2221ceea-bc8d-33d4-a1ce-7cb41443cda4" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.logging.appenders">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var __extends = VROES.tslib.__extends;
+var BaseAppender_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging.appenders/BaseAppender");
+var ObfuscatorAppender = /** @class */ (function (_super) {
+    __extends(ObfuscatorAppender, _super);
+    function ObfuscatorAppender(properties) {
+        var _this = _super.call(this, properties) || this;
+        _this.searchPatterns = [];
+        _this.defaultSearchPatterns = [{
+                // Looking to match any sensitive data e.g. "password": "MyPassword"
+                searchPattern: "((\\\\)?\"(password|access_token|refresh_token|authorization|authentication|pass)(\\\\)?\"\\s*:\\s*)((\\\\)?\".+?(\\\\)?\")",
+                mask: "$1\"*****\""
+            }, {
+                // Looking to match any sensitive data e.g. password 'MyPassword'
+                searchPattern: "((password|access_token|refresh_token|authorization|authentication|pass)\\s*)('.+?')",
+                mask: "$1'*****'"
+            }, {
+                // Looking to match any sensitive data e.g. password=MyPassword
+                searchPattern: "((password|access_token|refresh_token|authorization|authentication|pass)=)(\\S*)",
+                mask: "$1*****"
+            }];
+        _this.searchPatterns = (properties === null || properties === void 0 ? void 0 : properties.patterns) || _this.defaultSearchPatterns;
+        return _this;
+    }
+    ObfuscatorAppender.prototype.append = function (severity, msg) {
+        if (msg && typeof msg === "string") {
+            this.searchPatterns.forEach(function (_a) {
+                var searchPattern = _a.searchPattern, mask = _a.mask;
+                try {
+                    var re = new RegExp(searchPattern, "gim");
+                    msg = msg.replace(re, mask);
+                }
+                catch (error) {
+                    throw new Error("An error occurred while obfuscating sensitive data in the logs! Regex error - pattern: " + searchPattern + "; mask: " + mask + "; Error: \" + " + error);
+                }
+            });
+        }
+        msg = this.format(severity, msg);
+        switch (severity) {
+            case "DEBUG":
+                System.debug(msg);
+                break;
+            case "INFO":
+                System.log(msg);
+                break;
+            case "WARN":
+                System.warn(msg);
+                break;
+            case "ERROR":
+                System.error(msg);
+                break;
+            default:
+                System.error("Logging Level[" + severity + "] is not defined!");
+        }
+    };
+    return ObfuscatorAppender;
+}(BaseAppender_1._.BaseAppender));
+exports.ObfuscatorAppender = ObfuscatorAppender;
+return exports;
+]]></script>
+</dunes-script-module>

@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="HttpClient" result-type="Any" api-version="6.0.0" id="31bc96e7-9ff4-3cd6-aba9-9a4b776a68ba" version="2.0.6" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.http">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var __extends = VROES.tslib.__extends;
+var BaseHttpClient_1 = VROES.importLazy("com.vmware.pscoe.library.ts.http.BaseHttpClient");
+var HttpClientVro = /** @class */ (function (_super) {
+    __extends(HttpClientVro, _super);
+    function HttpClientVro(restHost, options) {
+        var _this = _super.call(this, options) || this;
+        _this.restHost = restHost;
+        return _this;
+    }
+    HttpClientVro.prototype.providerCreateRequestFrom = function (request) {
+        var path = request.pathEncoded ? request.path : encodeURI(request.path);
+        var restRequest = this.restHost.createRequest(request.method, path, request.content !== undefined ? request.content : null);
+        var requestHeaders = this.getRequestHeaders(request);
+        for (var headerName in requestHeaders) {
+            restRequest.setHeader(headerName, requestHeaders[headerName]);
+        }
+        return restRequest;
+    };
+    HttpClientVro.prototype.providerExecuteRequest = function (request) {
+        try {
+            var restResponse = request.execute();
+            return {
+                statusCode: restResponse.statusCode,
+                content: restResponse.contentAsString,
+                headers: restResponse.getAllHeaders()
+            };
+        }
+        catch (e) {
+            return {
+                statusCode: 500,
+                content: typeof e == "object" ? JSON.stringify(e) : e,
+                headers: {}
+            };
+        }
+    };
+    HttpClientVro.prototype.getRequestHeaders = function (request) {
+        var headers = {};
+        if (this.options.headers) {
+            for (var headerName in this.options.headers) {
+                headers[headerName] = this.options.headers[headerName];
+            }
+        }
+        if (request.accept) {
+            headers["Accept"] = request.accept;
+        }
+        if (request.contentType) {
+            headers["Content-Type"] = request.contentType;
+        }
+        if (request.headers) {
+            for (var headerName in request.headers) {
+                headers[headerName] = request.headers[headerName];
+            }
+        }
+        return headers;
+    };
+    return HttpClientVro;
+}(BaseHttpClient_1._.BaseHttpClient));
+exports.HttpClientVro = HttpClientVro;
+exports.HttpClient = HttpClientVro;
+return exports;
+]]></script>
+</dunes-script-module>

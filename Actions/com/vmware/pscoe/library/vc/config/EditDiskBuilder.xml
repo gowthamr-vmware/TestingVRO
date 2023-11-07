@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="EditDiskBuilder" result-type="Any" api-version="6.0.0" id="d2159c5c-2b58-4a2b-8c18-303f183be4cc" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building device spec for resizing an existing virtual disk to VM]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+var AbstractDiskBuilder = Class.load("com.vmware.pscoe.library.vc.config", "AbstractDiskBuilder");
+
+return Class.define(function EditDiskBuilder(storage) {
+    AbstractDiskBuilder.call(this, storage);
+    var capacityInKB = null;
+    var removeDisk = false;
+    var detachDisk = false;
+    var disk = null;
+
+
+    this.setDisk = function (value) {
+        disk = value;
+        return this;
+    };
+
+	/**
+	 * @param {number} capacityGb - sets a new capacity of the disk
+	 */
+    this.setCapacityInGB = function (capacityGb) {
+        capacityInKB = capacityGb * 1024 * 1024;
+        return this;
+    };
+
+	/**
+	 * @param {boolean} value - set disk for removal, default - false
+	 */
+    this.removeDisk = function (value) {
+        removeDisk = value;
+        return this;
+    };
+
+    /**
+	 * @param {boolean} value - set disk for removal, default - false
+	 */
+    this.detachDisk = function (value) {
+        detachDisk = value;
+        return this;
+    };
+
+    this.getCapacity = function () {
+        return (capacityInKB || disk.capacityInKB);
+    };
+
+    this.buildDisk = function () {
+        return disk;
+    }
+
+	/**
+	 * @returns {VcVirtualDeviceConfigSpec} - the device spec to be used for reconfiguration
+	 */
+    this.build = function () {
+
+        var originalCapacityInKB = disk.capacityInKB;
+        var deviceConfigSpec = new VcVirtualDeviceConfigSpec();
+        deviceConfigSpec.device = disk;
+        deviceConfigSpec.device.capacityInKB = capacityInKB;
+        if (removeDisk || detachDisk) {
+            deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.remove;
+            if (removeDisk) {
+                deviceConfigSpec.fileOperation = VcVirtualDeviceConfigSpecFileOperation.destroy;
+            }
+        } else {
+            if (originalCapacityInKB > capacityInKB) {
+                throw new Error("Shirking disks is not supported.");
+            }
+            deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.edit;
+        }
+        return deviceConfigSpec;
+    };
+
+}, null, AbstractDiskBuilder);]]></script>
+</dunes-script-module>

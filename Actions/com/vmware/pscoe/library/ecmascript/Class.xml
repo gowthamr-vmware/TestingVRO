@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Class" result-type="Any" api-version="6.0.0" id="1331bc0e-d381-437a-aef1-872ec120f910" version="2.30.0" allowed-operations="vef" category-name="com.vmware.pscoe.library.ecmascript">
+  <script encoded="false"><![CDATA[var exports = {};
+function defineClass(ctor, instanceMembers, staticMembers, ctorBase) {
+    // Setup inheritance
+    ctor.prototype = Object.create(ctorBase ? ctorBase.prototype : {}, {
+        constructor: {
+            value: ctor,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
+    // Add toString method if it doesn't exist
+    if (!ctorBase || ctorBase.prototype.toString === undefined) {
+        ctor.prototype.toString = function toString() {
+            return "[object " + this.constructor.name + "]";
+        };
+    }
+    // Copy instance members
+    for (var name in instanceMembers) {
+        ctor.prototype[name] = instanceMembers[name];
+    }
+    // Copy static members
+    if (ctorBase) {
+        for (var name in ctorBase) {
+            if (!ctor.hasOwnProperty(name)) {
+                ctor[name] = ctorBase[name];
+            }
+        }
+    }
+    for (var name in staticMembers) {
+        ctor[name] = staticMembers[name];
+    }
+    // descriptor property definition
+    ctor.__descriptor = {
+        name: ctor.name,
+    };
+    return ctor;
+}
+exports.default = defineClass;
+return exports;]]></script>
+</dunes-script-module>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="returnStringValue" result-type="string" api-version="6.0.0" id="52be56b1-251a-4ef1-a83c-732ef6b67a4e" version="1.0.0" allowed-operations="vef" category-name="com.doe.formfields">
+  <param n="input" t="Properties"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (input) {
+   return input + '';
+} else { return 'bad' + input;}]]></script>
+</dunes-script-module>

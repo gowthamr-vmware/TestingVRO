@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ListSpecDecorator" result-type="Any" api-version="6.0.0" id="e1316958-ca50-4f57-8ada-83525eb01a34" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec.decorators">
+  <description><![CDATA[List decorator. Decorates any input specificator with the ability to request multiple instance of any given type, e.g. a list of strings,
+a list of references, a list of rest hosts etc.]]></description>
+  <script encoded="false"><![CDATA[return function ListSpecDecorator(subj) {
+	var validators = [];
+	
+	Object.defineProperty(
+		subj, 'isPartOfList', {
+			value: true,
+			enumerable: false,
+			writable: true,
+			configurable: true
+		});
+
+	subj.min = function (n) {
+		validators.push(function (values) {
+			return values.length < n ? "expected at least " + n + " items." : null;
+		});
+		return subj;
+	};
+	subj.max = function (n) {
+		validators.push(function (values) {
+			return values.length > n ? "expected less than " + n + " items." : null;
+		});
+		return subj;
+	};
+	subj.execute = function (values, context) {
+		return values.map(function (value) {
+			return subj.constructor.prototype.execute.call(subj, value, context);
+		});
+	};
+	subj.seed = function () {
+		return [];
+	};
+	subj.validate = function (values) {
+		values = values || [];
+		if (Array.isArray(values)) {
+			var validation = {
+				valid: true,
+				errors: validators
+					.map(function (validator) {
+						return validator(values);
+					})
+					.filter(function (x) {
+						return !!x;
+					}) // remove empty strings, as empty validation result means no error
+			};
+			values.map(subj.constructor.prototype.validate, subj).forEach(function (valueValidation) {
+				validation.errors = validation.errors.concat(valueValidation.errors);
+			});
+			validation.valid = !validation.errors.length;
+			return validation;
+		} else {
+			return {
+				valid: false,
+				errors: ["expected a list."]
+			}
+		}
+	}
+}]]></script>
+</dunes-script-module>

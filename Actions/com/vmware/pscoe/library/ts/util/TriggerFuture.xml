@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="TriggerFuture" result-type="Any" api-version="6.0.0" id="4c521d58-0416-4679-8c33-3cb9e98388d9" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), tslib_1 = VROES.tslib, exports = {};
+var Future_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util.Future");
+var AsyncWorkflowExecutor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util.AsyncWorkflowExecutor");
+var TriggerFuture = /** @class */ (function (_super) {
+    tslib_1.__extends(TriggerFuture, _super);
+    function TriggerFuture(trigger) {
+        var _this = _super.call(this) || this;
+        var properties = new Properties();
+        properties.put("trigger", trigger);
+        _this.future = AsyncWorkflowExecutor_1._.AsyncWorkflowExecutor.executeByFqn("PSCoE/Util/Wait for trigger", properties);
+        return _this;
+    }
+    TriggerFuture.prototype.toString = function () {
+        return this.future.toString();
+    };
+    TriggerFuture.prototype.checkCompleted = function () {
+        return this.future.isDone();
+    };
+    return TriggerFuture;
+}(Future_1._.Future));
+exports.TriggerFuture = TriggerFuture;
+return exports;]]></script>
+</dunes-script-module>

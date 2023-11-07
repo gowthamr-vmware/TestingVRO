@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Logger" result-type="Any" api-version="6.0.0" id="a4313786-0536-4a76-8711-e83f4a59ff5d" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging">
+  <description><![CDATA[This action represents logging interface for vRO actions or scripting blocks.
+Logger configuration must be supplied as a JSON-formatted resource element in /PSCoE/Library/Logging/LoggerConfig.json
+If no configuration is defined, the logger falls back to logging only to the System output stream.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var BaseAppender = Class.load("com.vmware.pscoe.library.logging.appenders", "BaseAppender");
+var LoggerConfiguration = Class.load("com.vmware.pscoe.library.logging.configuration", "LoggerConfiguration");
+
+/**
+ * Logger class. Takes configuration for the different loggers from the LoggerConfig.json resource file in Library/Logging
+ *
+ * @param  {name}     - logger name; ex: com.vmware.pscoe.mail
+ * @param  {options} - logger context, could be any object; ex: vc:VirtualMachine
+ * @return {Logger}     - the actual logger object
+ */
+function Logger(name) {
+
+	var LEVEL = {
+		ERROR: "ERROR",
+		WARN: "WARN",
+		INFO: "INFO",
+		DEBUG: "DEBUG"
+	};
+
+	LEVEL.filter = function (level, severity) {
+		var order = [LEVEL.ERROR, LEVEL.WARN, LEVEL.INFO, LEVEL.DEBUG];
+		return order.indexOf(level) - order.indexOf(severity) >= 0;
+	};
+
+	var level = LEVEL.INFO;
+	var appenders = [];
+
+	this.getName = function () {
+		return name;
+	};
+
+	this.setLevel = function (newLevel) {
+		level = newLevel.toUpperCase();
+
+		if (!LEVEL.hasOwnProperty(level)) {
+			throw "Cannot set logging level '" + level + "'. Acceptable values " + Object.keys(LEVEL);
+		}
+	};
+
+	this.setAppenders = function (newAppenders) {
+		appenders = newAppenders;
+
+		appenders.forEach(function (appender) {
+			if (!(appender instanceof BaseAppender)) {
+				throw "Appender: " + appender.constructor.name + " must extend BaseAppender!";
+			}
+		});
+	};
+
+	var log = function (severity, message) {
+		if (LEVEL.filter(level, severity)) {
+			appenders.forEach(function (appender) {
+				appender.append(severity, message);
+			});
+		}
+	};
+
+	this.info = function (message) {
+		log(LEVEL.INFO, message);
+	};
+	this.warn = function (message) {
+		log(LEVEL.WARN, message);
+	};
+	this.error = function (message) {
+		log(LEVEL.ERROR, message);
+	};
+	this.debug = function (message) {
+		log(LEVEL.DEBUG, message);
+	};
+}
+
+function LoggerFactory(configPath) {
+	var configuration = new LoggerConfiguration(configPath);
+	configuration.loadWithDefaults();
+
+	this.getLogger = function (name, options) {
+		var loggerName = configuration.getLoggerName(name);
+		var loggerLevel = (loggerName && configuration.loggers[loggerName]) ? configuration.loggers[loggerName].level : configuration.root.level;
+		var appendersNames = configuration.getAppendersNames(loggerName);
+
+		var appenders = appendersNames.map(function (appenderName) {
+			var appenderConfiguration = configuration.appenders[appenderName];
+			appenderConfiguration.name = appenderName;
+			appenderConfiguration.loggerName = name;
+			appenderConfiguration.context = options;
+
+			var patt = configuration.appenders[appenderName].pattern;
+			appenderConfiguration.pattern = configuration.getPattern(!!patt ?
+				patt.replace(new RegExp("[\$\{\}]*", "g"), "") : "defaultPattern");
+
+			var AppenderClass = Class.load(appenderConfiguration.modulePath, appenderConfiguration.moduleName);
+			return new AppenderClass(appenderConfiguration);
+		});
+
+		var logger = new Logger(name);
+		logger.setLevel(loggerLevel);
+		logger.setAppenders(appenders);
+
+		return logger;
+	};
+}
+
+function LoggerWrapper(name, options, configPath) {
+	return new LoggerFactory(configPath).getLogger(name, options);
+}
+
+return LoggerWrapper;]]></script>
+</dunes-script-module>

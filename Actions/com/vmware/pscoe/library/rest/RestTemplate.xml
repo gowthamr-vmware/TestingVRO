@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RestTemplate" result-type="Any" api-version="6.0.0" id="c9499b01-553c-4124-882b-8be5561beea7" version="2.5.8" allowed-operations="vef" category-name="com.vmware.pscoe.library.rest">
+  <description><![CDATA[DEPRECATED use RestClient]]></description>
+  <param n="restHost" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var RestClient = System.getModule("com.vmware.pscoe.library.rest").RestClient();
+var client = new RestClient(restHost);
+
+function getOptions(headers, options) {
+	if (headers) {
+		options = options || {};
+		options.headers = headers;
+	}
+	return options;
+}
+
+return {
+	"get" : function(urlTemplate, params, headers, options) {
+		return client.get(urlTemplate, params, getOptions(headers, options));
+	},
+	"post" : function(urlTemplate, params, content, headers, options) {
+		return client.post(urlTemplate, params, content, getOptions(headers, options));
+	},
+	"put" : function(urlTemplate, params, content, headers, options) {
+		return client.put(urlTemplate, params, content, getOptions(headers, options));	
+	},
+	"delete" : function(urlTemplate, params, headers, options) {
+		return client.delete(urlTemplate, params, getOptions(headers, options));	
+	},
+	"patch" : function(urlTemplate, params, content, headers, options) {
+		return client.patch(urlTemplate, params, content, getOptions(headers, options));	
+	}
+};]]></script>
+</dunes-script-module>

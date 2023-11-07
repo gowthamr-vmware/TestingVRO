@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="validateDuplicateMountPath" result-type="string" api-version="6.0.0" id="7bfba3cd-6ae8-4dc9-bdd8-101274e05464" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.presentations">
+  <param n="os" t="string"><![CDATA[w-Windows l-Linux]]></param>
+  <param n="disk_info" t="Array/Properties"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var message = '';
+var osMessage = os.toLowerCase() === 'w' ? 'Letter' : 'Mount path';
+var uniqueMountPoint = [];
+if (!disk_info || !os) {
+    return message;
+}
+disk_info.forEach(function (disk) {
+    if (uniqueMountPoint.indexOf(disk.letter) >= 0) {
+        message = osMessage + " is duplicated for '" + disk.letter + "', fix it and try again.";
+    }
+    uniqueMountPoint.push(disk.letter);
+});
+return message;]]></script>
+</dunes-script-module>

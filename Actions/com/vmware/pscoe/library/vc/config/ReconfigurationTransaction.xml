@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ReconfigurationTransaction" result-type="Any" api-version="6.0.0" id="77c225dc-b593-4c8d-addf-e7963499ed07" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for doing VM reconfiguration in a batch]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+/**
+ * @param {VC:VirtualMachine} vm - virtual machine to be reconfigured.
+ */
+var ReconfigurationTransaction = Class.define(function ReconfigurationTransaction(vm) {
+    var deviceConfigSpecs = [];
+    var committed = false;
+
+    /**
+     * Adds a device configuration spec to the current batch. Will throw an error 
+     * if the batch is already commited.
+     * @param {VcVirtualDeviceConfigSpec}
+     */
+    this.add = function (deviceConfigSpec) {
+        if (committed) {
+            throw new Error("Reconfiguration transaction was already commited.");
+        }
+
+        if (deviceConfigSpec instanceof VcVirtualDeviceConfigSpec) {
+            deviceConfigSpecs.push(deviceConfigSpec);
+        } else {
+            throw new Error("Invalid argument exception: expected VcVirtualDeviceConfigSpec");
+        }
+    }
+
+    /**
+     * Will return a list of device config specifications that satisfy the predicate
+     * @param {*} predicate - a predicate function that accepts a VcVirtualDeviceConfigSpec as a single parameter.
+     * @returns {VcVirtualDeviceConfigSpec}
+     */
+    this.find = function (predicate) {
+        return deviceConfigSpecs.filter(function (x) { 
+            return predicate(x); 
+        });
+    }
+
+    /**
+     * Commits the batch and waits for the corresponding vCenter task to complete.
+     */
+    this.commit = function (questionHandler) {
+        if (committed) {
+            throw new Error("Reconfiguration transaction was already commited.");
+        }
+        var configSpec = new VcVirtualMachineConfigSpec();
+        configSpec.deviceChange = deviceConfigSpecs;
+        var task = vm.reconfigVM_Task(configSpec);
+        if (questionHandler) {
+            var result = System.getModule("com.vmware.library.vc.basic").WaitTaskEndOrVMQuestion(task, false, 1, vm);
+            if (result instanceof VcVirtualMachineQuestionInfo) {
+                var answer = questionHandler(result);
+                if (answer !== undefined && answer !== null) {
+                    vm.answerVM(result.id, answer);
+                    System.getModule("com.vmware.library.vc.basic").vim3WaitTaskEnd(task, false, 1);
+                } else {
+                    throw new Error("Machine reconfiguration failed b/c of a question: " + result.text)
+                }
+            }
+        } else {
+            System.getModule("com.vmware.library.vc.basic").vim3WaitTaskEnd(task, false, 1);
+        }
+        committed = true;
+    }
+});
+
+/**
+ * 
+ * @param {VC:VirtualMachine} vm 
+ * @param {Any} transactionalSystems - an array of systems that support transactions, e.g. Networking or Storage.
+ * @param {Any} blockFn - A function block that will be executed in the transaction. It should accept the transaction as a single parameter.
+ */
+ReconfigurationTransaction.scope = function (vm, transactionalSystems, blockFn) {
+    var tran = new ReconfigurationTransaction(vm);
+    transactionalSystems.forEach(function (system) {
+        system.setTransaction(tran);
+    }, this);
+    blockFn(tran);
+    transactionalSystems.forEach(function (system) {
+        system.setTransaction(null);
+    }, this);
+}
+
+return ReconfigurationTransaction;]]></script>
+</dunes-script-module>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="8d7fd8d3-c0e0-391b-9ded-fcfd4282a33d" version="1.0.0">
+  <display-name><![CDATA[RolesFiltered]]></display-name>
+  <atts>
+    <att name="rolesos" type="Properties" read-only="false"/>
+  </atts>
+</config-element>

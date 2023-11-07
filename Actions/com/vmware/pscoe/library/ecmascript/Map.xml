@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Map" result-type="Any" api-version="6.0.0" id="b13037b3-765b-4422-9808-c12bc2cee17d" version="2.30.0" allowed-operations="vef" category-name="com.vmware.pscoe.library.ecmascript">
+  <script encoded="false"><![CDATA[/*-
+     * #%L
+     * ecmascript
+     * %%
+     * Copyright (C) 2023 VMware
+     * %%
+     * Build Tools for VMware Aria
+     * Copyright 2023 VMware, Inc.
+     *
+     * This product is licensed to you under the BSD-2 license (the "License"). You may not use this product except in compliance with the BSD-2 License.
+     *
+     * This product may include a number of subcomponents with separate copyright notices and license terms. Your use of these subcomponents is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
+     * #L%
+     */
+    var exports = {};
+    var Map = /** @class */ (function () {
+        function Map(values) {
+            this.size = 0;
+            this.items = {};
+            if (values) {
+                for (var _i = 0, values_1 = values; _i < values_1.length; _i++) {
+                    var keyValue = values_1[_i];
+                    this.items[keyValue[0]] = keyValue[1];
+                    this.size++;
+                }
+            }
+        }
+        Map.prototype.entries = function () {
+            var entries = [];
+            for (var key in this.items) {
+                entries.push([key, this.items[key]]);
+            }
+            return entries;
+        };
+        Map.prototype.keys = function () {
+            var keys = [];
+            for (var key in this.items) {
+                keys.push(key);
+            }
+            return keys;
+        };
+        Map.prototype.values = function () {
+            var values = [];
+            for (var key in this.items) {
+                values.push(this.items[key]);
+            }
+            return values;
+        };
+        Map.prototype.has = function (key) {
+            return this.items.hasOwnProperty(key);
+        };
+        Map.prototype.get = function (key) {
+            return this.items[key];
+        };
+        Map.prototype.set = function (key, value) {
+            var exist = this.items.hasOwnProperty(key);
+            if (exist) {
+                this.size++;
+            }
+            this.items[key] = value;
+            return this;
+        };
+        Map.prototype.delete = function (key) {
+            var exist = this.items.hasOwnProperty(key);
+            if (exist) {
+                this.size--;
+                delete this.items[key];
+            }
+            return exist;
+        };
+        Map.prototype.clear = function () {
+            this.size = 0;
+            this.items = {};
+        };
+        Map.prototype.forEach = function (callbackfn) {
+            for (var key in this.items) {
+                callbackfn(this.items[key], key, this);
+            }
+        };
+        return Map;
+    }());
+    exports.default = Map;
+    return exports;]]></script>
+</dunes-script-module>

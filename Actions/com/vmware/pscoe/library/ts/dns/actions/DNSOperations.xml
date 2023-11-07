@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="DNSOperations" result-type="Any" api-version="6.0.0" id="7f917114-0285-4e95-b72d-a2913786a121" version="1.0.5" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.dns.actions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var logger = Logger_1._.Logger.getLogger("com.vmware.pscoe.library.ts.dns.actions/DNSOperations");
+var DNSOperations = /** @class */ (function () {
+    function DNSOperations(provider) {
+        this.provider = provider;
+    }
+    DNSOperations.prototype.addRecord = function (name, ipAddress, type, zone, dnsServers, isPtr) {
+        logger.info("DnsOperations: Attempting to create DNS record in DNS Servers ["
+            + (dnsServers + "] Type [" + type + "] Name [" + name + "] Zone [" + zone + "] Value [")
+            + (ipAddress + "] PTR [" + isPtr + "]"));
+        var errors = [];
+        if (!Array.isArray(dnsServers)) {
+            dnsServers = [dnsServers];
+        }
+        this.provider.setPTR(isPtr);
+        var created = 0;
+        dnsServers.forEach(function (server) {
+            try {
+                if (!created) {
+                    this.provider.addRecord(name, ipAddress, type, zone, server);
+                    logger.info("Successfully added DNS record in server " + server);
+                    created += 1;
+                }
+            }
+            catch (exp) {
+                errors.push("Server " + server + "\" error: " + exp);
+                logger.warn("Unable to add DNS record to server " + server);
+            }
+        }, this);
+        if (!created && errors.length > 0) {
+            throw new Error("Unable to add DNS record in any of the provided servers. Errors: \n " + errors + ".join(\"\n\")");
+        }
+    };
+    DNSOperations.prototype.deleteRecord = function (name, type, zone, dnsServers, ipAddress) {
+        logger.info("DnsOperations: Attempting to delete DNS record in DNS Servers ["
+            + (dnsServers + "] Type [" + type + "] IP Address [" + ipAddress + "] Name [" + name + "] Zone [" + zone + "]"));
+        var errors = [];
+        if (!Array.isArray(dnsServers)) {
+            dnsServers = new Array(dnsServers);
+        }
+        var deleted = 0;
+        dnsServers.forEach(function (server) {
+            try {
+                if (!deleted) {
+                    this.provider.deleteRecord(name, type, zone, server, ipAddress);
+                    deleted += 1;
+                }
+            }
+            catch (e) {
+                errors.push("Server " + server + " error: " + e);
+                logger.error("Unable to delete DNS record from server " + server);
+            }
+        }, this);
+        if (!deleted && errors.length > 0) {
+            throw new Error("DNS record delete failed on all servers. Error: \n " + errors + ".join(\"\n\")");
+        }
+        else {
+            logger.info("Successfully deleted DNS record from " + deleted + " servers");
+        }
+    };
+    return DNSOperations;
+}());
+exports.DNSOperations = DNSOperations;
+return exports;]]></script>
+</dunes-script-module>

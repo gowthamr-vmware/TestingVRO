@@ -1,0 +1,20 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="592c16b6-aa30-411e-b584-e4f40f387f5d" version="1.0.0" api-version="6.0.0" allowed-operations="vef" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[getDescription and Role vRA8]]></display-name><description><![CDATA[This Workflow can be used to extract specific custom properties from the vcac VM.]]></description><position y="50.0" x="100.0"/><input><param name="vm" type="VC:VirtualMachine"/></input><output><param name="mydesc" type="string"/><param name="Role" type="string"/></output><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="50.0" x="420.0"/></workflow-item><workflow-item name="item1" out-name="item0" type="task"><display-name><![CDATA[Scriptable task]]></display-name><script encoded="false"><![CDATA[function getCustomValue(key){
+    var value = null;
+    var availableFields = vm.availableField;
+    availableFields.forEach(function (item){
+        if (item.name == key){
+            var fields = vm.retrieveCustomValues([item.key]);
+            if (fields && fields.length >= 0 ) {
+                value = fields[0].value;
+            }            
+        }
+    });
+
+    return value;
+}
+
+mydesc = getCustomValue('custom.machineDescription');
+Role = getCustomValue('custom.machineRole');
+
+System.log("The Description is : "+mydesc);
+System.log("The Role is :"+Role);]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"/></in-binding><out-binding><bind name="mydesc" type="string" export-name="mydesc"/><bind name="Role" type="string" export-name="Role"/></out-binding><position y="60.0" x="220.0"/></workflow-item><presentation/></workflow>

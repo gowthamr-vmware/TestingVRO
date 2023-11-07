@@ -1,0 +1,911 @@
+Name,DOE Criticality Rating Tier,Business Unit
+000 No Application ,4 - Business Preferred,Compliance
+Absence and Appeals ,3 - Business Support,Compliance
+Absent Teacher Reserve Case Management system (ATR) ,3 - Business Support,Compliance
+Admin Building SSP ,3 - Business Support,Compliance
+Administrative Trial Unit (ATR) ,4 - Business Preferred,Compliance
+Administrative Trial Unit (ATU) ,4 - Business Preferred,Compliance
+After School Professional Development ,3 - Business Support,Compliance
+After School Professional Development (ASPDP) ,3 - Business Support,Compliance
+Appeals and Grievances (AGS) ,3 - Business Support,Compliance
+Automated Student Health Record System (ASHR) ,3 - Business Support,Compliance
+Backtrack (DSF Inventory) ,4 - Business Preferred,Compliance
+Bloodborne Pathogen - Internet (BBP) ,3 - Business Support,Compliance
+Bloodborne Pathogen - Intranet (BBP) ,3 - Business Support,Compliance
+Bully Reporting ,3 - Business Support,Compliance
+Calendar Change Request application (CCR) ,4 - Business Preferred,Compliance
+Charter/Third Party Work Approval (CTP) ,4 - Business Preferred,Compliance
+Charter/Third Party Work Initial Request (Intranet) ,4 - Business Preferred,Compliance
+Charter/Third Party Work Initial Request Approval (Internet) ,4 - Business Preferred,Compliance
+Compliance ,4 - Business Preferred,Compliance
+Consultant Control (CONS) ,4 - Business Preferred,Compliance
+Cooling Tower (CTIS) ,4 - Business Preferred,Compliance
+COVID Tracker (CTS) ,3 - Business Support,Compliance
+CPU Intake (CPU) ,3 - Business Support,Compliance
+Custodian Satisfaction Survey Application (CSS) ,4 - Business Preferred,Compliance
+Custodian Time Tracking System (CTTS) ,4 - Business Preferred,Compliance
+DDF Ratings ,3 - Business Support,Compliance
+Dimensions RM ,3 - Business Support,Compliance
+Dist 79 SSP ,3 - Business Support,Compliance
+DOE ALL Stars ,3 - Business Support,Compliance
+DSF AC Application (A/C) ,4 - Business Preferred,Compliance
+DSF Applications Administration System (AAS) (Internet) ,4 - Business Preferred,Compliance
+DSF Boiler Tracking ,3 - Business Support,Compliance
+DSF Certification Status ,4 - Business Preferred,Compliance
+DSF Content Management System (CMS) ,4 - Business Preferred,Compliance
+DSF Custodian Rating ,4 - Business Preferred,Compliance
+DSF Dust Mop Services System ,4 - Business Preferred,Compliance
+DSF In-House App Server ,3 - Business Support,Compliance
+DSF Outdoor Yard (Intranet) ,4 - Business Preferred,Compliance
+DSF Paint ,3 - Business Support,Compliance
+DSF Roof (Intranet) ,4 - Business Preferred,Compliance
+DSF Violation ,4 - Business Preferred,Compliance
+Early Intervention Document Transfer System (EIDTS) ,3 - Business Support,Compliance
+Election Notification System ,4 - Business Preferred,Compliance
+Emergency Contact (EC) ,4 - Business Preferred,Compliance
+Facility Information System (FIS) ,4 - Business Preferred,Compliance
+Fuel Application (Intranet) ,4 - Business Preferred,Compliance
+General Audit Case Management ,3 - Business Support,Compliance
+General Practice Unit (GPU) ,3 - Business Support,Compliance
+Health Screening ,2 - Business Essential,Compliance
+Inspection Module ,4 - Business Preferred,Compliance
+Lead Paint ,4 - Business Preferred,Compliance
+Mental Health Provider System ,3 - Business Support,Compliance
+Motorized Partition Survey (MPS) ,4 - Business Preferred,Compliance
+MyCube ,3 - Business Support,Compliance
+Office of General Counsel (OGC) ,3 - Business Support,Compliance
+Office of Legal Service (OLS) ,3 - Business Support,Compliance
+Office of Safety and Youth Development Portal (OSYD) ,3 - Business Support,Compliance
+Office of Special Investigation (OSI) ,3 - Business Support,Compliance
+OLS Reports ,3 - Business Support,Compliance
+Online Occurrence Reporting System (OORS) ,3 - Business Support,Compliance
+Paint Film Inspection-Lead Paint Survey (LPS) ,4 - Business Preferred,Compliance
+Parent University (ParentU) ,3 - Business Support,Compliance
+Parking Permit ,3 - Business Support,Compliance
+Passport Material Request App ,3 - Business Support,Compliance
+PassPort Portal J ,3 - Business Support,Compliance
+Playground Survey ,4 - Business Preferred,Compliance
+Principal Review ,3 - Business Support,Compliance
+Principals SST ,3 - Business Support,Compliance
+Proceed Order Tracking System (PO) ,4 - Business Preferred,Compliance
+Professional Development (PD) ,3 - Business Support,Compliance
+PTA ,3 - Business Support,Compliance
+PTA Admin ,3 - Business Support,Compliance
+Registration ,4 - Business Preferred,Compliance
+Reset Custodian SQL Password ,4 - Business Preferred,Compliance
+Reset DSF Staff SQL Password ,4 - Business Preferred,Compliance
+Room Assessment ,3 - Business Support,Compliance
+School Consolidated Plan (CPLAN) ,3 - Business Support,Compliance
+School Parent Leader Contact Information System (SPLCIS) ,4 - Business Preferred,Compliance
+School Safety Plan (SSP) ,3 - Business Support,Compliance
+SchoolStat ,4 - Business Preferred,Compliance
+SDI Issue Log ,4 - Business Preferred,Compliance
+Summer School SSP ,3 - Business Support,Compliance
+Supervisor Site Visit (SSV) ,4 - Business Preferred,Compliance
+Suspensions and Office of Hearings Online (SOHO) ,3 - Business Support,Compliance
+Teacher Performance Unit (TPU) ,4 - Business Preferred,Compliance
+UPK SSP ,3 - Business Support,Compliance
+Vaccine Portal ,2 - Business Essential,Compliance
+VLAN Network Change Request (TIS) ,3 - Business Support,Compliance
+Water Flushing ,4 - Business Preferred,Compliance
+Wireless Client Configuration Tool (WCC) ,3 - Business Support,Compliance
+Absenteeism (OSYD) ,0 - Tier 0,CTO Apps
+AD assessment,0 - Tier 0,CTO Apps
+AD Resiliency Presidio jumpbox,0 - Tier 0,CTO Apps
+ADFS ,0 - Tier 0,CTO Apps
+Alchemy License and Acronis,0 - Tier 0,CTO Apps
+Ansible - POC,0 - Tier 0,CTO Apps
+Apple School Manager ,0 - Tier 0,CTO Apps
+ARC GIS (CTO) ,0 - Tier 0,CTO Apps
+Asset Management System (AMS) ,0 - Tier 0,CTO Apps
+AssetGEN ,0 - Tier 0,CTO Apps
+Assyst ,0 - Tier 0,CTO Apps
+AVI ,0 - Tier 0,CTO Apps
+AVI Load Balancers ,0 - Tier 0,CTO Apps
+AVS ,0 - Tier 0,CTO Apps
+Azure Active Directory Connect ,0 - Tier 0,CTO Apps
+BIG-IP,0 - Tier 0,CTO Apps
+Blackberry Enterprise ,0 - Tier 0,CTO Apps
+Building Management System (BMS) ,0 - Tier 0,CTO Apps
+Caliber ,0 - Tier 0,CTO Apps
+Central Bandwidth (Cacti) ,0 - Tier 0,CTO Apps
+Certificate Authority OSSS ,0 - Tier 0,CTO Apps
+Cherwell Management System (Cherwell) ,0 - Tier 0,CTO Apps
+CIFS Anti Virus ,0 - Tier 0,CTO Apps
+Cisco Fabric Manager ,0 - Tier 0,CTO Apps
+Cisco Identity Service Engine 2.7 ,0 - Tier 0,CTO Apps
+Cisco ISE - Armis Security ,0 - Tier 0,CTO Apps
+CLIQ ,0 - Tier 0,CTO Apps
+Cloudlink ,0 - Tier 0,CTO Apps
+Data Domain ,0 - Tier 0,CTO Apps
+Dell Secure Gateway Connect ,0 - Tier 0,CTO Apps
+DHC Exchange ,0 - Tier 0,CTO Apps
+DHCP,0 - Tier 0,CTO Apps
+DNS Servers ,0 - Tier 0,CTO Apps
+Domain Controllers (ADDS),0 - Tier 0,CTO Apps
+DSF File Shares ,0 - Tier 0,CTO Apps
+Dynamic Forms System (DFS) ,0 - Tier 0,CTO Apps
+Efficient IP IPAM ,0 - Tier 0,CTO Apps
+EMC Recovery Point ,0 - Tier 0,CTO Apps
+EMC Secure Remote Support (ESRS) ,0 - Tier 0,CTO Apps
+Esker Fax Servers ,0 - Tier 0,CTO Apps
+ESO Management Tools ,0 - Tier 0,CTO Apps
+Exchange ,0 - Tier 0,CTO Apps
+File Migration ,3 - Business Support,CTO Apps
+Govern Lan ,0 - Tier 0,CTO Apps
+Helpdesk/Service Desk ,0 - Tier 0,CTO Apps
+Horizon 7 ,0 - Tier 0,CTO Apps
+Infrastructure / JumpBox ,0 - Tier 0,CTO Apps
+Insight VM Rapid 7 ,0 - Tier 0,CTO Apps
+Integration Runtime ,0 - Tier 0,CTO Apps
+Intune ,0 - Tier 0,CTO Apps
+Jump Server - OWS Management for Central Lan ,0 - Tier 0,CTO Apps
+Key Management Server (KMS) ,0 - Tier 0,CTO Apps
+Lenovo Unified Workspace ,0 - Tier 0,CTO Apps
+Lenovo xClarity Administrator ,0 - Tier 0,CTO Apps
+Lexmark Data Collection Manager ,0 - Tier 0,CTO Apps
+Lexmark Markvision Enterprise (MVE) ,0 - Tier 0,CTO Apps
+Local Administrator Password Solution (LAPS) ,0 - Tier 0,CTO Apps
+Lync ,0 - Tier 0,CTO Apps
+Magic ,0 - Tier 0,CTO Apps
+Management Servers ,0 - Tier 0,CTO Apps
+Microsoft Active Directory (ADCS) ,0 - Tier 0,CTO Apps
+Microsoft Active Directory (ADDS ADCS) ,0 - Tier 0,CTO Apps
+Mitel Reporting ,0 - Tier 0,CTO Apps
+Netscout ,0 - Tier 0,CTO Apps
+Network team servers,0 - Tier 0,CTO Apps
+Networker ,0 - Tier 0,CTO Apps
+NICE ,0 - Tier 0,CTO Apps
+NOC Homepage ,0 - Tier 0,CTO Apps
+NOC Monitoring Dashboards (Nagios) ,0 - Tier 0,CTO Apps
+NSX ,0 - Tier 0,CTO Apps
+NTP servers for Network Devices ,0 - Tier 0,CTO Apps
+Office 365 (O365) ,0 - Tier 0,CTO Apps
+Office 365 Powershell ,0 - Tier 0,CTO Apps
+Omnicast 4.0 4.7 and 4.8 ,0 - Tier 0,CTO Apps
+Power Protect Data Manager (PPDM) ,0 - Tier 0,CTO Apps
+Print Servers ,0 - Tier 0,CTO Apps
+Quest Active Roles ,0 - Tier 0,CTO Apps
+Quest Authentication Service ,0 - Tier 0,CTO Apps
+Quest Change Auditor ,0 - Tier 0,CTO Apps
+Quest IT Security Search ,0 - Tier 0,CTO Apps
+Quest Management Console ,0 - Tier 0,CTO Apps
+Quest Recovery Manager ,0 - Tier 0,CTO Apps
+QuestOne,0 - Tier 0,CTO Apps
+RAMP ,0 - Tier 0,CTO Apps
+Red Hat Satellite ,0 - Tier 0,CTO Apps
+Remote Desktop Services ,0 - Tier 0,CTO Apps
+Riverbed NetIM ,0 - Tier 0,CTO Apps
+Riverbed Portal ,0 - Tier 0,CTO Apps
+Salt Stack ,0 - Tier 0,CTO Apps
+School Bandwidth (Cacti) ,0 - Tier 0,CTO Apps
+School Monitoring Dashboard ,0 - Tier 0,CTO Apps
+Schoolnet ,0 - Tier 0,CTO Apps
+Scripting Management ,0 - Tier 0,CTO Apps
+SDS Project ,0 - Tier 0,CTO Apps
+Security Center ,0 - Tier 0,CTO Apps
+ServiceNow ,0 - Tier 0,CTO Apps
+Smart Building ,0 - Tier 0,CTO Apps
+Splunk ,0 - Tier 0,CTO Apps
+SPOCNOC ,0 - Tier 0,CTO Apps
+Storage Springpath Controllers ,0 - Tier 0,CTO Apps
+Storage/Virtualization Servers ,0 - Tier 0,CTO Apps
+Symantec End Point Protection ,0 - Tier 0,CTO Apps
+System Center Configuration Manager (SCCM) ,0 - Tier 0,CTO Apps
+System Center Operation Manager (SCOM) ,0 - Tier 0,CTO Apps
+System Center Orchestrator ,0 - Tier 0,CTO Apps
+System Center Virtual Machine Manager (SCVMM) ,0 - Tier 0,CTO Apps
+TAS Stemcell ,0 - Tier 0,CTO Apps
+Thousand Eyes Agents ,0 - Tier 0,CTO Apps
+TKGS ,0 - Tier 0,CTO Apps
+vCenter ,0 - Tier 0,CTO Apps
+vCenter Utility VMs ,0 - Tier 0,CTO Apps
+VCF - TAS ,0 - Tier 0,CTO Apps
+VCF Management Component,0 - Tier 0,CTO Apps
+VEEAM ,0 - Tier 0,CTO Apps
+Virtualization Team Test Servers ,0 - Tier 0,CTO Apps
+VM Cluster: Cluster-1,0 - Tier 0,CTO Apps
+VM Cluster: es00vx-w1c4-edge01,0 - Tier 0,CTO Apps
+VM Cluster: es00vx-w2c3,0 - Tier 0,CTO Apps
+VM Cluster: es00vx-w2c4,0 - Tier 0,CTO Apps
+VM Cluster: es00vx-w2c5,0 - Tier 0,CTO Apps
+VM Cluster: es00vx-w2c6,0 - Tier 0,CTO Apps
+VM Cluster: es00vx-w2c6-edge01,0 - Tier 0,CTO Apps
+VM Cluster: es20vx-w1c5-edge01,0 - Tier 0,CTO Apps
+VM Cluster: es20vx-w2c7-edge01,0 - Tier 0,CTO Apps
+VM Cluster: es55vx-w1c3-dmz01,0 - Tier 0,CTO Apps
+VM Cluster: es55vx-w2c1-dev01,0 - Tier 0,CTO Apps
+VM Cluster: OP0-DB,0 - Tier 0,CTO Apps
+VM Cluster: OP0-Inf-Clstr,0 - Tier 0,CTO Apps
+VM Cluster: OP0-Reserved,0 - Tier 0,CTO Apps
+VM Cluster: OP0-SQL,0 - Tier 0,CTO Apps
+VM Cluster: VC-Backup,0 - Tier 0,CTO Apps
+VM Cluster: vC-Cluster-MGMT,0 - Tier 0,CTO Apps
+VM Cluster: vC-Cluster-POC,0 - Tier 0,CTO Apps
+VM Cluster: VC-USCM24-B200M4-28-DQ,0 - Tier 0,CTO Apps
+VM Cluster: VC-USCM24-B200M4-28-PS,0 - Tier 0,CTO Apps
+VMware Jump Box GMC Admins,0 - Tier 0,CTO Apps
+VMWare Template,0 - Tier 0,CTO Apps
+VMware vRealize Automation (vRA) ,0 - Tier 0,CTO Apps
+VMware vRealize Operations (vROps) ,0 - Tier 0,CTO Apps
+vRealize Log Insight ,0 - Tier 0,CTO Apps
+vRealize Network Insight (vRNI) ,0 - Tier 0,CTO Apps
+VxRail Manager ,0 - Tier 0,CTO Apps
+WASP ,0 - Tier 0,CTO Apps
+Web Connect ,0 - Tier 0,CTO Apps
+WINS Servers ,0 - Tier 0,CTO Apps
+BFIS (Building and Construction information) ,3 - Business Support,Family
+Common Admin Tool (CAT) ,4 - Business Preferred,Family
+DOE Intranet ,3 - Business Support,Family
+DPP Admin ,3 - Business Support,Family
+DSF Lead Water ,3 - Business Support,Family
+EMMA - Emergency Management System ,4 - Business Preferred,Family
+Family Access Management (FAM) ,2 - Business Essential,Family
+Infohub ,3 - Business Support,Family
+Intranet Site ,3 - Business Support,Family
+LCGMS Downloadable Spreadsheets ,1 - Business Critical,Family
+Medicaid CIN Consent ,4 - Business Preferred,Family
+New York City Schools Account - Manage Account (NYCSA) ,1 - Business Critical,Family
+New York City Schools Account - My Student (NYCSA) ,1 - Business Critical,Family
+New York City Schools Account - Surveys (NYCSA) ,3 - Business Support,Family
+NYC School Link ,3 - Business Support,Family
+Parent Coordinator Activity Report (PCAR) ,4 - Business Preferred,Family
+PSAL Admin Tool ,4 - Business Preferred,Family
+PSAL Assign Personnel to Events System ,4 - Business Preferred,Family
+PSAL Box score/Results Submission System ,4 - Business Preferred,Family
+PSAL Communication tool ,4 - Business Preferred,Family
+PSAL Content Management System (CMS) ,3 - Business Support,Family
+PSAL Finance ,4 - Business Preferred,Family
+PSAL iOS/Android Mobile APP ,4 - Business Preferred,Family
+PSAL Maintenance System ,4 - Business Preferred,Family
+PSAL MetroCard Shipment ,4 - Business Preferred,Family
+PSAL New Team Request ,4 - Business Preferred,Family
+PSAL Roster/Player Submission System ,4 - Business Preferred,Family
+PSAL Scheduling ,4 - Business Preferred,Family
+PSAL Sport Awards - Nominations/Voting ,4 - Business Preferred,Family
+PSAL Summer Program ,4 - Business Preferred,Family
+PSAL Time Keeping - Personnel Check In/Out ,4 - Business Preferred,Family
+Public Apps ,3 - Business Support,Family
+Public Apps - Fair Student Funding Detail (FSF Detail) ,4 - Business Preferred,Family
+Public Apps - Fair Student Funding Overview (FSF Overview) ,4 - Business Preferred,Family
+Public Apps - Galaxy Allocation (Finance) ,4 - Business Preferred,Family
+Public Apps - LCGMS Run Time Extract ,4 - Business Preferred,Family
+Public Apps - NYPD Crime Data ,4 - Business Preferred,Family
+Public Apps - Quality Review ,4 - Business Preferred,Family
+Public Apps - Today's Attendance ,4 - Business Preferred,Family
+Public Schools Athletic League (PSAL) Website ,3 - Business Support,Family
+Public Website ,3 - Business Support,Family
+Resources ,3 - Business Support,Family
+Resources – Contact Lists ,4 - Business Preferred,Family
+Resources – Meal Code Report ,4 - Business Preferred,Family
+Resources – My Human Resources Reports & Systems ,3 - Business Support,Family
+Resources – My Workbooks & Data ,4 - Business Preferred,Family
+Resources – Principals' Dashboard ,3 - Business Support,Family
+Resources – Reasonable Accommodations Rosters ,3 - Business Support,Family
+Student Information Data Repository (SIIDR) ,3 - Business Support,Family
+Student Profile (SP) ,4 - Business Preferred,Family
+Support for Families ,3 - Business Support,Family
+Water Testing Tool ,4 - Business Preferred,Family
+ADAM AD LDS instances ,3 - Business Support,Finance & Product Eng
+Arts Reporting (ARTS) ,3 - Business Support,Finance & Product Eng
+Azure Devops (FSBO) ,3 - Business Support,Finance & Product Eng
+Azure DevOps (IET) ,3 - Business Support,Finance & Product Eng
+Brocade Data Center Fabric Manager ,3 - Business Support,Finance & Product Eng
+C-683 Admin ,3 - Business Support,Finance & Product Eng
+CA ,3 - Business Support,Finance & Product Eng
+Capacity Planning ,3 - Business Support,Finance & Product Eng
+Certified Monthly Roster (CMR) ,3 - Business Support,Finance & Product Eng
+Chapter 683 ,3 - Business Support,Finance & Product Eng
+COGNOS BI 10 ,1 - Business Critical,Finance & Product Eng
+Contract Aid Financial System (CAFS) ,3 - Business Support,Finance & Product Eng
+Contract Processing System (CPS) ,3 - Business Support,Finance & Product Eng
+Contract Tracking System (CTS) ,3 - Business Support,Finance & Product Eng
+Core - Curriculum ,3 - Business Support,Finance & Product Eng
+Core - Curriculum (NonProd Testing Only),3 - Business Support,Finance & Product Eng
+Core - Inventory ,3 - Business Support,Finance & Product Eng
+Core - Walkthrough ,3 - Business Support,Finance & Product Eng
+Core Curriculum/Walkthrough ,3 - Business Support,Finance & Product Eng
+CRM ,3 - Business Support,Finance & Product Eng
+Custodial Payroll System (CPS) ,2 - Business Essential,Finance & Product Eng
+Cybershift web Logic ,0 - Tier 0,Finance & Product Eng
+Data Request Form (DRF) ,3 - Business Support,Finance & Product Eng
+DataHub ,3 - Business Support,Finance & Product Eng
+DELL EMC Management ,3 - Business Support,Finance & Product Eng
+DELL Storage Integration Tools for VmWare ,3 - Business Support,Finance & Product Eng
+Destiny Library Manager (Destiny) ,3 - Business Support,Finance & Product Eng
+DEV Web ,3 - Business Support,Finance & Product Eng
+Device Hub / Remote Learning Device Management (RLD) ,3 - Business Support,Finance & Product Eng
+Device Hub / Remote Learning Device Request Form (RLD 1.0) ,3 - Business Support,Finance & Product Eng
+DFOApps.nycenet.edu ,3 - Business Support,Finance & Product Eng
+DFOForms.nycenet.edu ,3 - Business Support,Finance & Product Eng
+DHS ,3 - Business Support,Finance & Product Eng
+EasyTrack ,3 - Business Support,Finance & Product Eng
+Endeca ,3 - Business Support,Finance & Product Eng
+Enterprise Operational Data Store (EODS) ,3 - Business Support,Finance & Product Eng
+Ephesoft ,3 - Business Support,Finance & Product Eng
+Esker ,3 - Business Support,Finance & Product Eng
+Esker Payroll ,3 - Business Support,Finance & Product Eng
+External Web Services ,3 - Business Support,Finance & Product Eng
+F5 ,3 - Business Support,Finance & Product Eng
+FAMIS - Adjustments and Payments ,1 - Business Critical,Finance & Product Eng
+FAMIS - Annual Inventory ,1 - Business Critical,Finance & Product Eng
+FAMIS - Approval Box ,1 - Business Critical,Finance & Product Eng
+FAMIS - Bank Survey Admin ,1 - Business Critical,Finance & Product Eng
+FAMIS - Banking Survey ,1 - Business Critical,Finance & Product Eng
+FAMIS - BNPS Invoice Tracking ,1 - Business Critical,Finance & Product Eng
+FAMIS - Book Buy Back ,1 - Business Critical,Finance & Product Eng
+FAMIS - Catalog Management Tool (CMT) ,1 - Business Critical,Finance & Product Eng
+FAMIS - Certification of Delivery ,1 - Business Critical,Finance & Product Eng
+FAMIS - Coach Bus ,1 - Business Critical,Finance & Product Eng
+FAMIS - Consultant Service Approval ,1 - Business Critical,Finance & Product Eng
+FAMIS - Control Panel ,1 - Business Critical,Finance & Product Eng
+FAMIS - Core Curriculum Admin ,1 - Business Critical,Finance & Product Eng
+FAMIS - Core Curriculum Reports ,1 - Business Critical,Finance & Product Eng
+FAMIS - Core Report Card ,1 - Business Critical,Finance & Product Eng
+FAMIS - Courier Service - Special Delivery ,1 - Business Critical,Finance & Product Eng
+FAMIS - Diploma Ordering Tool ,1 - Business Critical,Finance & Product Eng
+FAMIS - Document Conversion ,1 - Business Critical,Finance & Product Eng
+FAMIS - Document Inquiry ,1 - Business Critical,Finance & Product Eng
+FAMIS - Document Status ,1 - Business Critical,Finance & Product Eng
+FAMIS - Equipment Disposition ,1 - Business Critical,Finance & Product Eng
+FAMIS - Extract of financial data for yearly audit ,1 - Business Critical,Finance & Product Eng
+FAMIS - Financial Processing ,1 - Business Critical,Finance & Product Eng
+FAMIS - Fiscal Year End Account and Grant Table Roll ,1 - Business Critical,Finance & Product Eng
+FAMIS - Fringe processing ,1 - Business Critical,Finance & Product Eng
+FAMIS - Fuel Invoice and Maintenance ,1 - Business Critical,Finance & Product Eng
+FAMIS - Impartial Hearing Financial Application ,1 - Business Critical,Finance & Product Eng
+FAMIS - Internal Service Ordering (via ProTraxx) ,1 - Business Critical,Finance & Product Eng
+FAMIS - Inventory for RISO TGI DANKA ,1 - Business Critical,Finance & Product Eng
+FAMIS - MAINFRAME BATCH/HOST PROCESSING (FAMIS) ,1 - Business Critical,Finance & Product Eng
+FAMIS - MPWaiver Tool ,1 - Business Critical,Finance & Product Eng
+FAMIS - Multiple Task Award Contract Viewer for DCP ,1 - Business Critical,Finance & Product Eng
+FAMIS - OnixEdit ,1 - Business Critical,Finance & Product Eng
+FAMIS - Oracle Endeca Page Builder ,1 - Business Critical,Finance & Product Eng
+FAMIS - P-Card Certification ,1 - Business Critical,Finance & Product Eng
+FAMIS - P-Card Expense Reporting ,1 - Business Critical,Finance & Product Eng
+FAMIS - Personal Computing Services (PCS) ,1 - Business Critical,Finance & Product Eng
+FAMIS - PO Voucher ,1 - Business Critical,Finance & Product Eng
+FAMIS - Portal ,1 - Business Critical,Finance & Product Eng
+FAMIS - Pre-encumbrance ,1 - Business Critical,Finance & Product Eng
+FAMIS - Procurement Card (P-Card) ,1 - Business Critical,Finance & Product Eng
+FAMIS - Purchasing Application (PO) ,1 - Business Critical,Finance & Product Eng
+FAMIS - Related Service Admin ,1 - Business Critical,Finance & Product Eng
+FAMIS - School Zone ,1 - Business Critical,Finance & Product Eng
+FAMIS - Shop DOE - e-Commerce (SHOPDOE) ,1 - Business Critical,Finance & Product Eng
+FAMIS - Small Item Payment Process (SIPP) ,1 - Business Critical,Finance & Product Eng
+FAMIS - SNAPPLE ,1 - Business Critical,Finance & Product Eng
+FAMIS - Spending Plan Inquiry ,1 - Business Critical,Finance & Product Eng
+FAMIS - Split Ratio (DOH) ,1 - Business Critical,Finance & Product Eng
+FAMIS - ST3 (ST3) ,1 - Business Critical,Finance & Product Eng
+FAMIS - Stop Payment ,1 - Business Critical,Finance & Product Eng
+FAMIS - Table Maintenance ,1 - Business Critical,Finance & Product Eng
+FAMIS - Teacher's Fellows Process ,1 - Business Critical,Finance & Product Eng
+FAMIS - Teachers Choice Electronic Funds Transfer ,1 - Business Critical,Finance & Product Eng
+FAMIS - Travel Reimbursement Approval and Certification (TRAC) ,1 - Business Critical,Finance & Product Eng
+FAMIS - Universal Pre-Kindergarten Admin (UPKADMIN) ,1 - Business Critical,Finance & Product Eng
+FAMIS - UWBS ,1 - Business Critical,Finance & Product Eng
+FAMIS - VENDEX Caution Manager ,1 - Business Critical,Finance & Product Eng
+FAMIS - Vendor Evaluation ,1 - Business Critical,Finance & Product Eng
+FAMIS - Vendor Inquiry ,1 - Business Critical,Finance & Product Eng
+FAMIS - Vendor Portal Admin ,1 - Business Critical,Finance & Product Eng
+FAMIS - Voucher processing and reporting/V-Portal (UWBS) ,1 - Business Critical,Finance & Product Eng
+FAMIS - VP E-Catalog Table Maintenance ,1 - Business Critical,Finance & Product Eng
+FAMIS - Wokers Compensation ,1 - Business Critical,Finance & Product Eng
+FAMIS - Workers Compensation ,1 - Business Critical,Finance & Product Eng
+Filemaker Pro (FSBO) ,3 - Business Support,Finance & Product Eng
+Financial Accounting Management Information System (FAMIS) ,3 - Business Support,Finance & Product Eng
+Financial Accounting Management Information System (FAMIS) (NonProd  Testing Only),3 - Business Support,Finance & Product Eng
+Foglight ,3 - Business Support,Finance & Product Eng
+FSBO FTP ,3 - Business Support,Finance & Product Eng
+FSBO Workstations ,3 - Business Support,Finance & Product Eng
+Galaxy - ATR Assignments ,1 - Business Critical,Finance & Product Eng
+Galaxy - Batch And Mainframe Processing ,1 - Business Critical,Finance & Product Eng
+Galaxy ,1 - Business Critical,Finance & Product Eng
+Galaxy - Galaxy Reports ,1 - Business Critical,Finance & Product Eng
+Galaxy - Nomination and Staffing Hub ,1 - Business Critical,Finance & Product Eng
+Galaxy - Role Management ,1 - Business Critical,Finance & Product Eng
+Galaxy - Sentry ,1 - Business Critical,Finance & Product Eng
+Galaxy - SOLAS ,1 - Business Critical,Finance & Product Eng
+Galaxy - Staffing Hub Module (SHM) ,1 - Business Critical,Finance & Product Eng
+Galaxy (SNY3) ,1 - Business Critical,Finance & Product Eng
+Galaxy BA ,3 - Business Support,Finance & Product Eng
+Grants Tracking System (GTS) ,3 - Business Support,Finance & Product Eng
+Grants Tracking System (GTS) ,3 - Business Support,Finance & Product Eng
+Hawkeye ,3 - Business Support,Finance & Product Eng
+HostBridge ,3 - Business Support,Finance & Product Eng
+Idera ,3 - Business Support,Finance & Product Eng
+iLearn Admin Console (iLearn) ,3 - Business Support,Finance & Product Eng
+Impartial Hearing System - DAITS ,3 - Business Support,Finance & Product Eng
+Impartial Hearing System - SETSS ,3 - Business Support,Finance & Product Eng
+Impartial Hearing System - Settlements ,3 - Business Support,Finance & Product Eng
+Informatica ,3 - Business Support,Finance & Product Eng
+IP Switch ,3 - Business Support,Finance & Product Eng
+IPAM ,3 - Business Support,Finance & Product Eng
+Kace ,3 - Business Support,Finance & Product Eng
+LCGMS Application ,1 - Business Critical,Finance & Product Eng
+Learning Management Integration ,3 - Business Support,Finance & Product Eng
+Master Data Management ,3 - Business Support,Finance & Product Eng
+MEDICAID - Spec Ed Claiming System ,3 - Business Support,Finance & Product Eng
+Microsoft Dynamics ,3 - Business Support,Finance & Product Eng
+MoveIT ,0 - Tier 0,Finance & Product Eng
+MS CRM Dynamics - Ed Tech ,3 - Business Support,Finance & Product Eng
+MS CRM Dynamics - ERMA ,3 - Business Support,Finance & Product Eng
+MS CRM Dynamics - NSR ,3 - Business Support,Finance & Product Eng
+MS CRM Dynamics - SPP ,3 - Business Support,Finance & Product Eng
+MS CRM Dynamics - UPK/PKA ,3 - Business Support,Finance & Product Eng
+MTAC - Client ,3 - Business Support,Finance & Product Eng
+MTAC - PQS ,3 - Business Support,Finance & Product Eng
+Multiple Task Award Contract (MTAC) - Plus ,3 - Business Support,Finance & Product Eng
+Notification Hub (NHUB) ,3 - Business Support,Finance & Product Eng
+OnBase ,3 - Business Support,Finance & Product Eng
+Onix ,3 - Business Support,Finance & Product Eng
+Package Deployment (PDQ) ,3 - Business Support,Finance & Product Eng
+Parents Choice Invoice for Parents (RS) ,3 - Business Support,Finance & Product Eng
+Parents Choice invoice for Parents (RS) (NonProd  Testing Only),3 - Business Support,Finance & Product Eng
+Payroll Portal (PP) ,2 - Business Essential,Finance & Product Eng
+Power Builder/Oracle - Stand Alone - SBER Support ,3 - Business Support,Finance & Product Eng
+Power Builder/Oracle - Stand Alone - SBER Support ,3 - Business Support,Finance & Product Eng
+PP - Administrative Payroll System (APRL) ,3 - Business Support,Finance & Product Eng
+PP - APRL - Access Form ,3 - Business Support,Finance & Product Eng
+PP - Bank Account Request ,2 - Business Essential,Finance & Product Eng
+PP - C2 Form ,2 - Business Essential,Finance & Product Eng
+PP - College Savings Web ,2 - Business Essential,Finance & Product Eng
+PP - CPS Access Form ,3 - Business Support,Finance & Product Eng
+PP - Electronic Funds Transfer Corrections ,2 - Business Essential,Finance & Product Eng
+PP - Electronic Funds Transfer Reversal ,2 - Business Essential,Finance & Product Eng
+PP - Electronic Funds Transfer Stop Payment ,2 - Business Essential,Finance & Product Eng
+PP - Electronic Funds Transfer Web ,2 - Business Essential,Finance & Product Eng
+PP - Employee Salary Adjustment Form ,2 - Business Essential,Finance & Product Eng
+PP - Metro Card Web ,2 - Business Essential,Finance & Product Eng
+PP - Over Payment ,2 - Business Essential,Finance & Product Eng
+PP - Overtime Request Form ,2 - Business Essential,Finance & Product Eng
+PP - Overtime Waiver Form ,2 - Business Essential,Finance & Product Eng
+PP - Payables Inquiry Tracking ,2 - Business Essential,Finance & Product Eng
+PP - Payroll Interactive Voice Recognition ,2 - Business Essential,Finance & Product Eng
+PP - Payroll Register Web ,2 - Business Essential,Finance & Product Eng
+PP - Principal Approval ,2 - Business Essential,Finance & Product Eng
+PP - Request for Verification Form ,2 - Business Essential,Finance & Product Eng
+PP - Salary Differential Step Process ,2 - Business Essential,Finance & Product Eng
+PP - Salary Upgrade ,2 - Business Essential,Finance & Product Eng
+PP - Saving Bonds Web ,2 - Business Essential,Finance & Product Eng
+PP - School Food ,2 - Business Essential,Finance & Product Eng
+PP - Training Session ,2 - Business Essential,Finance & Product Eng
+PP - Transit Card Web ,2 - Business Essential,Finance & Product Eng
+PP - Vendor (Payables) Interactive Voice Response ,2 - Business Essential,Finance & Product Eng
+PP - W2 Correction/Duplicate Form ,2 - Business Essential,Finance & Product Eng
+PP - Wage Works ,2 - Business Essential,Finance & Product Eng
+PP - Workers Compensation ,2 - Business Essential,Finance & Product Eng
+PreKIDS ,3 - Business Support,Finance & Product Eng
+Puppet ,3 - Business Support,Finance & Product Eng
+Recent Contract and Grant Activity (RCGA) ,3 - Business Support,Finance & Product Eng
+RTS ActivitiesService (API) ,3 - Business Support,Finance & Product Eng
+RTS Portal ,3 - Business Support,Finance & Product Eng
+RTS PublicPortal (API) ,3 - Business Support,Finance & Product Eng
+RTSIntake ,3 - Business Support,Finance & Product Eng
+RTSIntake-dece ,3 - Business Support,Finance & Product Eng
+Salesforce ,3 - Business Support,Finance & Product Eng
+Samsung MagicInfo ,4 - Business Preferred,Finance & Product Eng
+SAS System ,3 - Business Support,Finance & Product Eng
+School Allocations Memorandums ,3 - Business Support,Finance & Product Eng
+School Allocations Memorandums (SAM) ,3 - Business Support,Finance & Product Eng
+School Allocations Memorandums (SAM) ,3 - Business Support,Finance & Product Eng
+School Search ,3 - Business Support,Finance & Product Eng
+SESIS Role Viewer Tool (SRVT) ,4 - Business Preferred,Finance & Product Eng
+Smart Schools Bond Act  (SSBA) ,3 - Business Support,Finance & Product Eng
+Smart Schools Bond Act (SSBA) ,3 - Business Support,Finance & Product Eng
+SolarWinds ,3 - Business Support,Finance & Product Eng
+Special Education Teacher Support Services - Impartial Hearing System ,3 - Business Support,Finance & Product Eng
+Speech Language Pathologists ,3 - Business Support,Finance & Product Eng
+SQL Server Integration Services (SSIS) ,2 - Business Essential,Finance & Product Eng
+SSRS reporting ,2 - Business Essential,Finance & Product Eng
+State Level 2 Reports (L2RPT) ,4 - Business Preferred,Finance & Product Eng
+Support Hub ,2 - Business Essential,Finance & Product Eng
+TAO Assessment Platform (TAO) ,3 - Business Support,Finance & Product Eng
+Teachers Choice Reimbursement ,3 - Business Support,Finance & Product Eng
+Teachers Choice Reimbursement ,3 - Business Support,Finance & Product Eng
+TM1 10.1 ,1 - Business Critical,Finance & Product Eng
+TM1 10.2 ,1 - Business Critical,Finance & Product Eng
+Vendor Portal ,3 - Business Support,Finance & Product Eng
+vmWare ,3 - Business Support,Finance & Product Eng
+VP - Account Administrator ,3 - Business Support,Finance & Product Eng
+VP - ARRA ,3 - Business Support,Finance & Product Eng
+VP - Bid Download for DCP Admin ,3 - Business Support,Finance & Product Eng
+VP - CAFS Report ,3 - Business Support,Finance & Product Eng
+VP - CAFS Upload ,3 - Business Support,Finance & Product Eng
+VP - Catalog Management Tool (VPCMT) ,3 - Business Support,Finance & Product Eng
+VP - Impartial Hearing Invoicing ,3 - Business Support,Finance & Product Eng
+VP - Multiple Task Award Contract ,3 - Business Support,Finance & Product Eng
+VP - Nursing Services for DOH ,3 - Business Support,Finance & Product Eng
+VP - PO Order Download ,3 - Business Support,Finance & Product Eng
+VP - Promotional Pricing ,3 - Business Support,Finance & Product Eng
+VP - Related Service Invoice ,3 - Business Support,Finance & Product Eng
+VP - Shopping Cart ,3 - Business Support,Finance & Product Eng
+VP - Universal Pre- Kindergarten ,3 - Business Support,Finance & Product Eng
+VP - Universal Pre- Kindergarten Elec. Trans. Invoicing ,3 - Business Support,Finance & Product Eng
+VP - User Profile ,3 - Business Support,Finance & Product Eng
+VP - UWBS ,3 - Business Support,Finance & Product Eng
+VP - Vendor Web Inquiry (For Vendors) ,3 - Business Support,Finance & Product Eng
+Web Log Analizer ,3 - Business Support,Finance & Product Eng
+Windows Admin Center ,3 - Business Support,Finance & Product Eng
+Advance ,3 - Business Support,Human Capital
+AP Title Changes (HRProfiles) ,3 - Business Support,Human Capital
+Applicant Gateway ,3 - Business Support,Human Capital
+Applicant Gateway - Internet ,3 - Business Support,Human Capital
+Applicant Gateway - Internet (AGWAY) ,3 - Business Support,Human Capital
+Applicant Gateway - Intranet (AGWAY) ,3 - Business Support,Human Capital
+Aware Fingerprinting System (Aware) ,3 - Business Support,Human Capital
+Background Investigator Tool ,3 - Business Support,Human Capital
+Blackboard Learn ,3 - Business Support,Human Capital
+Day Scoring ELA/MATH (PSSAT) ,3 - Business Support,Human Capital
+Day Scoring Regents ,3 - Business Support,Human Capital
+DPP Hiring ,3 - Business Support,Human Capital
+EDTrainingCenter ,3 - Business Support,Human Capital
+ELA/MATH Per Session - Applicant Portal (ELAMATH) ,3 - Business Support,Human Capital
+ELA/MATH Per Session ,3 - Business Support,Human Capital
+ELA/MATH Per Session - Hiring Portal (ELAMATH) ,3 - Business Support,Human Capital
+Embark ,3 - Business Support,Human Capital
+Employment Verification System (EVP) ,3 - Business Support,Human Capital
+Equal Opportunity Information System (EOIS) ,3 - Business Support,Human Capital
+FluidReview (Survey Monkey Apply) ,3 - Business Support,Human Capital
+Gallup Access Platform ,3 - Business Support,Human Capital
+Gifted and Talented ,3 - Business Support,Human Capital
+Gifted and Talented Nominations ,3 - Business Support,Human Capital
+High Objective Uniform State Standard of Evaluation (HOUSSE) ,3 - Business Support,Human Capital
+HR Hub ,3 - Business Support,Human Capital
+Human Capital Profiles System (HRCS) ,3 - Business Support,Human Capital
+Human Capital Profiles/Tenure Notification System/AP Title Changes/Background Investigator Tool,3 - Business Support,Human Capital
+IdentiSys SpIDer ,3 - Business Support,Human Capital
+Leadership Pathway System (LPS) ,3 - Business Support,Human Capital
+MasterTrak ,3 - Business Support,Human Capital
+Mentor Tracking System (MTS NTIMS) ,3 - Business Support,Human Capital
+Office of Equal Opportunity (OEO) ,3 - Business Support,Human Capital
+Open Market Tracking System(OMT) -Internet ,3 - Business Support,Human Capital
+Open Market Transfer System/Excessed Staff Selection System (OMT/ESSS) Internet ,3 - Business Support,Human Capital
+Open Market Transfer System/Excessed Staff Selection System (OMT/ESSS) Intranet ,3 - Business Support,Human Capital
+OpenHire ,3 - Business Support,Human Capital
+Oracle Service Cloud ,3 - Business Support,Human Capital
+Personnel Eligibility Tracking System (PETS) ,3 - Business Support,Human Capital
+Principal Performance Review (PPR) ,3 - Business Support,Human Capital
+QM ,3 - Business Support,Human Capital
+Reasonable Assurance Acknowledgement (RA) ,3 - Business Support,Human Capital
+Regents - Appeals Tracking ,3 - Business Support,Human Capital
+Regents Per Session - Applicant Portal (Regents) ,3 - Business Support,Human Capital
+Regents Per Session ,3 - Business Support,Human Capital
+Regents Per Session - Hiring Portal (Regents) ,3 - Business Support,Human Capital
+Salary Application ,3 - Business Support,Human Capital
+Self-Service Online Leaves Application System (Back Office) (SOLAS) ,3 - Business Support,Human Capital
+Self-Service Online Leaves Application System (Employee Facing) (SOLAS) ,3 - Business Support,Human Capital
+Seniority Reports ,3 - Business Support,Human Capital
+SHM: Bypass Nomination (Nomination Management) (SHM) ,3 - Business Support,Human Capital
+SHM: Event Scheduling (administration) (SHM) ,3 - Business Support,Human Capital
+SHM: Event Scheduling for F/T Paraprofessionals ,3 - Business Support,Human Capital
+SHM: Event Scheduling for F/T Paraprofessionals ,3 - Business Support,Human Capital
+SHM: New Hire reports (SHM) ,3 - Business Support,Human Capital
+SHM: Notification Management (SHM) ,3 - Business Support,Human Capital
+SHM: Para Continued Employment Eligibility (Para CEE) ,3 - Business Support,Human Capital
+SHM: Rosters (SHM) ,3 - Business Support,Human Capital
+SHM: SHM Tools (SHM) ,3 - Business Support,Human Capital
+SHM: Staffing Hub Monitor (SHM) ,3 - Business Support,Human Capital
+SHM: Substitute Renewal (Sub renewal) (SHM) ,3 - Business Support,Human Capital
+Siebel ,3 - Business Support,Human Capital
+Staff Data Management (SDM) ,3 - Business Support,Human Capital
+Sub Central/Smart Find Express ,3 - Business Support,Human Capital
+Summer School ,3 - Business Support,Human Capital
+Summer School - Summer In the City Applicant Tool (SITC) ,3 - Business Support,Human Capital
+Summer School - Summer In the City Selection Tool (SITC Selection Tool) ,3 - Business Support,Human Capital
+Talent Profile (TPR) ,4 - Business Preferred,Human Capital
+Teacher Hiring Support Center ,3 - Business Support,Human Capital
+Teachers Support Network (TSN) ,3 - Business Support,Human Capital
+Tenure Notification System (TNS) ,3 - Business Support,Human Capital
+TT2 - NYC Teaching Collaborative (TNTP),3 - Business Support,Human Capital
+TT2 - Teaching Fellows (TNTP),3 - Business Support,Human Capital
+TT2 (TNTP) ,3 - Business Support,Human Capital
+WeTeachNYC ,3 - Business Support,Human Capital
+Workforce Management system (WFM) ,3 - Business Support,Human Capital
+ABACUS ,3 - Business Support,IET
+Action Plan ,3 - Business Support,IET
+Admin.nycenet.edu,3 - Business Support,IET
+AMP ,3 - Business Support,IET
+analytics,3 - Business Support,IET
+API Connect ,3 - Business Support,IET
+API Portal Signup ,3 - Business Support,IET
+ats FTP,3 - Business Support,IET
+Attendance ,1 - Business Critical,IET
+Azure DevOps (IET) ,3 - Business Support,IET
+Backup Server for OSSS MT Prod Server ,3 - Business Support,IET
+BCO Unified Professional Learning System (UP Learning) ,3 - Business Support,IET
+Biztalk ,3 - Business Support,IET
+Champs ,3 - Business Support,IET
+Champs Manager ,3 - Business Support,IET
+Cognos (IET App) ,1 - Business Critical,IET
+COGNOS BI 10 ,1 - Business Critical,IET
+COGNOS CA 11,1 - Business Critical,IET
+Content Matrix ,3 - Business Support,IET
+Cybershift ,0 - Tier 0,IET
+DataCore ,3 - Business Support,IET
+DB2 Gateway Servers ,3 - Business Support,IET
+Development Servers ,3 - Business Support,IET
+Dynatrace ,0 - Tier 0,IET
+EDI Integration with External Vendors (NonProd Testing Only),3 - Business Support,IET
+Enterprise Service Bus (ESB) ,1 - Business Critical,IET
+Event Manager ,3 - Business Support,IET
+External User Portal (EUP) ,3 - Business Support,IET
+File Share Servers ,3 - Business Support,IET
+FileMaker Pro ,0 - Tier 0,IET
+FTP Server,3 - Business Support,IET
+G Suite Migration ,3 - Business Support,IET
+GAMA ,1 - Business Critical,IET
+Gradebook ,1 - Business Critical,IET
+Gsuite Admin ,3 - Business Support,IET
+HP Application Lifecycle Management (ALM) (HPQC) ,4 - Business Preferred,IET
+https://apps.schools.nyc ,3 - Business Support,IET
+https://ws.nycboe.net ,3 - Business Support,IET
+https://ws.nycenet.edu ,3 - Business Support,IET
+https://wsfp.nycboe.net ,3 - Business Support,IET
+IBM Priviledged Identity Access Management (IPAM) ,1 - Business Critical,IET
+IBM Security Access Manager (ISAM) ,1 - Business Critical,IET
+IBM Security Identity Manager (IDM) ,1 - Business Critical,IET
+IBM Role Base Access Control (RBAC) ,1 - Business Critical,IET
+IBM Tivoli Identity Manager (ISIM) ,1 - Business Critical,IET
+IBM Priviledged Identity Management - Access Management (PIMPAM) ,1 - Business Critical,IET
+Install Shield ,3 - Business Support,IET
+Intranet OSSS ,3 - Business Support,IET
+iPlan Portal ,3 - Business Support,IET
+IQ ,3 - Business Support,IET
+ISIM 7 ,1 - Business Critical,IET
+ITSD Projects DashBoard ,3 - Business Support,IET
+LMS Admin ,1 - Business Critical,IET
+Load Runner ,3 - Business Support,IET
+Managment Servers ,4 - Business Preferred,IET
+Middleware (Windows Service) Servers ,3 - Business Support,IET
+MongoDB ,3 - Business Support,IET
+Moodle (E-think/Moodle) ,3 - Business Support,IET
+NRTS ,3 - Business Support,IET
+NYC Fitness Gram ,3 - Business Support,IET
+NYCFG Student Report ,3 - Business Support,IET
+Octopus Deploy ,3 - Business Support,IET
+On Prem Gateway ,3 - Business Support,IET
+Pending New Web Infrastructure,3 - Business Support,IET
+Plunet ,3 - Business Support,IET
+Principals Portal ,3 - Business Support,IET
+Redis Enterprise ,3 - Business Support,IET
+Redis Enterprise ,3 - Business Support,IET
+Repository Server For Postgres ,3 - Business Support,IET
+Role Based Access Control (RBAC) ,1 - Business Critical,IET
+School Wellness Hub ,3 - Business Support,IET
+SchoolCNXT Vendor (FACE CNXT) ,3 - Business Support,IET
+Schoolfinder ,2 - Business Essential,IET
+SDL Trados ,3 - Business Support,IET
+Sharepoint ,3 - Business Support,IET
+Sharepoint ,3 - Business Support,IET
+Sharepoint - Project Server,3 - Business Support,IET
+SSR Reports (SSRS) 2 ,2 - Business Essential,IET
+SSRS reporting (Compliance?) denn,2 - Business Essential,IET
+Stress Testing Node Servers ,3 - Business Support,IET
+Student Enrollment Management System (SEMS) ,3 - Business Support,IET
+Student Information Repository System (SIRS Level 1) ,3 - Business Support,IET
+Tableau ,4 - Business Preferred,IET
+Teach Hub ,1 - Business Critical,IET
+TeachHub.schools.nyc ,1 - Business Critical,IET
+TFS (IET) ,3 - Business Support,IET
+Trados Translation App ,3 - Business Support,IET
+UX ,3 - Business Support,IET
+Visual Source Save ,3 - Business Support,IET
+Visual SVN ,3 - Business Support,IET
+WESTKM ,3 - Business Support,IET
+wiki.nycenet.edu,3 - Business Support,IET
+Mitel Teleworker ,3 - Business Support,IET / Office of Telecommunications
+Growth Explorer (GE) ,3 - Business Support,Office of Policy and Evaluation
+Insight ,4 - Business Preferred,Office of Policy and Evaluation
+Nyc School Survey Online Platform ,4 - Business Preferred,Office of Policy and Evaluation
+Overall Rating Report (ORR) ,3 - Business Support,Office of Policy and Evaluation
+Receivership Reports ,4 - Business Preferred,Office of Policy and Evaluation
+School Performance Dashboard ,4 - Business Preferred,Office of Policy and Evaluation
+School Quality Guide ,4 - Business Preferred,Office of Policy and Evaluation
+School Quality Report Student Level Workbooks ,4 - Business Preferred,Office of Policy and Evaluation
+School Quality Snapshot ,4 - Business Preferred,Office of Policy and Evaluation
+State Accountability Resource Tool (StART) ,3 - Business Support,Office of Policy and Evaluation
+Student Perception Survey Online Platform ,3 - Business Support,Office of Policy and Evaluation
+Student Perception Survey Results ,3 - Business Support,Office of Policy and Evaluation
+APRL - Cybershift Interface ,4 - Business Preferred,Payroll & Accounting
+APRL - Nurses & Therapists ,4 - Business Preferred,Payroll & Accounting
+APRL - Quality of Work Life ,4 - Business Preferred,Payroll & Accounting
+APRL - Salary Forecasting ,4 - Business Preferred,Payroll & Accounting
+APRL - Summer pay Nurses & Therapists ,4 - Business Preferred,Payroll & Accounting
+Custodial Payroll System - Back end Payment processing Salary and School Allocation (CPS) ,3 - Business Support,Payroll & Accounting
+Cybershift - Time & Attendance ,0 - Tier 0,Payroll & Accounting
+EI Portal ,3 - Business Support,Payroll & Accounting
+EIS - Payroll ,3 - Business Support,Payroll & Accounting
+EIS - Portal ,3 - Business Support,Payroll & Accounting
+EIS - Rating ,4 - Business Preferred,Payroll & Accounting
+EIS - Supplementary Payroll ,4 - Business Preferred,Payroll & Accounting
+EIS - Teachers/Para - Hourly ,3 - Business Support,Payroll & Accounting
+Employee Information System (EIS) ,3 - Business Support,Payroll & Accounting
+PD/PS - Bulk Job Reporting ,4 - Business Preferred,Payroll & Accounting
+PD/PS - Check Cancellation ,4 - Business Preferred,Payroll & Accounting
+PD/PS - Per-Diem Status ,4 - Business Preferred,Payroll & Accounting
+PD/PS - Public Schools Athletic League - Transaction Reporting ,4 - Business Preferred,Payroll & Accounting
+PD/PS - Retro Payments ,4 - Business Preferred,Payroll & Accounting
+PD/PS - Service History Reporting ,4 - Business Preferred,Payroll & Accounting
+Per Diem/Per-Session (PD/PS) ,3 - Business Support,Payroll & Accounting
+Per Session Waivers (PSWaivers) ,4 - Business Preferred,Payroll & Accounting
+PSWaivers ,3 - Business Support,Payroll & Accounting
+System to Track and Account for Children (STAC) ,3 - Business Support,Payroll & Accounting
+Teachers of Tomorrow ,3 - Business Support,Payroll & Accounting
+Assyst Eligibility Integration ,4 - Business Preferred,School Food
+Back of the House ,4 - Business Preferred,School Food
+BI Reports ,4 - Business Preferred,School Food
+CafeteriaPlus ,2 - Business Essential,School Food
+Cash Management System ,4 - Business Preferred,School Food
+Claims Reports ,4 - Business Preferred,School Food
+Compliance Auditing Reporting System ,4 - Business Preferred,School Food
+DOE Working from Home ,3 - Business Support,School Food
+DOH Claims System ,4 - Business Preferred,School Food
+DOH Upload Report ,3 - Business Support,School Food
+DOH Upload System ,4 - Business Preferred,School Food
+DOH Violation System ,3 - Business Support,School Food
+Electronic Report Submission System ,4 - Business Preferred,School Food
+Family Income Inquiry System ,4 - Business Preferred,School Food
+Integrated Pest Management System ,3 - Business Support,School Food
+Meal Claim/Cost Report System ,4 - Business Preferred,School Food
+National School Lunch Program/Summer File System ,4 - Business Preferred,School Food
+OFNS Calendar ,4 - Business Preferred,School Food
+OFNS Data Lake ,4 - Business Preferred,School Food
+OFNS Incident Reporting ,4 - Business Preferred,School Food
+OFNS Occurrence ,4 - Business Preferred,School Food
+OFNS Web Search (Menu CMS Summer search) ,4 - Business Preferred,School Food
+OFNS Weekly Communications ,4 - Business Preferred,School Food
+OSSS Web/SQL Request Upload System ,4 - Business Preferred,School Food
+Parent/Guardian Refund Portal ,3 - Business Support,School Food
+Parent/Guardian Refund Portal  (B),3 - Business Support,School Food
+Point of Sale System ,4 - Business Preferred,School Food
+POS/CafeteriaPlus/Breakfast In The Classroom To SOFA Feed ,4 - Business Preferred,School Food
+Product Compliance ,3 - Business Support,School Food
+Receipt Agency Automation System ,4 - Business Preferred,School Food
+Request Tracking System ,4 - Business Preferred,School Food
+School Food Online Forms Application (SOFA) ,4 - Business Preferred,School Food
+School Information System ,4 - Business Preferred,School Food
+School/Teacher's Form ,4 - Business Preferred,School Food
+SchoolFood Equipment System ,4 - Business Preferred,School Food
+SchoolFood Operations Update System ,4 - Business Preferred,School Food
+Schools Open/Closed for Meal Entry ,4 - Business Preferred,School Food
+SCM Call Recording System ,4 - Business Preferred,School Food
+SED Claims - Web System ,4 - Business Preferred,School Food
+SF Breakfast in the Classroom Meal System ,3 - Business Support,School Food
+SF Metrics ,4 - Business Preferred,School Food
+SF Mobile App ,3 - Business Support,School Food
+SF Ordering System ,3 - Business Support,School Food
+SF2 Cash Collection ,3 - Business Support,School Food
+SF3 Reports ,3 - Business Support,School Food
+Single Sign-on Web Portal ,3 - Business Support,School Food
+Snacks & Beverages System ,3 - Business Support,School Food
+Special Events System ,3 - Business Support,School Food
+Special Programs System ,3 - Business Support,School Food
+SSR Reports (SSRS) ,3 - Business Support,School Food
+SSR Reports (SSRS) ,2 - Business Essential,School Food
+Staffing System ,3 - Business Support,School Food
+Summer 311 Reporting System ,3 - Business Support,School Food
+Summer Apprentice (workers) ,4 - Business Preferred,School Food
+Summer Meal Application ,3 - Business Support,School Food
+Teachers and Aides Forms ,3 - Business Support,School Food
+Teachers and Aides System 1.0 ,4 - Business Preferred,School Food
+Vended Programs System ,3 - Business Support,School Food
+Warehouse Automation & Modernization (WHAM) ,3 - Business Support,School Food
+WebSmaRTT Menu Publishing System ,3 - Business Support,School Food
+Cisco IME ips management express,3 - Business Support,Security
+Devo Relay ,3 - Business Support,Security
+DLP ,0 - Tier 0,Security
+Filtering ,4 - Business Preferred,Security
+Insight VM Rapid 7 ,0 - Tier 0,Security
+Nexpose Scan Engine - Prodution,0 - Tier 0,Security
+Symantec End Point Protection ,0 - Tier 0,Security
+Xsoar ,0 - Tier 0,Security
+Zscaler ,0 - Tier 0,Security
+ACS (Abuse & Neglect / Foster Care Data for Department of Homeless Services) ,3 - Business Support,SIS
+Automate The Schools (ATS) ,3 - Business Support,SIS
+Basic Educational Data System (BEDS) ,3 - Business Support,SIS
+Career & Technical Education Application (CTE) ,3 - Business Support,SIS
+Decision Support System (DSS) ,3 - Business Support,SIS
+ELL Transfer ,3 - Business Support,SIS
+Gifts Grants ,3 - Business Support,SIS
+MySchools ,1 - Business Critical,SIS
+New Visions for Public Schools (NV) ,3 - Business Support,SIS
+No Child Left Behind (NCLB) ,3 - Business Support,SIS
+Non Public School Information System (NPSIS) ,3 - Business Support,SIS
+NPSIS ,3 - Business Support,SIS
+NPSIS Admin site ,3 - Business Support,SIS
+NPSIS Transportation Web System ,3 - Business Support,SIS
+Periodic Assessment Selection Tool (PAST) ,4 - Business Preferred,SIS
+Pre-K Playground ,3 - Business Support,SIS
+Register Projection System (RPS) ,3 - Business Support,SIS
+SIS Reports ,3 - Business Support,SIS
+STARS Admin ,3 - Business Support,SIS
+STARS Classroom ,2 - Business Essential,SIS
+STARS Client ,3 - Business Support,SIS
+Student Documents ,3 - Business Support,SIS
+Student Information System (SIS) ,3 - Business Support,SIS
+10 Day Notice (TDN) ,4 - Business Preferred,Special Education
+Agency Transmittal ,1 - Business Critical,Special Education
+CAP Access ,4 - Business Preferred,Special Education
+CAP Calendar ,3 - Business Support,Special Education
+Child Assistance Program (CAP) ,3 - Business Support,Special Education
+FTP Repository (ES00vINTFTP01) ,3 - Business Support,Special Education
+GigaTrack ,3 - Business Support,Special Education
+IEP Translation ,3 - Business Support,Special Education
+Impartial Hearing System (IHS) ,3 - Business Support,Special Education
+Pre School Special Education Record Management System (CCP) ,4 - Business Preferred,Special Education
+Preschool Special Education Encounter Tracking (PSEET) ,4 - Business Preferred,Special Education
+Provider Assignment (PA) ,1 - Business Critical,Special Education
+Special Education Document Management System (SEDMS) ,3 - Business Support,Special Education
+Special Education Student Information System (SESIS) ,1 - Business Critical,Special Education
+Accident System ,2 - Business Essential,Transportation
+After School Transportation ,3 - Business Support,Transportation
+ARC GIS ,1 - Business Critical,Transportation
+ARC GIS (CTO) ,0 - Tier 0,Transportation
+ATS Attendance ,3 - Business Support,Transportation
+Attendant Wage Accrual ,3 - Business Support,Transportation
+BI Report ,3 - Business Support,Transportation
+Bus Route Status System ,3 - Business Support,Transportation
+Bus Stop Request System (OPT 199) ,3 - Business Support,Transportation
+Bus Strike Disruption ,3 - Business Support,Transportation
+Daily Metrics Report ,3 - Business Support,Transportation
+Daily Route Snapshot ,3 - Business Support,Transportation
+Distance Check Widget (Consumed By The Exception [Variance] Application) ,3 - Business Support,Transportation
+DMV Lens Batch Console System ,3 - Business Support,Transportation
+DOE School Session Time Application ,3 - Business Support,Transportation
+Driver and Attendant System ,3 - Business Support,Transportation
+Driver Escort Search - SSN display ,3 - Business Support,Transportation
+Edulog - GE Routing System ,2 - Business Essential,Transportation
+Emergency Contact Information System ,3 - Business Support,Transportation
+Exception Application ,3 - Business Support,Transportation
+Field Trips ,3 - Business Support,Transportation
+Field Trips Summer ,3 - Business Support,Transportation
+Foster Call ,3 - Business Support,Transportation
+Gen Ed Routing (Gened I) ,2 - Business Essential,Transportation
+Integrated Route View System ,3 - Business Support,Transportation
+Inventory System ,3 - Business Support,Transportation
+Map Portal 2.0 ,3 - Business Support,Transportation
+Map Portal Summer ,3 - Business Support,Transportation
+Non-Public Schools Calendar System /PreKEISitesCalendar ,3 - Business Support,Transportation
+Non-Public Summer School & Fall Reconciliation System ,3 - Business Support,Transportation
+OPT Call Recording System ,3 - Business Support,Transportation
+OPT Contracts System ,3 - Business Support,Transportation
+OPT Finance System ,3 - Business Support,Transportation
+OPT Information for Bus Companies (Letters Memos) ,3 - Business Support,Transportation
+OPT Inspection Application ,3 - Business Support,Transportation
+OPT Metrics ,3 - Business Support,Transportation
+OPT School Information System ,3 - Business Support,Transportation
+OPT Vehicle Inspection Reports ,3 - Business Support,Transportation
+Pick Process ,3 - Business Support,Transportation
+Pre-K Contract System ,3 - Business Support,Transportation
+Pre-K/EI Rider ,3 - Business Support,Transportation
+Pre-K/EI Rider Summer ,3 - Business Support,Transportation
+Problem Runs Reported System ,3 - Business Support,Transportation
+Project Read Entry ,3 - Business Support,Transportation
+Project Read Finance ,3 - Business Support,Transportation
+Public school session time system ,3 - Business Support,Transportation
+School and Student Transportation Search System (SchoolRouteStSearch) ,3 - Business Support,Transportation
+School Bus Delays and Breakdowns ,3 - Business Support,Transportation
+School Bus Violations ,3 - Business Support,Transportation
+School Ridership System ,3 - Business Support,Transportation
+School Visit Application ,3 - Business Support,Transportation
+SE_GE_StudentInfo Report Generator ,3 - Business Support,Transportation
+SessionTime Console ,3 - Business Support,Transportation
+SessionTime Poster Console Application ,3 - Business Support,Transportation
+Special Education Pupil Data Entry ,3 - Business Support,Transportation
+Special Education Ridership System ,3 - Business Support,Transportation
+Special Education Routing FoxPro System ,3 - Business Support,Transportation
+Special Handling Email Notification System ,3 - Business Support,Transportation
+STSendUserPass ,3 - Business Support,Transportation
+Student Data Validation ,3 - Business Support,Transportation
+Students in Temporary Housing (STH) Call Management System ,2 - Business Essential,Transportation
+Ticketing System ,3 - Business Support,Transportation
+Transportation (After 4 PM) Reimbursement System/Return Trip Reimbursements Authorization Tracking System ,3 - Business Support,Transportation
+Transportation Eligibility Determination System (TED) ,3 - Business Support,Transportation
+Transportation Service Request System ,3 - Business Support,Transportation
+Vehicle System ,3 - Business Support,Transportation
+Vendor Information System ,3 - Business Support,Transportation
+Vendor Integration System ,3 - Business Support,Transportation
+Violation Images Video ,3 - Business Support,Transportation
+Web Service Route Validation ,3 - Business Support,Transportation
+Test Application ,4 - Business Preferred,Testing

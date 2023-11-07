@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="DateUtil" result-type="Any" api-version="6.0.0" id="964b3964-97e1-4068-bb23-09bc61c43cb6" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var ISO8061RegExp = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])(T([0-1]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?(.(\d{3}))?)?Z?([+|-]([01][0-9]|[2][0-3])[:]([0-5][0-9]))?$/;
+var DateUtil = /** @class */ (function () {
+    function DateUtil() {
+        throw new Error("Private constructor");
+    }
+    DateUtil.isDate = function (value) {
+        return ISO8061RegExp.test(value);
+    };
+    DateUtil.parseDate = function (value) {
+        var date = DateUtil.tryParseDate(value);
+        if (!date) {
+            throw new Error("'" + value + "' is not a valid ISO 8061 date");
+        }
+        return date;
+    };
+    DateUtil.tryParseDate = function (value) {
+        var capturedGroups = ISO8061RegExp.exec(value);
+        if (capturedGroups) {
+            var year = Number(capturedGroups[1]);
+            var month = Number(capturedGroups[2]);
+            var date = Number(capturedGroups[3]);
+            var hour = 0;
+            var minute = 0;
+            var second = 0;
+            var miliseconds = 0;
+            if (capturedGroups[4] && capturedGroups[4][0].toUpperCase() === "T") { //looking for time group
+                hour = Number(capturedGroups[5]); //get hour group from time parent group
+                minute = Number(capturedGroups[6]); //get minutes group from time parent group
+                if (capturedGroups[7] && capturedGroups[7][0] === ":") { //looking for seconds group inside time group
+                    second = Number(capturedGroups[8]); //get seconds group
+                    if (capturedGroups[9] && capturedGroups[9][0] === ".") { //looking for miliseconds group inside time group
+                        miliseconds = Number(capturedGroups[10]); //get miliseconds group
+                    }
+                }
+            }
+            return new Date(Date.UTC(year, month - 1, date, hour, minute, second, miliseconds));
+        }
+        return null;
+    };
+    DateUtil.dateReviver = function (key, value) {
+        if (typeof value === "string") {
+            var date = DateUtil.tryParseDate(value);
+            if (date) {
+                return date;
+            }
+        }
+        return value;
+    };
+    return DateUtil;
+}());
+exports.DateUtil = DateUtil;
+return exports;]]></script>
+</dunes-script-module>

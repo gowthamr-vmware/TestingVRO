@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AuthService" result-type="Any" api-version="6.0.0" id="a2147ca1-9535-3774-84a0-64d9d7d27da2" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.identity.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * A list of identity, account and service management APIs.
+ */
+var AuthService = /** @class */ (function () {
+    function AuthService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Exchange org scoped refresh token to user access token.
+     * Endpoint URL: '/csp/gateway/am/api/auth/api-tokens/authorize'
+     * Endpoint Method: 'post'
+     * @param {AuthorizationByRefreshTokenRequest} body
+     * @return {GetAccessTokenWithRefreshTokenHttpResponse} Http response (200)
+     */
+    AuthService.prototype.getAccessTokenWithRefreshToken = function (parameters) {
+        var path = "/csp/gateway/am/api/auth/api-tokens/authorize";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Exchange authorization code, refresh token or client_credentials to user access token.
+     * Endpoint URL: '/csp/gateway/am/api/auth/authorize'
+     * Endpoint Method: 'post'
+     * @param {string} authorization
+     * @param {AuthorizationRequest} body
+     * @return {GetAccessTokenWithAuthorizationRequestHttpResponse} Http response (200)
+     */
+    AuthService.prototype.getAccessTokenWithAuthorizationRequest = function (parameters) {
+        var path = "/csp/gateway/am/api/auth/authorize";
+        var headerParameters = {};
+        parameters = parameters || {};
+        if (parameters["header_authorization"] !== undefined) {
+            headerParameters["authorization"] = parameters["header_authorization"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Performs a logout by invalidating the supplied token (if supplied) and returning an URL to navigate to. The token to invalidate is first looked up in the request body.
+     * Endpoint URL: '/csp/gateway/am/api/auth/logout'
+     * Endpoint Method: 'post'
+     * @param {IdTokenRequest} body
+     * @return {LogoutHttpResponse} Http response (200)
+     */
+    AuthService.prototype.logout = function (parameters) {
+        var path = "/csp/gateway/am/api/auth/logout";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Returns the public key to be used for verifying the idp generated tokens signature.
+     * Endpoint URL: '/csp/gateway/am/api/auth/token-public-key'
+     * Endpoint Method: 'get'
+     * @param {string} The public key format.
+     * @return {GetPublicKeyExtendedHttpResponse} Http response (200)
+     */
+    AuthService.prototype.getPublicKeyExtended = function (parameters) {
+        var path = "/csp/gateway/am/api/auth/token-public-key";
+        var queryParameters = {};
+        if (parameters["query_The public key format."] !== undefined) {
+            queryParameters["The public key format."] = parameters["query_The public key format."];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Performs login but returns an AccessToken.
+     * Endpoint URL: '/csp/gateway/am/idp/auth/login'
+     * Endpoint Method: 'post'
+     * @param {boolean} access_token
+     * @param {LoginRequest} body
+     * @return {LoginExtendedHttpResponse} Http response (200)
+     */
+    AuthService.prototype.loginExtended = function (parameters) {
+        var path = "/csp/gateway/am/idp/auth/login";
+        var queryParameters = {};
+        if (parameters["query_access_token"] !== undefined) {
+            queryParameters["access_token"] = parameters["query_access_token"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    AuthService.METADATA = {
+        "description": "A list of identity, account and service management APIs.",
+        "title": "Identity Service API",
+        "version": "1.3.0"
+    };
+    return AuthService;
+}());
+exports.AuthService = AuthService;
+return exports;
+]]></script>
+</dunes-script-module>

@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getConfigurationElementByCategory" result-type="Any" api-version="6.0.0" id="b93cd424-60a7-4bc7-a592-93d42b8cf693" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[This action is deprecated.]]></description>
+  <param n="categoryPath" t="Any"><![CDATA[]]></param>
+  <param n="configName" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging")
+			.getLogger("com.vmware.pscoe.library.util.ConfigElementAccessor");
+
+logger.warn("This action is deprecated. Please use ConfigElementAccessor");
+
+var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var ConfigElementAccessor = Class.load("com.vmware.pscoe.library.util", "ConfigElementAccessor");
+
+var cea = new ConfigElementAccessor(categoryPath, configName);
+
+return cea.getElement();]]></script>
+</dunes-script-module>

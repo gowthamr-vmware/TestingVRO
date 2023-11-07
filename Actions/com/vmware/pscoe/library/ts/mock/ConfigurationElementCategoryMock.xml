@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ConfigurationElementCategoryMock" result-type="Any" api-version="6.0.0" id="95dbdca7-a1f2-3061-85c2-0bd959e244c4" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * mock
+ * %%
+ * Copyright (C) 2020 VMWARE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var ConfigurationElementCategoryMock = /** @class */ (function () {
+    function ConfigurationElementCategoryMock() {
+        this.configurationElements = [];
+        this.subCategories = [];
+        this.allConfigurationElements = [];
+    }
+    return ConfigurationElementCategoryMock;
+}());
+exports.ConfigurationElementCategoryMock = ConfigurationElementCategoryMock;
+return exports;
+]]></script>
+</dunes-script-module>

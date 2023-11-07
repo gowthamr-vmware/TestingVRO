@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="acdafda8-83d5-3a5c-ad5c-08a8e38ba866" version="2.0.9">
+  <display-name><![CDATA[VraConfiguration]]></display-name>
+  <atts>
+    <att name="refreshToken" type="SecureString" read-only="false"/>
+    <att name="password" type="SecureString" read-only="false"/>
+    <att name="token" type="SecureString" read-only="false"/>
+    <att name="isPersistent" type="boolean" read-only="false">
+      <description><![CDATA[Only persistent rest hosts support proxy settings]]></description>
+    </att>
+    <att name="hostname" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="port" type="number" read-only="false"/>
+    <att name="domain" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="username" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="projectID" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="orgID" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="authHostname" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="authPort" type="number" read-only="false"/>
+    <att name="expires_in" type="number" read-only="false"/>
+    <att name="proxyHost" type="string" read-only="false">
+      <value encoded="n"><![CDATA[]]></value>
+    </att>
+    <att name="proxyPort" type="number" read-only="false"/>
+  </atts>
+</config-element>

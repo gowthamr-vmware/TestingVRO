@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getDOEProjects" result-type="Properties" api-version="6.0.0" id="1cfefa4f-6107-4e85-a950-517329cb2083" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.presentation">
+  <param n="resourceFileReference" t="string"><![CDATA[The absolute reference path to JSON Resource element having project mapping]]></param>
+  <param n="vraProjectID" t="string"><![CDATA[vRA Project ID]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor")
+var mapResource = new ResourceElementAccessor_1._.ResourceElementAccessor(resourceFileReference,true).asJSON();
+var doeProjectList = new Properties();
+try{
+var listLength = mapResource[vraProjectID].length;
+var listItem = mapResource[vraProjectID];
+for(i=0;i<listLength;i++)
+{
+  doeProjectList.put(listItem[i].doeProjectname,listItem[i].doeProjectValue);
+}
+}catch(e)
+{
+System.log("Error Occurred in getDOEProjects()"+ e);
+doeProjectList.put("-","-");
+}
+return doeProjectList]]></script>
+</dunes-script-module>

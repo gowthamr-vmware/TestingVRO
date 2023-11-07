@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[Built by Build Tools for VMware Aria]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='881c57e8-5d52-41e8-92c7-052b93da734f'&dunesName='Action'&name='RestHostFactory'&category='com.vmware.pscoe.library.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='93d62f81-d295-43b6-a516-7faf25b99bf2'&dunesName='Action'&name='RestClient'&category='com.vmware.pscoe.library.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a52cd3ca-33c3-43a2-a069-edc750990418'&dunesName='Action'&name='DefaultHostManagedAuth'&category='com.vmware.pscoe.library.rest.auth']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='b1e237dd-90c9-455d-a107-f66292a07f6e'&dunesName='Action'&name='RestHostMock'&category='com.vmware.pscoe.library.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='c9499b01-553c-4124-882b-8be5561beea7'&dunesName='Action'&name='RestTemplate'&category='com.vmware.pscoe.library.rest']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='ee52aea5-fd09-44a9-b7f0-139c5a00fef9'&dunesName='Action'&name='Cookie'&category='com.vmware.pscoe.library.rest']]></elm>
+</package>

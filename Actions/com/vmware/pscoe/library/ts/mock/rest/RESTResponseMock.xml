@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RESTResponseMock" result-type="Any" api-version="6.0.0" id="9015c9e4-7b9b-3a24-94a4-d2d8cff2725b" version="2.0.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock.rest">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var RESTResponseMock = /** @class */ (function () {
+    function RESTResponseMock(contentAsString, statusCode, headers) {
+        this.contentAsString = typeof contentAsString === "string" ? contentAsString : !!contentAsString ? JSON.stringify(contentAsString) : "";
+        this.statusCode = statusCode;
+        this.contentLength = this.contentAsString.length;
+        this.headers = new Properties();
+        if (headers) {
+            VROES.Shims.objectAssign(this.headers, headers);
+        }
+    }
+    RESTResponseMock.prototype.getHeaderValues = function (headerName) {
+        var value = this.headers[headerName];
+        return !!value ? (Array.isArray(value) ? value : [value]) : [];
+    };
+    RESTResponseMock.prototype.getAllHeaders = function () {
+        return this.headers;
+    };
+    return RESTResponseMock;
+}());
+exports.RESTResponseMock = RESTResponseMock;
+return exports;
+]]></script>
+</dunes-script-module>

@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="HostnameValidator" result-type="Any" api-version="6.0.0" id="c6468bdc-c5e4-49dc-8600-d7495c0d1578" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.validation">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var TemplateValidator_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.validation/TemplateValidator");
+/**
+ * Validates hostname template and uniquness through systems
+ */
+var HostnameValidator = /** @class */ (function () {
+    function HostnameValidator(context) {
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.HostnameValidator');
+        this.context = context;
+        this.hostname = context.testHostname;
+        this.validations = [];
+    }
+    HostnameValidator.prototype.addValidation = function (validation) {
+        this.validations.push(validation);
+    };
+    HostnameValidator.prototype.validate = function () {
+        this.logger.debug("Verifying hostname: " + this.hostname);
+        // validate hostname - always apply this check
+        var templateValidator = new TemplateValidator_1._.TemplateValidator();
+        templateValidator.validateHostname(this.hostname);
+        // hostname validations - will be applied according to the custom properties from the vRA blueprint
+        var assertDone = false;
+        var isHostnameValid = true;
+        for (var _i = 0, _a = this.validations; _i < _a.length; _i++) {
+            var validation = _a[_i];
+            this.logger.debug("Validation Obj: " + validation.name);
+            try {
+                // expected to throw exception if hostname is not valid or already taken.
+                validation.assert(this.context);
+                assertDone = true;
+                this.logger.info(validation.name + " validation succeded");
+            }
+            catch (err) {
+                this.logger.info(this.hostname + " is not valid.\n  " + err);
+                isHostnameValid = false;
+                break;
+            }
+        }
+        if (!assertDone) {
+            this.logger.debug('No hostname validators configured. Skipping name validation.');
+        }
+        return isHostnameValid;
+    };
+    return HostnameValidator;
+}());
+exports.HostnameValidator = HostnameValidator;
+return exports;]]></script>
+</dunes-script-module>

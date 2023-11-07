@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ip-range" result-type="Any" api-version="6.0.0" id="69e70698-1c22-4f1e-abe9-b831cb0b14b3" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.util">
+  <script encoded="false"><![CDATA[/*-
+     * #%L
+     * actions
+     * %%
+     * Copyright (C) 2023 VMWARE
+     * %%
+     * This program is licensed under Technical Preview License by VMware.
+     * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+     * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+     * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+     * You should have received a copy of the Technical Preview License along with this program.  If not, see
+     * <https://flings.vmware.com/vrealize-build-tools/license>
+     * #L%
+     */
+    /*
+     * Copyright 2017 VMware, Inc. All rights reserved. VMware Confidential
+     */
+    var exports = {};
+    return exports;]]></script>
+</dunes-script-module>

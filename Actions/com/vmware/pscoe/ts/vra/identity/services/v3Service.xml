@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="v3Service" result-type="Any" api-version="6.0.0" id="8c1215e9-3dfa-3c98-b1db-46ce6686f862" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.identity.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * A list of identity, account and service management APIs.
+ */
+var v3Service = /** @class */ (function () {
+    function v3Service(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Update service and organization roles of a user in the organization.
+     * Endpoint URL: '/csp/gateway/am/api/v3/users/{userId}/orgs/{orgId}/roles'
+     * Endpoint Method: 'patch'
+     * @param {string} userId
+     * @param {string} orgId
+     * @param {UpdateMemberRolesRequest} body
+     * @return {PatchUserRolesOnOrganizationHttpResponse} Http response (200)
+     */
+    v3Service.prototype.patchUserRolesOnOrganization = function (parameters) {
+        var path = "/csp/gateway/am/api/v3/users/" + parameters["path_userId"] + "/orgs/" + parameters["path_orgId"] + "/roles";
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PATCH",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    v3Service.METADATA = {
+        "description": "A list of identity, account and service management APIs.",
+        "title": "Identity Service API",
+        "version": "1.3.0"
+    };
+    return v3Service;
+}());
+exports.v3Service = v3Service;
+return exports;
+]]></script>
+</dunes-script-module>

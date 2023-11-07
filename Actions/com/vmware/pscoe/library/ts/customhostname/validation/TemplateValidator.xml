@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="TemplateValidator" result-type="Any" api-version="6.0.0" id="98a28d20-b2b5-4891-a8fd-fe7e936da9d7" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.validation">
+  <script encoded="false"><![CDATA[var exports = {};
+/*-
+ * #%L
+ * customhostname
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+/**
+ * Validations for custom hostname generation. The validations will be applied for the hostname template
+ * and hostname string in the installation/configuration and provisioning phases.
+ */
+var TemplateValidator = /** @class */ (function () {
+    function TemplateValidator() {
+        this.defaultTemplateValue = 'VirtualMachineName-';
+    }
+    TemplateValidator.prototype.applyDefaultSettings = function (hostnameTemplate) {
+        if (!hostnameTemplate) {
+            System.log('Cannot use empty hostname template. A default value will be applied: ' + this.defaultTemplateValue);
+            hostnameTemplate = this.defaultTemplateValue;
+        }
+        return hostnameTemplate;
+    };
+    TemplateValidator.prototype.validateOverflow = function (hostnameTemplate) {
+        if (hostnameTemplate.indexOf('################') > -1) {
+            throw new Error('Cannot use templates with values bigger than 9.(9)*10^15');
+        }
+    };
+    TemplateValidator.prototype.specialCharactersConfiguration = function (hostnameTemplate) {
+        if (!/^[a-zA-Z0-9-_.{}\#]*$/.test(hostnameTemplate)) {
+            throw new Error('Hostname template contains illegal characters. Allowed symbols: "a-z", "A-Z", "0-9", ".", "-" and "_"');
+        }
+    };
+    TemplateValidator.prototype.specialCharactersProvisioning = function (hostname) {
+        if (!/^[a-zA-Z0-9-_.]*$/.test(hostname)) {
+            throw new Error('Hostname contains illegal characters. Allowed symbols: "a-z", "A-Z", "0-9", ".", "-" and "_"');
+        }
+    };
+    TemplateValidator.prototype.prepareTemplate = function (hostnameTemplate) {
+        hostnameTemplate = this.applyDefaultSettings(hostnameTemplate);
+        try {
+            this.validateOverflow(hostnameTemplate);
+            this.specialCharactersConfiguration(hostnameTemplate);
+        }
+        catch (err) {
+            hostnameTemplate = undefined;
+        }
+        return hostnameTemplate;
+    };
+    TemplateValidator.prototype.prepareHostname = function (hostname) {
+        try {
+            this.specialCharactersProvisioning(hostname);
+        }
+        catch (err) {
+            hostname = undefined;
+        }
+        return hostname;
+    };
+    // Public members
+    TemplateValidator.prototype.validateTemplate = function (hostnameTemplate) {
+        return this.prepareTemplate(hostnameTemplate);
+    };
+    TemplateValidator.prototype.validateHostname = function (hostname) {
+        return this.prepareHostname(hostname);
+    };
+    return TemplateValidator;
+}());
+exports.TemplateValidator = TemplateValidator;
+return exports;]]></script>
+</dunes-script-module>

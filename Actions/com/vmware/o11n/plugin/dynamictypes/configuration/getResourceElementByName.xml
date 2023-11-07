@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getResourceElementByName" result-type="ResourceElement" api-version="6.0.0" id="0ab65e69-f38d-4778-8cc3-e0b83b19ef10" version="1.0.0" allowed-operations="vef" category-name="com.vmware.o11n.plugin.dynamictypes.configuration">
+  <param n="name" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (name == null) {
+  System.log("getResourceElementByName() --> name is null");
+  return null;
+}
+
+var rpath = null;
+var rname = name;
+
+var idx = rname.lastIndexOf("/");
+if (idx != -1) {
+  rpath = rname.substr(0, idx);
+  rname = rname.substr(idx + 1);
+}
+
+var category = Server.getResourceElementCategoryWithPath(rpath);
+if (category == null) {
+  System.log("getResourceElementByName() --> category not found: " + rpath);
+  return null;
+}
+
+var elements = category.resourceElements;
+for (var i in elements) {
+  var resource = elements[i];
+  if (resource.name == rname) {
+    return resource;
+  }
+}
+
+System.log("getResourceElementByName() --> resource not found: " + name);
+
+return null;]]></script>
+</dunes-script-module>

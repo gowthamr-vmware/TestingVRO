@@ -1,0 +1,267 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VcTaskUtil" result-type="Any" api-version="6.0.0" id="4e67d917-7aab-4feb-8c92-1a46ebf0c1ff" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var Func = System.getModule("com.vmware.pscoe.library.util").Func();
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+    .getLogger("com.vmware.pscoe.library.util.VcTaskUtil");
+
+/**
+ * Defines a helper class that hold utility methods for working with VcTask's
+ */
+var VcTaskUtil = Class.define(function VcTaskUtil() {
+    /**
+     * Get's VC Task info
+     *
+     * @param {object} propertyCollector - object created by VcTask.sdkConnection.propertyCollector.createPropertyCollector()
+     * @param {object} filterSpec - populated VcPropertyFilterSpec object
+     * @returns {object} - VC Task Info
+     */
+    var getTaskInfo = function getTaskInfo(propertyCollector, filterSpec) {
+        if (propertyCollector == null) {
+            throw new Error("Unable retrieve task info - invalid property collector");
+        }
+
+        var retrieveOptions = new VcRetrieveOptions();
+        var retrieveResult = propertyCollector.retrievePropertiesEx([filterSpec], retrieveOptions);
+
+        var taskInfo = null;
+        if (retrieveResult && retrieveResult.hasOwnProperty("objects") && 0 < retrieveResult.objects.length) {
+            taskInfo = (retrieveResult.objects[0].propSet.length) ? retrieveResult.objects[0].propSet[0].val : null;
+        }
+
+        if (taskInfo == null) {
+            throw new Error("VIM Task info is null");
+        }
+
+        if (taskInfo.state == null) {
+            throw new Error("VIM Task state is null");
+        }
+
+        return taskInfo;
+    };
+
+    var createFilterSpec = function createFilterSpec(listViewReference) {
+        var oSpec = new VcObjectSpec();    // create an object spec for the beginning of the traversal
+        var tSpec = new VcTraversalSpec(); // create a traversal spec to select all objects in the view
+        var pSpec = new VcPropertySpec();  // create a property spec to select all objects in the view
+
+        oSpec.skip = true;
+        oSpec.obj = listViewReference;
+
+        // populate vc object with traversal spec
+        tSpec.skip = false;
+        tSpec.path = "view";
+        tSpec.type = "ListView";
+        tSpec.name = "traverseEntities";
+        oSpec.selectSet = [tSpec];
+
+        // specify the properties for retrieval
+        pSpec.type = "Task";
+        pSpec.pathSet = ["info"];
+
+        var fs = new VcPropertyFilterSpec();
+        fs.propSet = [pSpec];
+        fs.objectSet = [oSpec];
+
+        return fs;
+    };
+
+    /**
+     * Waits 10 seconds for task cache to update
+     *
+     * @param {string} taskState
+     * @param {object} taskObj
+     */
+    var waitForTaskCacheUpdate = function (taskState, taskObj) {
+        try {
+            Func.retryWithTimeout(
+                function () {
+                    if (taskState == taskObj.info.state.value) {
+                        logger.info("Task cache synchronized");
+                        return true;
+                    }
+                    return false;
+                },
+                function (result, error) {
+                    if (error) {
+                        logger.warn("Unable to synchronize task cache: " + error);
+                        return false;
+                    }
+                    return result;
+                },
+                10,
+                1
+            );
+        } catch (error) {
+            logger.warn("Unable to synchronize task cache: " + error);
+        }
+    };
+
+    var createTaskFilterSpec = function (vcObject) {
+        var filter = new VcTaskFilterSpec();
+        var spec = new VcTaskFilterSpecByEntity();
+        spec.entity = vcObject.reference;
+        spec.recursion = VcTaskFilterSpecRecursionOption.self;
+        filter.entity = spec;
+
+        return filter;
+    };
+
+    /**
+     * Wait's for specific VC Task to complete
+     *
+     * @param {object} vcTask - the VC Task to wait for
+     * @param {number} pollRate - the task pool rate (in seconds)
+     * @param {number} timeout - how long to wait for task before time out operation (in seconds)
+     * @returns {VcManagedObject/Any}
+     */
+    this.wait = function (vcTask, pollRate, timeout) {
+        if (!vcTask && vcTask.hasOwnProperty("sdkConnection")) {
+            throw new Error("Invalid VC Task to wait for");
+        }
+
+        if (vcTask.sdkConnection.hasOwnProperty("propertyCollector") === false) {
+            throw new Error("Unable to create VC Task property collector");
+        }
+
+        try {
+            var filterSpec = createFilterSpec(
+                vcTask.sdkConnection.viewManager.createListView([vcTask.reference]).reference
+            );
+            var propertyCollector = vcTask.sdkConnection.propertyCollector.createPropertyCollector();
+
+            return Func.retryWithTimeout(
+                function () {
+                    var taskInfo = getTaskInfo(propertyCollector, filterSpec);
+
+                    switch (taskInfo.state.value) {
+                        case "running":
+                            logger.info(
+                                "Task status [" + taskInfo.name + "/" + vcTask.id + "] is [queued/running], " +
+                                "progress: [" + (taskInfo.progress || "unknown") + " %]"
+                            );
+                            return false;
+
+                        case "success":
+                            waitForTaskCacheUpdate(taskInfo.state.value, vcTask);
+                            logger.info("Task [" + taskInfo.name + "/" + vcTask.id + "] is completed successfully");
+
+                            return VcPlugin.convertToVimManagedObject(vcTask, taskInfo.entity.moref);
+
+                        case "error":
+                            waitForTaskCacheUpdate(taskInfo.state.value, vcTask);
+                            throw new Error(
+                                "Task [" + taskInfo.name + "/" + vcTask.id + "] has encountered an error: " +
+                                (taskInfo.error.localizedMessage || "unknown error")
+                            );
+                    }
+                },
+                // checks if task is completed successfully
+                function (res, error) {
+                    if (error) {
+                        throw new Error("Unexpected error: " + error);
+                    }
+                    return res;
+                },
+                (timeout + ((pollRate * 10) + timeout)), // add additional timeout because of waiting task cache updates
+                pollRate
+            );
+        } finally {
+            if (propertyCollector) {
+                propertyCollector.destroyPropertyCollector();
+            }
+        }
+    };
+
+    /**
+     * Use a Task Manager Collector to find a vCenter Task using provided property of the task
+     *
+     * @param {VcTaskHistoryCollector} collector - the related object, e.g. instance of VC:VirtualMachine, VC:ClusterComputeResource, etc.
+     * @param {string} property - key of the given property, e.g. "state", "key", etc.
+     * @param {string} value - value of the given property, e.g. "task-11802"
+     * @param {boolean} isFutureTask - states whether the collector should look for latest task executions or for older ones
+     * @param {number} [tasksPerPage] - the amount of task info objects returned per page when querying. Defaults to 10 if not provided
+     * 
+     * @returns {VcTask/Any}
+     */
+    this.find = function (collector, property, value, isFutureTask, tasksPerPage) {
+        var taskPage;
+        var queryFunction = isFutureTask ? "readNextTasks" : "readPreviousTasks";
+
+        while ((taskPage = collector[queryFunction](tasksPerPage)) != null) {
+            for (var i = 0; i < taskPage.length; i++) {
+                var taskInfo = taskPage[i];
+                if (taskInfo[property] == value) {
+                    return taskInfo.task;
+                }
+            }
+        }
+    };
+
+    /**
+     * Use a Task Manager Collector to find a recently executed vCenter Task using provided property of the task
+     *
+     * @param {VcTaskHistoryCollector} collector - the related object, e.g. instance of VC:VirtualMachine, VC:ClusterComputeResource, etc.
+     * @param {string} property - key of the given property, e.g. "state", "key", etc.
+     * @param {string} value - value of the given property, e.g. "task-11802"
+     * @param {number} [tasksPerPage] - the amount of task info objects returned per page when querying. Defaults to 10 if not provided
+     * 
+     * @returns {VcTask/Any}
+     */
+    this.findFuture = function (collector, property, value, tasksPerPage) {
+        return this.find(collector, property, value, true, tasksPerPage);
+    };
+
+    /**
+     * Use a Task Manager Collector to find a previously executed vCenter Task using provided property of the task
+     *
+     * @param {VcTaskHistoryCollector} collector - the related object, e.g. instance of VC:VirtualMachine, VC:ClusterComputeResource, etc.
+     * @param {string} property - key of the given property, e.g. "state", "key", etc.
+     * @param {string} value - value of the given property, e.g. "task-11802"
+     * @param {number} [tasksPerPage] - the amount of task info objects returned per page when querying. Defaults to 10 if not provided
+     * 
+     * @returns {VcTask/Any}
+     */
+    this.findPrevious = function (collector, property, value, tasksPerPage) {
+        return this.find(collector, property, value, false, tasksPerPage);
+    };
+
+    /**
+     * Find a vCenter Task using it's ID and the vC object which produced the task
+     *
+     * @param {object} vcObject - the related object, e.g. instance of VC:VirtualMachine, VC:ClusterComputeResource, etc.
+     * @param {string} taskId - the task id, e.g. "task-11802"
+     * @param {number} [tasksPerPage] - the amount of task info objects returned per page when querying. Defaults to 10 if not provided
+     * 
+     * @returns {VcTask/Any}
+     */
+    this.findById = function (vcObject, taskId, tasksPerPage) {
+        tasksPerPage = tasksPerPage || 10;
+        var taskManager = vcObject.sdkConnection.taskManager;
+
+        // Create FilterSpec containing the vCenter object reference to filter 
+        var filter = createTaskFilterSpec(vcObject);
+
+        // Create collector
+        var collector = taskManager.createCollectorForTasks(filter);
+        collector.resetCollector();
+
+        var task = this.findFuture(collector, VcTaskUtil.Properties.ID, taskId, tasksPerPage);
+        if (!task) {
+            task = this.findPrevious(collector, VcTaskUtil.Properties.ID, taskId, tasksPerPage);
+        }
+
+        return task;
+    };
+}, {});
+
+VcTaskUtil.Properties = {
+    ID: "key",
+    Progress: "progress",
+    Result: "result",
+    State: "state"
+}
+
+return VcTaskUtil;]]></script>
+</dunes-script-module>

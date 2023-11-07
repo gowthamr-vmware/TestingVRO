@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getVCVirtualByName" result-type="VC:VirtualMachine" api-version="6.0.0" id="1e082c35-1a37-4f8e-8ee2-f23cf831688b" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pso.helpers">
+  <param n="vmNameToFind" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var allVMs = VcPlugin.getAllVirtualMachines(null, vmNameToFind);
+
+
+if (allVMs && allVMs.length > 0) {
+    for each (var vm in allVMs) {
+        if (vm.name == vmNameToFind) {
+            System.debug('Found it');
+            return vm;
+        }
+    }
+}
+
+System.debug('No results');
+return null;]]></script>
+</dunes-script-module>

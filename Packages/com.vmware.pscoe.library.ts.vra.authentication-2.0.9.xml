@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='79742b77-3422-3d03-aba0-d94bcb4274d8'&dunesName='Action'&name='BearerTokenClient'&category='com.vmware.pscoe.library.ts.vra.authentication.actions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='8d59f370-56b3-3753-beee-5c571311acd5'&dunesName='Action'&name='AuthClientService'&category='com.vmware.pscoe.library.ts.vra.authentication.actions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='93d7f731-3bc7-35cd-9c88-d673ec5b1204'&dunesName='Action'&name='VraConfigurationAccessor'&category='com.vmware.pscoe.library.ts.vra.authentication.elements.config']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ConfigurationElement?id='acdafda8-83d5-3a5c-ad5c-08a8e38ba866'&dunesName='ConfigurationElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='b2894892-20c5-3422-a0ab-7a4844b3a91c'&dunesName='Action'&name='AuthClientServiceMock'&category='com.vmware.pscoe.library.ts.vra.authentication.actions']]></elm>
+</package>

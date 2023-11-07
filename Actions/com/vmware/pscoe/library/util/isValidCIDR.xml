@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="isValidCIDR" result-type="Any" api-version="6.0.0" id="0661a8ec-4dde-4b13-ade4-94f19e6d5156" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <param n="networkAddressCIDR" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var IpV4Util = System.getModule("com.vmware.pscoe.library.util").IpV4Util();
+return new IpV4Util().isValidCIDR(networkAddressCIDR);]]></script>
+</dunes-script-module>

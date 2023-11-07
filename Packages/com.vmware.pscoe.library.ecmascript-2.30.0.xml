@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[Build Tools for VMware Aria provides development and release management tools for implementing automation solutions
+		based on the VMware Aria Suite and VMware Cloud Director. The solution enables Virtual Infrastructure Administrators and 
+		Automation Developers to use standard DevOps practices for managing and deploying content.]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='1331bc0e-d381-437a-aef1-872ec120f910'&dunesName='Action'&name='Class'&category='com.vmware.pscoe.library.ecmascript']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='200939d7-c7e6-44a1-a9cd-7b395e62ca4f'&dunesName='Action'&name='Module'&category='com.vmware.pscoe.library.ecmascript']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='2d6a5de2-9a8d-4084-8ad0-33cd522149ac'&dunesName='Action'&name='Set'&category='com.vmware.pscoe.library.ecmascript']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a1a3fdf8-818c-417f-92d8-7ac2429569c0'&dunesName='Action'&name='Promise'&category='com.vmware.pscoe.library.ecmascript']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='b13037b3-765b-4422-9808-c12bc2cee17d'&dunesName='Action'&name='Map'&category='com.vmware.pscoe.library.ecmascript']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='b35d2a59-39ff-4ecb-a4ed-71b6448d6e9f'&dunesName='Action'&name='tslib'&category='com.vmware.pscoe.library.ecmascript']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='e7460a91-5985-4fb7-97e1-4ad4ae007d83'&dunesName='Action'&name='Shims'&category='com.vmware.pscoe.library.ecmascript']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='ec98a25a-8097-45ba-9606-05e68d87349e'&dunesName='Action'&name='VROES'&category='com.vmware.pscoe.library.ecmascript']]></elm>
+</package>

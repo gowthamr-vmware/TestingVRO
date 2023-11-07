@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="GroupsService" result-type="Any" api-version="6.0.0" id="15a28165-17c6-3101-8e92-aca03c97359f" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.identity.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * A list of identity, account and service management APIs.
+ */
+var GroupsService = /** @class */ (function () {
+    function GroupsService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * In this case the PagedResponse.results field will contain <code>Group</code> object. See the <code>Group</code> model for reference.
+     * Endpoint URL: '/csp/gateway/am/api/groups/search'
+     * Endpoint Method: 'get'
+     * @param {string} searchTerm - The search term, uses 'contains' filter on the group displayName attribute.
+     * @param {string} idpId - This parameter is included for CSP compatibility and its value is ignored.
+     * @param {number} pageStart - The number of results per page.
+     * @param {number} pageLimit - The index of the first element of the page. One based.
+     * @return {SearchGroupsHttpResponse} Http response (200)
+     */
+    GroupsService.prototype.searchGroups = function (parameters) {
+        var path = "/csp/gateway/am/api/groups/search";
+        var queryParameters = {};
+        if (parameters["query_searchTerm"] !== undefined) {
+            queryParameters["searchTerm"] = parameters["query_searchTerm"];
+        }
+        if (parameters["query_idpId"] !== undefined) {
+            queryParameters["idpId"] = parameters["query_idpId"];
+        }
+        if (parameters["query_pageStart"] !== undefined) {
+            queryParameters["pageStart"] = parameters["query_pageStart"];
+        }
+        if (parameters["query_pageLimit"] !== undefined) {
+            queryParameters["pageLimit"] = parameters["query_pageLimit"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    GroupsService.METADATA = {
+        "description": "A list of identity, account and service management APIs.",
+        "title": "Identity Service API",
+        "version": "1.3.0"
+    };
+    return GroupsService;
+}());
+exports.GroupsService = GroupsService;
+return exports;
+]]></script>
+</dunes-script-module>

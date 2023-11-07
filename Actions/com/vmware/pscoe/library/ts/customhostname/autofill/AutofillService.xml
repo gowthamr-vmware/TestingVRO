@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AutofillService" result-type="Any" api-version="6.0.0" id="a95dfc57-12ee-45c1-98c6-1636174713ba" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.autofill">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var AutofillService = /** @class */ (function () {
+    function AutofillService(machinePrefix, machineSuffix, extractors, excludedMachines) {
+        var _this = this;
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.autofill.extractor.AutofillService');
+        this.prefix = machinePrefix;
+        this.postfix = machineSuffix;
+        this.excludedMachines = excludedMachines.map(function (em) { return parseInt(em.replace(_this.prefix, ''), 10); });
+        // Converts array of Validator assertions objects to array of Extractor objects
+        this.extractors = extractors.map(function (v) {
+            var extractorName = v.constructor.name.replace('Assertion', 'Extractor');
+            var extractorModule = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.autofill.extractor." + extractorName);
+            return new extractorModule._[extractorName](machinePrefix, machineSuffix);
+        });
+    }
+    AutofillService.prototype.removeDuplicates = function (array) {
+        var obj = {};
+        array.forEach(function (num) {
+            obj[num] = num;
+        });
+        return Object.keys(obj);
+    };
+    AutofillService.prototype.getTakenNumbers = function () {
+        this.logger.debug('Extracting ...');
+        var machineNumbers = [];
+        this.extractors.forEach(function (ex) {
+            var nums = ex.extract();
+            machineNumbers = machineNumbers.concat(nums);
+        }, this);
+        return machineNumbers;
+    };
+    AutofillService.prototype.getNextFreeNumber = function (takenNumbers, startNumber, incrementStep) {
+        var taken = takenNumbers.concat(this.excludedMachines);
+        taken = this.removeDuplicates(taken);
+        taken = taken
+            .filter(function (num) {
+            return num >= startNumber;
+        })
+            .sort(function (a, b) {
+            return a - b;
+        });
+        if (taken.length === 0) {
+            return startNumber;
+        }
+        this.logger.info("Taken numbers: " + taken);
+        var current = startNumber;
+        taken = taken.map(function (value) { return parseInt(value); }, 10);
+        for (var _i = 0, taken_1 = taken; _i < taken_1.length; _i++) {
+            var value = taken_1[_i];
+            if (value !== current) {
+                return current;
+            }
+            current = current + incrementStep;
+        }
+        return parseInt(taken[taken.length - 1], 10) + incrementStep;
+    };
+    return AutofillService;
+}());
+exports.AutofillService = AutofillService;
+return exports;]]></script>
+</dunes-script-module>

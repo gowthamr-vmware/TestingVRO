@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="EditCdromBuilder" result-type="Any" api-version="6.0.0" id="9007ad94-8831-43e6-b6ae-d7eca814d152" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building device spec for updating/removing an existing virtual cdrom to VM]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var AbstractCdromBuilder = Class.load("com.vmware.pscoe.library.vc.config", "AbstractCdromBuilder");
+
+return Class.define(function EditCdromBuilder(storage) {
+    AbstractCdromBuilder.call(this, storage);
+}, {
+        /**
+         * An existing CD-ROM device to update
+         * @param {VcVirtualCdrom} value 
+         */
+        setCdrom: function (value) {
+            this.cdrom = value;
+            return this;
+        },
+
+        /**
+         * @param {boolean} value - set cdrom for removal, default - false
+         */
+
+        remove: function (value) {
+            this.removeFlag = value;
+            return this;
+        },
+
+        buildCdrom: function () {
+            if (!this.removeFlag) {
+                this.cdrom.backing = this.buildBackingInfo();
+            }
+            return this.cdrom;
+        },
+
+        /**
+         * @returns {VcVirtualDeviceConfigSpec} - the device spec to be used for reconfiguration
+         */
+        build: function () {
+            var deviceConfigSpec = AbstractCdromBuilder.prototype.build.apply(this, arguments);
+            if (this.removeFlag) {
+                deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.remove;
+            } else {
+                deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.edit;
+            }
+            return deviceConfigSpec;
+        }
+
+    }, AbstractCdromBuilder);]]></script>
+</dunes-script-module>

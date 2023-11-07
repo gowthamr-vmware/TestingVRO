@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AsyncActionExecutor" result-type="Any" api-version="6.0.0" id="86008368-e5c1-47dc-8d16-f733c275a210" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), tslib_1 = VROES.tslib, exports = {};
+var Future_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util.Future");
+var AsyncWorkflowExecutor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util.AsyncWorkflowExecutor");
+var AsyncActionExecutor = /** @class */ (function () {
+    function AsyncActionExecutor() {
+        throw new Error("Private constructor");
+    }
+    AsyncActionExecutor.execute = function (action) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        return new ActionFuture(action, args);
+    };
+    return AsyncActionExecutor;
+}());
+exports.AsyncActionExecutor = AsyncActionExecutor;
+var ActionFuture = /** @class */ (function (_super) {
+    tslib_1.__extends(ActionFuture, _super);
+    function ActionFuture(action, args) {
+        var _this = _super.call(this) || this;
+        var properties = new Properties();
+        properties.put("action", action);
+        properties.put("args", args);
+        properties.put("__tokenName", "Async Action Executor - " + action);
+        _this.future = AsyncWorkflowExecutor_1._.AsyncWorkflowExecutor.executeByFqn("PSCoE/Util/Async Action Executor", properties);
+        return _this;
+    }
+    ActionFuture.prototype.toString = function () {
+        return this.future.toString();
+    };
+    ActionFuture.prototype.getInnerState = function () {
+        return this.future.getInnerState();
+    };
+    ActionFuture.prototype.checkCompleted = function () {
+        if (this.future.isDone()) {
+            this.value = this.future.get()["result"];
+            return true;
+        }
+        return false;
+    };
+    return ActionFuture;
+}(Future_1._.Future));
+return exports;]]></script>
+</dunes-script-module>

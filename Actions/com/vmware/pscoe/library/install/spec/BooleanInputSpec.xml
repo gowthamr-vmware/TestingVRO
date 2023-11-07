@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="BooleanInputSpec" result-type="Any" api-version="6.0.0" id="80d84e91-3847-434e-aa7f-3e669b625d6c" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[Boolean input specificator. Allows the operator to specify a boolean value as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var InputSpecBase = System.getModule("com.vmware.pscoe.library.install.spec").InputSpecBase();
+
+
+return Class.define(function BooleanInputSpec(path) {
+	InputSpecBase.apply(this, arguments);
+	this.validators = [function (value) {
+		return value && typeof (value) !== "boolean" ? "boolean value expected, but got " + typeof (value) : null;
+	}];
+}, {}, InputSpecBase);]]></script>
+</dunes-script-module>

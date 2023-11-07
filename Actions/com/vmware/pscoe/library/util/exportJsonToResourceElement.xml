@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="exportJsonToResourceElement" result-type="Any" api-version="6.0.0" id="02effc50-d005-41f2-bb0d-2406359e31f0" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <param n="category" t="Any"><![CDATA[]]></param>
+  <param n="name" t="Any"><![CDATA[]]></param>
+  <param n="content" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (name.lastIndexOf(".json") != name.length - 5) {
+	name += ".json";
+}
+
+var mime = new MimeAttachment(name);
+mime.content = JSON.stringify(JSON.parse(content), null, 2);
+mime.mimeType = "text/json";
+var resourceElement = null;
+
+for (var i in category.resourceElements) {
+	var re = category.resourceElements[i];
+	if (re.name == name) {
+		resourceElement = re;
+		break;
+	}
+}
+
+if (!resourceElement) {
+	Server.createResourceElement(category, name, mime, "text/json");
+} else {
+	resourceElement.setContentFromMimeAttachment(mime);
+}]]></script>
+</dunes-script-module>

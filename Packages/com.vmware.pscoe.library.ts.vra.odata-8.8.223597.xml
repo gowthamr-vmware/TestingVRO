@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[This package is licensed under https://flings.vmware.com/vrealize-build-tools/license]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='22d7081a-63ee-4230-b893-ce7dc2d40901'&dunesName='Action'&name='oDataServiceFactory'&category='com.vmware.pscoe.library.ts.vra.odata']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='5a84e19b-8ad7-4d46-91e5-b86712a94ef1'&dunesName='Action'&name='HttpStatusCode'&category='com.vmware.pscoe.library.ts.vra.odata.enums']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='8c2bc299-10b0-4674-9075-21f047178b07'&dunesName='Action'&name='oDataService'&category='com.vmware.pscoe.library.ts.vra.odata']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ResourceElement?id='92c784c4-0bb8-3e42-9d42-2b16880c29d7'&dunesName='ResourceElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='99976d84-95df-4c1b-972a-e0d8f2148588'&dunesName='Action'&name='oDataOperation'&category='com.vmware.pscoe.library.ts.vra.odata']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='9c1b4cc7-0b28-4a07-8249-ed5dd325474a'&dunesName='Action'&name='oDataQuery'&category='com.vmware.pscoe.library.ts.vra.odata']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a7f0bda5-5824-4e64-ae89-6ce75c614c95'&dunesName='Action'&name='oDataFilterExpressions'&category='com.vmware.pscoe.library.ts.vra.odata']]></elm>
+</package>

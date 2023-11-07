@@ -1,0 +1,7 @@
+{
+	"tmpFolder": "c:\\Windows\\Temp",
+	"runScriptArguments" : "/q /c {{scriptPath}} {{args}} > {{stdOutPath}} 2> {{stdErrPath}}",
+	"separator": "\\",
+	"scriptProgram": "C:\\Windows\\system32\\cmd.exe",
+	"scriptExtension": "cmd"
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[This package is licensed under https://flings.vmware.com/vrealize-build-tools/license]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='20a691d6-0711-43e7-9b56-b8ad1d3bacb1'&dunesName='Action'&name='Yaml'&category='com.vmware.pscoe.library.ts.yaml']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='921c24d0-c449-4ef8-b5c0-8cefa1e50a39'&dunesName='Action'&name='YamlParse'&category='com.vmware.pscoe.library.ts.yaml']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='9fe630dd-5026-40c0-b854-644a9843b19a'&dunesName='Action'&name='YamlStringify'&category='com.vmware.pscoe.library.ts.yaml']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ResourceElement?id='c7a25388-0885-38e3-b76a-fe0c8ea0c047'&dunesName='ResourceElement']]></elm>
+</package>

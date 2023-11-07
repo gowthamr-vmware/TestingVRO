@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="redfish" result-type="Any" api-version="6.0.0" id="e454a494-cce0-3079-8557-4d45479881aa" version="2.0.6" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.http.sample">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var __extends = VROES.tslib.__extends;
+var HttpClient_1 = VROES.importLazy("com.vmware.pscoe.library.ts.http.HttpClient");
+var HttpClientBuilder_1 = VROES.importLazy("com.vmware.pscoe.library.ts.http.HttpClientBuilder");
+var RedfishClientVro = /** @class */ (function (_super) {
+    __extends(RedfishClientVro, _super);
+    function RedfishClientVro(restHost, opts) {
+        return _super.call(this, restHost, opts) || this;
+    }
+    RedfishClientVro.prototype.getSystems = function () {
+        var _this = this;
+        var col = this.get(RedfishClientVro.SYSTEMS_PATH);
+        return (col.Members || []).map(function (sys) { return _this.get(sys["@odata.id"]); });
+    };
+    RedfishClientVro.prototype.getDefaultSystemService = function () {
+        var col = this.get(RedfishClientVro.SYSTEMS_PATH);
+        return col && col.Members && col.Members.length && col.Members[0]["@odata.id"];
+    };
+    RedfishClientVro.prototype.getTaskServices = function () {
+        var col = this.get(RedfishClientVro.TASKS_PATH);
+        return (col.Members || []).map(function (ent) { return ent["@odata.id"]; });
+    };
+    // factory method for getting an configurable client with simplest information needed
+    RedfishClientVro.withBasicAuth = function (url, userCreds) {
+        return new HttpClientBuilder_1._.HttpClientVroBuilder(url)
+            .transient()
+            .trustCert()
+            .basic(userCreds.username, userCreds.password)
+            .build(RedfishClientVro);
+    };
+    RedfishClientVro.withRefreshToekn = function (url, refreshToken) {
+        var client = new HttpClientBuilder_1._.HttpClientVroBuilder(url)
+            .transient()
+            .trustCert()
+            .build(RedfishClientVro);
+        // setup refresh token authentication
+        client.options.onBeforeRequest = function (req) {
+            if (req.path !== "/csp/gateway/am/idp/auth/login") {
+                if (!client.bearerToken) {
+                    var loginResp = client.post("/csp/gateway/am/idp/auth/login", {
+                        refresh_token: refreshToken
+                    });
+                    client.bearerToken = loginResp.access_token;
+                }
+                if (client.bearerToken) {
+                    req.headers = VROES.Shims.objectAssign({}, req.headers, { Authorization: "Bearer " + client.bearerToken });
+                }
+            }
+        };
+        return client;
+    };
+    RedfishClientVro.BASE_PATH = "/redfish/v1";
+    RedfishClientVro.SYSTEMS_PATH = RedfishClientVro.BASE_PATH + "/Systems";
+    RedfishClientVro.TASKS_PATH = RedfishClientVro.BASE_PATH + "/TaskService/Tasks";
+    return RedfishClientVro;
+}(HttpClient_1._.HttpClientVro));
+exports.default = RedfishClientVro;
+return exports;
+]]></script>
+</dunes-script-module>

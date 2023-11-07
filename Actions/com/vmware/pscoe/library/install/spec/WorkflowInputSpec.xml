@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="WorkflowInputSpec" result-type="Any" api-version="6.0.0" id="05c28907-8993-4ad8-b6d6-741d1efe3784" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[String input specificator. Allows the operator to specify a string value as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var RefInputSpec = System.getModule("com.vmware.pscoe.library.install.spec").RefInputSpec();
+
+return Class.define(function WorkflowInputSpec(path) {
+	RefInputSpec.apply(this, arguments);
+	this.type("Workflow")
+}, {
+	getById: function (id) {
+		return Server.getWorkflowWithId(id);
+	},
+
+	getByPath: function (path) {
+		var p = path.split("/");
+		if (!p.length) {
+			return null;
+		}
+		var workflowName = p.pop();
+		var categoryPath = p.join("/");
+		var category = Server.getWorkflowCategoryWithPath(categoryPath);
+		if (category) {
+			return category.allWorkflows.filter(function (wf) {
+				return wf.name === workflowName;
+			})[0];
+		} else {
+			return null;
+		}
+	},
+
+	dereference: function (value) {
+		if (typeof (value) == "string") {
+			return [this.getById(value) || this.getByPath(value)];
+		} else {
+			return [];
+		}
+	}
+}, RefInputSpec);]]></script>
+</dunes-script-module>

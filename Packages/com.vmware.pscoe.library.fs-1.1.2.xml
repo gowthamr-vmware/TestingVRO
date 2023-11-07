@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[Built by Build Tools for VMware Aria]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='0be28c78-818c-4a33-a213-9f7ad7635f93'&dunesName='Action'&name='CustomFile'&category='com.vmware.pscoe.library.filesystem']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='64ec84ad-9ad9-44d4-b0f2-f76824ff41ee'&dunesName='Action'&name='writeFile'&category='com.vmware.pscoe.library.filesystem']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='c9435639-8317-4d0f-9438-49aed7cea148'&dunesName='Action'&name='readFile'&category='com.vmware.pscoe.library.filesystem']]></elm>
+</package>

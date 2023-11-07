@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ResourceElementMock" result-type="Any" api-version="6.0.0" id="fbac45b2-7b73-3316-b568-f888b082db98" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * mock
+ * %%
+ * Copyright (C) 2020 VMWARE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var ResourceElementMock = /** @class */ (function () {
+    function ResourceElementMock() {
+        this.versionHistoryItems = [];
+    }
+    ResourceElementMock.prototype.writeContentToFile = function (fileName) { };
+    ResourceElementMock.prototype.getContentAsMimeAttachment = function () {
+        return {
+            name: this.name,
+            mimeType: this.mimeType,
+            content: this.content,
+            write: function () { },
+        };
+    };
+    ResourceElementMock.prototype.getResourceElementCategory = function () {
+        return this.category;
+    };
+    ResourceElementMock.prototype.reload = function () { };
+    ResourceElementMock.prototype.saveToVersionRepository = function () { };
+    ResourceElementMock.prototype.setContentFromFile = function (fileName, mimeType) { };
+    ResourceElementMock.prototype.setContentFromMimeAttachment = function (mimeAttachment) { };
+    return ResourceElementMock;
+}());
+exports.ResourceElementMock = ResourceElementMock;
+return exports;
+]]></script>
+</dunes-script-module>

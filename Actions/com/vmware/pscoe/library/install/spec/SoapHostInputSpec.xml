@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="SoapHostInputSpec" result-type="Any" api-version="6.0.0" id="2b9f7c82-8892-45b4-b119-e750148100f7" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[SoapHost input specificator. Allows the operator to specify a soap host object as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var RefInputSpec = Class.load("com.vmware.pscoe.library.install.spec", "RefInputSpec");
+var InputSpecBase = Class.load("com.vmware.pscoe.library.install.spec", "InputSpecBase");
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.install.spec.SoapHostInputSpec");
+
+return Class.define(function SoapHostInputSpec(path) {
+	InputSpecBase.apply(this, arguments);
+	this.refType = "SOAP:Host";
+	this.validators.push(function (val) {
+		return (val && (val.id || (val.name && (val.wsdlUri || val.wsdlContent)))) ?
+			null : ("no name, wsdlUri, wsdlContent or id property found for " + JSON.stringify(val));
+	});
+}, {
+	execute: function (value, context) {
+		var deref = this.dereference(value)[0];
+		return InputSpecBase.prototype.execute.apply(this, [deref, context]);
+	},
+
+	/**
+	 * Firewalls and server configuration may block requests resulting in
+	 * an unreachable status while some specific ports may be accessible.
+	 */
+	reachable: function (timeout) {
+		this.validators.push(function (value) {
+			if (!value.wsdlUri) {
+				logger.warn("Reachable method require 'wsdUri' parameter to be passed. Validation is considered as successful.");
+				return null;
+			}
+			var url = new URL(value.wsdlUri);
+			var isHostReachable = System.isHostReachable(url.host, timeout || 60);
+			return (!isHostReachable) ? ("Host '" + url.host + "' is not reachable.") : null;
+		});
+		return this;
+	},
+
+	/**
+	 * Finds a SOAP:Host object in vRO. First-level properties:
+	 * -id
+	 * -name
+	 * -wsdlUri
+	 * -wsdlContent
+	 * -authenticationType
+	 * -sessionMode
+	 * -username
+	 * -password
+	 * -connectionTimeout
+	 * -requestTimeout
+	 * -domain
+	 * -workstation
+	 * -spn
+	 * -proxyHost
+	 * -proxyPort
+	 * -overwrite
+	 * -customProperties (optional) - setting custom properties on the vRO SOAPHost
+	 *
+	 * @param {Any} value - JSON criteria
+	 * @returns {SOAP:Host}
+	 */
+	dereference: function (value) {
+		var dereferenceCriteria = buildDereferenceCriteria(value);
+		var hosts = RefInputSpec.prototype.dereference.apply(this, [dereferenceCriteria]);
+		if (!value.id) {
+			if ((hosts && hosts.length == 1) && (value.overwrite)) {
+				removeSoapHost(hosts[0]);
+				hosts = [createSoapHost(value)];
+				value.overwrite = false;
+			}
+			if (!hosts || hosts.length < 1) {
+				hosts = [createSoapHost(value)];
+			}
+		}
+		return hosts;
+	}
+}, InputSpecBase);
+
+
+function buildDereferenceCriteria(value) {
+	var criteria = {};
+	if (value.id) {
+		criteria.id = value.id;
+	} else {
+		var validKeys = ["name", "wsdlUri", "wsdlFileContent", "proxyHost", "proxyPort"];
+		Object.keys(value).forEach(function (key) {
+			if (validKeys.indexOf(key) > -1) {
+				criteria[key] = value[key];
+			}
+		});
+	}
+	return criteria;
+}
+
+function createSoapHost(options) {
+	logger.info("Creating a new soap host with options: " + JSON.stringify(options));
+	var wf = Server.getWorkflowWithId("6f5958de-7651-4ecf-9f70-a1d007525114");
+
+	var inputs = new Properties();
+	inputs.put("name", options.name);
+	inputs.put("wsdlUri", options.wsdlUri);
+
+	if (options.wsdlContent) {
+		inputs.put("isWsdlLocal", true);
+		inputs.put("wsdlContent", options.wsdlContent);
+	}
+
+	inputs.put("connectionTimeout", options.connectionTimeout || 30);
+	inputs.put("requestTimeout", options.requestTimeout || 60);
+	inputs.put("authenticationType", "None");
+	inputs.put("sessionMode", "Per User Session");
+
+	if (options.username && options.password) {
+		inputs.put("sessionMode", "Shared Session");
+		inputs.put("username", options.username);
+		inputs.put("password", options.password);
+		inputs.put("authenticationType", options.authenticationType || "Basic");
+
+		if (options.spn) {
+			inputs.put("spn", options.spn);
+			inputs.put("authenticationType", "Negotiate");
+		}
+
+		if (options.domain && options.workstation) {
+			inputs.put("domain", options.domain);
+			inputs.put("workstation", options.workstation);
+			inputs.put("authenticationType", "NTLM");
+		}
+	}
+
+	if (options.proxyHost && options.proxyPort) {
+		inputs.put("useProxy", true);
+		inputs.put("proxyHost", options.proxyHost);
+		inputs.put("proxyPort", options.proxyPort);
+	}
+
+	inputs.put("ignoreWarnings", (options.ignoreWarnings !== undefined) ? options.ignoreWarnings : true);
+
+	var token = wf.execute(inputs);
+	var output = System.getModule("com.vmware.pscoe.library.util").waitForWorkflowToComplete(token, 1, 30);
+	var soapHost = output.get("soapHost");
+	if (!!options.customProperties) {
+		var inSpecDummy = new InputSpecBase("dummy");
+		Object.keys(options.customProperties).forEach(function (key) {
+			inSpecDummy.setCustomProperty(soapHost, key, options.customProperties[key]);
+		}, this);
+	}
+	return soapHost;
+}
+
+function removeSoapHost(host) {
+	SOAPHostManager.removeHost(host.id);
+	logger.info("SOAPHost with name '" + host.name + "' has been deleted.");
+}]]></script>
+</dunes-script-module>

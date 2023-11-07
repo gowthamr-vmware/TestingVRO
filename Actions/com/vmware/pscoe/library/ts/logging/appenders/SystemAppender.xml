@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="SystemAppender" result-type="Any" api-version="6.0.0" id="1fa268b1-f5e2-3de5-8f6c-785b522c6ea3" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.logging.appenders">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var __extends = VROES.tslib.__extends;
+var BaseAppender_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging.appenders/BaseAppender");
+/**
+ * Appender that prints the logs to the system stream
+ */
+var SystemAppender = /** @class */ (function (_super) {
+    __extends(SystemAppender, _super);
+    function SystemAppender(properties) {
+        return _super.call(this, properties) || this;
+    }
+    SystemAppender.prototype.append = function (severity, msg) {
+        msg = this.format(severity, msg);
+        switch (severity) {
+            case "DEBUG":
+                System.debug(msg);
+                break;
+            case "INFO":
+                System.log(msg);
+                break;
+            case "WARN":
+                System.warn(msg);
+                break;
+            case "ERROR":
+                System.error(msg);
+                break;
+            default:
+                System.error("Logging Level[" + severity + "] is not defined!");
+        }
+    };
+    return SystemAppender;
+}(BaseAppender_1._.BaseAppender));
+exports.SystemAppender = SystemAppender;
+return exports;
+]]></script>
+</dunes-script-module>

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getNamespaceByName" result-type="DynamicTypes:DynamicNamespaceDefinition" api-version="6.0.0" id="de8d79fb-df5e-4c8f-b0d6-5f5b390370a0" version="1.0.0" allowed-operations="vef" category-name="com.vmware.o11n.plugin.dynamictypes.configuration">
+  <param n="name" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (name == null) {
+  System.log("getNamespaceByName() --> name is null");
+  return null;
+}
+
+return DynamicTypesManager.getNamespace(name);]]></script>
+</dunes-script-module>

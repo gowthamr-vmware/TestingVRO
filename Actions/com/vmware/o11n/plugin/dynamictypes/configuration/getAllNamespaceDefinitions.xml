@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getAllNamespaceDefinitions" result-type="Array/DynamicTypes:DynamicNamespaceDefinition" api-version="6.0.0" id="c5f71ed4-9b4f-40b8-94cc-82fb764ab0b9" version="1.0.0" allowed-operations="vef" category-name="com.vmware.o11n.plugin.dynamictypes.configuration">
+  <script encoded="false"><![CDATA[return DynamicTypesManager.getAllNamespaces();]]></script>
+</dunes-script-module>

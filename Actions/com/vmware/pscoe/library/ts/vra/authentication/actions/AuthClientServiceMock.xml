@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AuthClientServiceMock" result-type="Any" api-version="6.0.0" id="b2894892-20c5-3422-a0ab-7a4844b3a91c" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.vra.authentication.actions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var VroMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock/VroMock");
+var RESTMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.rest/RESTMock");
+var AuthClientServiceMock = /** @class */ (function () {
+    function AuthClientServiceMock(scope) {
+        this.scope = scope;
+        this.config = AuthClientServiceMock.CONFIGURATION_ELEMENT_ATTRIBUTES;
+    }
+    AuthClientServiceMock.prototype.mockVraConfiguration = function (configuration) {
+        this.config = VROES.Shims.objectAssign({}, this.config, configuration);
+        VroMock_1._.VroMock
+            .configure()
+            .config(AuthClientServiceMock.CONFIGURATION_ELEMENT_NAME, this.config);
+    };
+    AuthClientServiceMock.prototype.mockGlobalHiddenConfig = function () {
+        this.scope.Config = {
+            getKeystores: function () {
+                return {
+                    getImportCAFromUrlAction: function () {
+                        return {
+                            getModel: function () {
+                                return {
+                                    value: ""
+                                };
+                            },
+                            validateCertificates: function () {
+                                return {
+                                    isNoChainOfTrust: function () { return false; },
+                                    isWrongDomain: function () { return false; },
+                                    isNotValid: function () { return false; },
+                                };
+                            },
+                            execute: function () { }
+                        };
+                    }
+                };
+            }
+        };
+        Config = this.scope.Config;
+    };
+    AuthClientServiceMock.prototype.mockAuthentication = function (builder) {
+        // Use initial config always as a base
+        var config = VROES.Shims.objectAssign({}, this.config);
+        var PATH = {
+            user: "/csp/gateway/am/idp/auth/login",
+            token: "/csp/gateway/am/api/auth/api-tokens/authorize?refresh_token=" + config.refreshToken
+        };
+        builder
+            .withHandler(PATH.user, "POST", function (request) {
+            if (request.content.username == config.username &&
+                request.content.password == config.password &&
+                request.content.domain == config.domain) {
+                return {
+                    access_token: AuthClientServiceMock.BEARER_TOKEN
+                };
+            }
+            return {};
+        })
+            .withHandler(PATH.token, "POST", function (request) {
+            return {
+                access_token: AuthClientServiceMock.BEARER_TOKEN
+            };
+        });
+    };
+    AuthClientServiceMock.prototype.mockRESTHostManager = function (restHost) {
+        var _this = this;
+        this.scope.RESTHostManager =
+            this.scope.RESTHostManager || {};
+        this.scope.RESTHostManager.reloadConfiguration =
+            this.scope.RESTHostManager.reloadConfiguration || (function () { });
+        this.scope.RESTHostManager.createTransientHostFrom =
+            this.scope.RESTHostManager.createTransientHostFrom || (function (restHost) { return restHost; });
+        var createHostOriginal = this.scope.RESTHostManager.createHost;
+        var PATH = {
+            user: "/csp/gateway/am/idp/auth/login",
+            token: "/csp/gateway/am/api/auth/api-tokens/authorize?refresh_token=" + _this.config.refreshToken
+        };
+        this.scope.RESTHostManager.createHost = function (name) {
+            // Copied from RESTHostMockBuilder name generator
+            var hostName = (_this.config.hostname + ":" + _this.config.port)
+                .replace(/https:\/\//i, "")
+                .replace(/http:\/\//i, "")
+                .replace(/\W/g, "_");
+            return hostName == name ? restHost : createHostOriginal(name);
+        };
+        this.scope.RESTHostManager.createHostOriginal = this.scope.RESTHostManager.createHost;
+        RESTHostManager = this.scope.RESTHostManager;
+    };
+    AuthClientServiceMock.prototype.mock = function (restHostMockBuilder) {
+        var builder = restHostMockBuilder || RESTMock_1._.RESTMock.createHost();
+        this.mockVraConfiguration(AuthClientServiceMock.CONFIGURATION_ELEMENT_ATTRIBUTES);
+        this.mockGlobalHiddenConfig();
+        this.mockAuthentication(builder);
+        this.mockRESTHostManager(builder.build());
+    };
+    AuthClientServiceMock.CONFIGURATION_ELEMENT_NAME = "PS CoE/Library/vRA/VraConfiguration";
+    AuthClientServiceMock.CONFIGURATION_ELEMENT_ATTRIBUTES = {
+        hostname: "vra-l-01a.corp.local",
+        port: 443,
+        domain: "corp.local",
+        username: "configurationadmin",
+        password: "VMware1!",
+        refreshToken: "",
+        projectID: "pscoe",
+        orgID: "vmware",
+        token: "YYYYY",
+        expires_in: new Date().getTime() + 7000
+    };
+    AuthClientServiceMock.BEARER_TOKEN = "YYYYY";
+    return AuthClientServiceMock;
+}());
+exports.AuthClientServiceMock = AuthClientServiceMock;
+return exports;
+]]></script>
+</dunes-script-module>

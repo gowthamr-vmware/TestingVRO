@@ -1,0 +1,262 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ExpressionEvaluator" result-type="Any" api-version="6.0.0" id="a7307e13-67f0-4591-abc8-b1baa5c61551" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Evaluating math, boolean and expressions with variables Using Shunting-yard
+algorithm to parse Reverse Polish notation to calculate the result]]></description>
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging")
+		.getLogger("com.vmware.pscoe.library.util.ExpressionEvaluator");
+
+function isBoolean(el) {
+	return el === 'true' || el === 'false' || el === true || el === false;
+}
+
+function isNumeric(el) {
+	return !isNaN(parseFloat(el)) && isFinite(el);
+}
+function isStringLiteral(el) {
+	var elTrimed = el.trim();
+	return elTrimed.indexOf("\"") == 0 || elTrimed.indexOf("'") == 0;
+}
+function clean(arr) {
+	for (var i = 0; i < arr.length; i++) {
+		if (arr[i] === "") {
+			arr.splice(i, 1);
+		}
+	}
+	return arr;
+}
+
+/**
+ * getting and assigning the value
+ */
+function resolveVariable(variables, token) {
+	var arrToken = token.split(".");
+	var tempValue = variables;
+	var tokenValue;
+
+	if (variables.hasOwnProperty(token)) {
+		tokenValue = variables[token];
+	} else {
+		try {
+			for ( var i in arrToken) {
+				tokenValue = tempValue[arrToken[i]];
+				if (tokenValue == null || tokenValue == undefined) {
+					return undefined;
+				}
+				tempValue = tokenValue;
+			}
+		} catch (e) {
+			//error ignore at this stage, could be a value, not a variable
+		}
+	}
+
+	if (tokenValue == undefined || tokenValue == null) {
+		return token;
+	} else if (!isNumeric(tokenValue) && !isBoolean(tokenValue)) {
+		return "'" + tokenValue + "'";
+	} else {
+		return tokenValue;
+	}
+}
+
+var operators = {
+	"^" : {
+		precedence : 4,
+		associativity : "Right",
+		action : function(a, b) {
+			return Math.pow((b), (a));
+		}
+	},
+	"/" : {
+		precedence : 3,
+		associativity : "Left",
+		action : function(a, b) {
+			return ((b) / (a));
+		}
+	},
+	"*" : {
+		precedence : 3,
+		associativity : "Left",
+		action : function(a, b) {
+			return ((a) * (b));
+		}
+	},
+	"+" : {
+		precedence : 2,
+		associativity : "Left",
+		action : function(a, b) {
+			return ((a) + (b));
+		}
+	},
+	"-" : {
+		precedence : 2,
+		associativity : "Left",
+		action : function(a, b) {
+			return ((b) - (a));
+		}
+	},
+
+	">=" : {
+		precedence : 1,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b >= a);
+		}
+	},
+	"<=" : {
+		precedence : 1,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b <= a);
+		}
+	},
+	"==" : {
+		precedence : 1,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b == a);
+		}
+	},
+	"!=" : {
+		precedence : 1,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b != a);
+		}
+	},
+	"===" : {
+		precedence : 1,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b === a);
+		}
+	},
+	"!==" : {
+		precedence : 1,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b !== a);
+		}
+	},
+	">" : {
+		precedence : 1,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b > a);
+		}
+	},
+	"<" : {
+		precedence : 1,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b < a);
+		}
+	},
+
+	"&&" : {
+		precedence : 0,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b && a);
+		}
+	},
+	"||" : {
+		precedence : 0,
+		associativity : "Left",
+		action : function(a, b) {
+			return (b || a);
+		}
+	},
+};
+
+var keywords = {
+	"null" : null,
+	"undefined" : undefined
+}
+
+return function() {
+
+	this.solvePostfix = function(postfix) {
+		var resultStack = [];
+		for (var i = 0; i < postfix.length; i++) {
+			if (isNumeric(postfix[i])) {  // numeric
+				resultStack.push(parseFloat(postfix[i]));
+			} else if (isBoolean(postfix[i])) { // boolean
+				resultStack.push(postfix[i] == "true"
+						|| postfix[i] == true);
+			} else if (Object.keys(keywords).indexOf(postfix[i]) > -1) { // null or undefined value
+				resultStack.push(keywords[postfix[i]]);
+			} else if ("^*/+-<=>===!==&&||".indexOf(postfix[i] ? postfix[i].trim() : null) === -1) { // string value
+				resultStack.push(postfix[i]);
+			} else {
+				var a = resultStack.pop();
+				var b = resultStack.pop();
+				resultStack.push(operators[postfix[i]].action(a, b));
+			}
+		}
+		if (resultStack.length > 1) {
+			logger.debug("result stack: " + resultStack);
+			throw "Error in solving the expression, SYA";
+		} else {
+			return resultStack.pop();
+		}
+	};
+
+	this.infixToPostfix = function(variables, infix) {
+		var outputQueue = [];
+		var operatorStack = [];
+
+		infix = infix.replace(/\s+/g, "");
+		var inflixSplitted =[];
+		infix.split(/('.*?')/g).forEach(function(el){
+			if(el.indexOf("'") >= 0){
+				inflixSplitted.push(el)
+			} else {
+				el.split(/(<=|\(|>=|===|==|!==|!=|&&|\|\||-|^|\)|\(|\+|\*|\/|>|<)/g).forEach(function(el1){//ordered split
+				inflixSplitted.push(el1)
+				})
+			}				
+		});
+		inflixSplitted = clean(inflixSplitted);
+
+		for (var i = 0; i < inflixSplitted.length; i++) {
+			var token = inflixSplitted[i];
+			if (isNumeric(token) || isBoolean(token) || isStringLiteral(token)) {
+				outputQueue.push(token);
+			} else if ("^*/+-<=>===!==&&||".indexOf(token) !== -1) {
+				var o1 = token;
+				var o2 = operatorStack[operatorStack.length - 1];
+				while ("^*/+-<=>===!==&&||".indexOf(o2) !== -1
+						&& ((operators[o1].associativity === "Left" && operators[o1].precedence <= operators[o2].precedence) ||
+							(operators[o1].associativity === "Right" && operators[o1].precedence < operators[o2].precedence))) {
+					outputQueue.push(operatorStack.pop());
+					o2 = operatorStack[operatorStack.length - 1];
+				}
+				operatorStack.push(o1);
+			} else if (token === "(") {
+				operatorStack.push(token);
+			} else if (token === ")") {
+				while (operatorStack[operatorStack.length - 1] !== "(") {
+					outputQueue.push(operatorStack.pop());
+				}
+				operatorStack.pop();
+			} else { // variable
+				var calcvalue = resolveVariable(variables, token);
+				outputQueue.push(calcvalue);
+			}
+		}
+		while (operatorStack.length > 0) {
+			outputQueue.push(operatorStack.pop());
+		}
+		return outputQueue;
+	};
+
+	this.evaluate = function(variables, infix) {
+		var postfix = this.infixToPostfix(variables, infix);
+		logger.debug("infix: " + infix);
+		logger.debug("postfix: " + postfix.join(" "));
+		var result = this.solvePostfix(postfix); // this.type
+		logger.debug("result: " + result);
+		return result;
+	};
+};]]></script>
+</dunes-script-module>

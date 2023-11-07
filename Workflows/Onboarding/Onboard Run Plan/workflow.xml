@@ -1,0 +1,33 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item4" object-name="workflow:name=generic" id="dcb4d4e5-4dc0-47d6-9bd9-3440f0d9a4bb" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Onboard Run Plan]]></display-name><position y="50.0" x="100.0"/><input><param name="vraURL" type="string"/><param name="username" type="string"/><param name="password" type="SecureString"/><param name="planID" type="string"/><param name="inputSessionToken" type="string"/></input><output><param name="runningPlanID" type="string"/></output><attrib name="sessionToken" type="string" read-only="false"><value encoded="n"/></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="140.0" x="420.0"/></workflow-item><workflow-item name="item3" out-name="item0" type="task"><display-name><![CDATA[Run Plan]]></display-name><script encoded="false"><![CDATA[var opUrl = '/relocation/api/wo/execute-plan';
+var baseUrl = vraURL;
+var opMethod = 'POST'
+var urlParamValues = null;
+//var headers = new Properties();
+//headers.put('csp-auth-token',sessionToken);
+var headers = new Properties();
+headers.put('Authorization','Bearer ' + sessionToken);
+var contentType = 'application/json';
+
+var contentObject = new Object();
+contentObject.planLink = "/relocation/onboarding/plan/" + planID;
+
+var content = JSON.stringify(contentObject);
+
+var username = null;
+var password = null;
+
+response = System.getModule("com.vmware.pso.rest").executeTransientRESTOperation(baseUrl,username,password,opMethod,opUrl,urlParamValues,headers,contentType,content);
+
+
+System.log('responseString' + response.responseString)
+System.log('statusCode' + response.statusCode)
+
+if (response.statusCode != 200) {
+    throw 'Exception seen calling plan status code ' + response.statusCode;
+}
+
+var jsonObj = JSON.parse(response.responseString)
+var selfLink = jsonObj.documentSelfLink;
+var splitSelfLink =selfLink.split('/');
+
+runningPlanID = splitSelfLink[(splitSelfLink.length -1)]]]></script><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="sessionToken" type="string" export-name="sessionToken"/><bind name="planID" type="string" export-name="planID"/></in-binding><out-binding><bind name="runningPlanID" type="string" export-name="runningPlanID"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="380.0"/></workflow-item><workflow-item name="item4" out-name="item3" type="link" linked-workflow-id="3f40bb50-7b54-4735-bfd5-74412624256a"><display-name><![CDATA[Get Or Create VRA Session Token]]></display-name><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="username" type="string" export-name="username"/><bind name="password" type="SecureString" export-name="password"/><bind name="inputSessionToken" type="string" export-name="inputSessionToken"/></in-binding><out-binding><bind name="sessionToken" type="string" export-name="sessionToken"/></out-binding><description><![CDATA[]]></description><position y="60.0" x="220.0"/></workflow-item><presentation/></workflow>

@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ServerAppender" result-type="Any" api-version="6.0.0" id="9a880cc4-2d08-342b-bfca-0bb9f817dc18" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.logging.appenders">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var __extends = VROES.tslib.__extends;
+var BaseAppender_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging.appenders/BaseAppender");
+/**
+ * Appender that writes to the server logs
+ */
+var ServerAppender = /** @class */ (function (_super) {
+    __extends(ServerAppender, _super);
+    function ServerAppender(properties) {
+        return _super.call(this, properties) || this;
+    }
+    ServerAppender.prototype.append = function (severity, msg) {
+        msg = this.format(severity, msg);
+        switch (severity) {
+            case "INFO":
+            case "DEBUG":
+                Server.log(msg);
+                break;
+            case "WARN":
+                Server.warn(msg);
+                break;
+            case "ERROR":
+                Server.error(msg);
+                break;
+            default:
+                Server.error("Logging Level[" + severity + "] is not defined!");
+        }
+    };
+    return ServerAppender;
+}(BaseAppender_1._.BaseAppender));
+exports.ServerAppender = ServerAppender;
+return exports;
+]]></script>
+</dunes-script-module>

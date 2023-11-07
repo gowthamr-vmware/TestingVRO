@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[This package is licensed under https://flings.vmware.com/vrealize-build-tools/license]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='048c423c-19f8-4ba0-9fbc-ee30579521a0'&dunesName='Action'&name='CloudAssemblyService'&category='com.vmware.pscoe.library.ts.customhostname.actions.vra']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='0b9aa297-ad42-4b60-b51f-0f8992316a50'&dunesName='Action'&name='DNSHostnameAssertion'&category='com.vmware.pscoe.library.ts.customhostname.validation.Assertions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='0c87f9e1-bdbd-4415-92a4-57b58a791cf6'&dunesName='Action'&name='ADHostnameExtractor'&category='com.vmware.pscoe.library.ts.customhostname.autofill.extractor']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='26b99e24-73d9-46f5-9e74-02b0e5ec0939'&dunesName='Action'&name='VRAHostnameExtractor'&category='com.vmware.pscoe.library.ts.customhostname.autofill.extractor']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='34bce1a1-5b79-4b60-b5dd-f59112b87d38'&dunesName='Action'&name='DNSHostnameExtractor'&category='com.vmware.pscoe.library.ts.customhostname.autofill.extractor']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='5dbd0ba7-887b-4c84-8e82-808d625a92f6'&dunesName='Action'&name='VRAHostnameAssertion'&category='com.vmware.pscoe.library.ts.customhostname.validation.Assertions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ResourceElement?id='6c734017-0991-35e8-8d27-627fa3bb62dc'&dunesName='ResourceElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='98a28d20-b2b5-4891-a8fd-fe7e936da9d7'&dunesName='Action'&name='TemplateValidator'&category='com.vmware.pscoe.library.ts.customhostname.validation']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a1251372-8faf-4fc8-916f-c6a9d7d84ce7'&dunesName='Action'&name='VCHostnameExtractor'&category='com.vmware.pscoe.library.ts.customhostname.autofill.extractor']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='a95dfc57-12ee-45c1-98c6-1636174713ba'&dunesName='Action'&name='AutofillService'&category='com.vmware.pscoe.library.ts.customhostname.autofill']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='abe860e9-a009-4520-8013-cb149cc409e4'&dunesName='Action'&name='CustomHostnameConfigurator'&category='com.vmware.pscoe.library.ts.customhostname.install.handlers']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='b44368a5-75e7-4f5d-8f74-5061a098116d'&dunesName='Action'&name='ExtractorUtil'&category='com.vmware.pscoe.library.ts.customhostname.autofill.extractor']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='bb733787-33fd-490e-afe2-bb628327c4a0'&dunesName='Action'&name='VCHostnameAssertion'&category='com.vmware.pscoe.library.ts.customhostname.validation.Assertions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='bc9731a9-38a0-4f9b-9d7c-bb95676403c7'&dunesName='Action'&name='HostnameGenerator'&category='com.vmware.pscoe.library.ts.customhostname.actions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='c6468bdc-c5e4-49dc-8600-d7495c0d1578'&dunesName='Action'&name='HostnameValidator'&category='com.vmware.pscoe.library.ts.customhostname.validation']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='fc7cf0b7-6465-46f9-bd26-b3d21c0d09c9'&dunesName='Action'&name='ADHostnameAssertion'&category='com.vmware.pscoe.library.ts.customhostname.validation.Assertions']]></elm>
+</package>

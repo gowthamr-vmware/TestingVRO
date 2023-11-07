@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="GuestRunner" result-type="Any" api-version="6.0.0" id="4fd8ccb9-9c77-464f-9d3e-74847a754756" version="1.0.5" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.dns.actions">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * dns
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var GuestRunner = /** @class */ (function () {
+    function GuestRunner(vCenterVm, username, password) {
+        this.guest = System.getModule("com.vmware.pscoe.library.guestops").Guest(vCenterVm, username, password);
+        this.guestOps = System.getModule("com.vmware.pscoe.library.guestops").GuestOperations(this.guest);
+        if (!this.credentials) {
+            this.credentials = {};
+        }
+        this.credentials["username"] = username;
+        this.credentials["password"] = password;
+        this.vCenterVm = vCenterVm;
+    }
+    GuestRunner.processResult = function (result) {
+        if (result.exitCode === 0 && !!result.stdErr) {
+            throw new Error("Guest OS script reported successful execution, " +
+                ("but error is presented in STDERR stream. Error: " + result.stdErr));
+        }
+    };
+    return GuestRunner;
+}());
+exports.GuestRunner = GuestRunner;
+return exports;]]></script>
+</dunes-script-module>

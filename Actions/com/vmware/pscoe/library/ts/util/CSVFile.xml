@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CSVFile" result-type="Any" api-version="6.0.0" id="7a7a8b9e-1f14-4dde-9d71-b1aa5f0b5daa" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+function removeQuotesAndTrim(value, newLine) {
+    var result = value.replace(new RegExp("\"", "g"), ""); //remove quotes from value
+    if (newLine) {
+        result = result.replace(new RegExp(newLine, "g"), ""); //remove newLine delimiter from value
+    }
+    return result.trim(); //remove empty spaces from start and end of value
+}
+;
+var CSVFile = /** @class */ (function () {
+    function CSVFile(headers, lines, delimiter, newLine, options) {
+        this.headers = headers;
+        this.lines = lines;
+        this.delimiter = delimiter;
+        this.newLine = newLine;
+        this.options = options;
+    }
+    CSVFile.prototype.toJSON = function () {
+        var jsonData = [];
+        for (var _i = 0, _a = this.lines; _i < _a.length; _i++) {
+            var line = _a[_i];
+            var currentLineObject = {};
+            for (var j = 0; j < this.headers.length; j++) {
+                var striped = removeQuotesAndTrim(this.headers[j]);
+                currentLineObject[striped] = line[j];
+            }
+            jsonData.push(currentLineObject);
+        }
+        return jsonData;
+    };
+    CSVFile.prototype.toString = function () {
+        var strLines = [this.headers.join(this.delimiter)];
+        strLines = strLines.concat(this.lines.join(this.delimiter));
+        return strLines.join(this.newLine);
+    };
+    CSVFile.parse = function (content, options) {
+        var delimiter = ",";
+        var newLine = "\r\n";
+        var match = /[^\r\n]+/g;
+        if (options) {
+            if (options.delimiter) {
+                delimiter = options.delimiter;
+            }
+            if (options.newLine) {
+                newLine = options.newLine;
+            }
+            if (options.match) {
+                match = options.match;
+            }
+        }
+        var lines = match ? content.match(match) : content.split(newLine);
+        var headers = lines[0].split(delimiter);
+        var parsedLines = [];
+        for (var i = 1; i < lines.length; i++) {
+            if (lines[i]) { //added by MM
+                parsedLines.push(lines[i].split(delimiter));
+            }
+        }
+        return new CSVFile(headers, parsedLines, delimiter, newLine, options);
+    };
+    CSVFile.fromJson = function (jsonArray, options) {
+        var delimiter = ",";
+        var newLine = "\r\n";
+        var emptyValue = null;
+        var opts = null;
+        if (options) {
+            if (options.delimiter) {
+                delimiter = options.delimiter;
+            }
+            if (options.newLine) {
+                newLine = options.newLine;
+            }
+            if (options.hasOwnProperty("emptyValue")) {
+                //Obtain empty value - user controlled
+                emptyValue = options.emptyValue;
+            }
+            if (options.options) {
+                opts = options.options;
+            }
+        }
+        if (jsonArray instanceof Array) {
+            //Make sure of consistency of array
+            var maxFieldsIndx = (-1);
+            var maxFields = 0;
+            for (var p = 0; p < jsonArray.length; p++) {
+                var objKeys = Object.keys(jsonArray[p]);
+                if (objKeys.length > maxFields) { //get object with most keys
+                    maxFields = objKeys.length;
+                    maxFieldsIndx = p; //get index of the object with most keys
+                }
+            }
+            //Generate headers
+            var headers_1 = [];
+            var allKeys = Object.keys(jsonArray[maxFieldsIndx]);
+            allKeys.forEach(function (key) {
+                var head = removeQuotesAndTrim(key, newLine);
+                headers_1.push(head);
+            });
+            //Generate lines
+            var lines = [];
+            var _loop_1 = function (i) {
+                var obj = jsonArray[i];
+                var lin = [];
+                allKeys.forEach(function (key) {
+                    if (obj.hasOwnProperty(key)) {
+                        var value = obj[key];
+                        var striped = !value ? emptyValue : (removeQuotesAndTrim((value + ""), newLine));
+                        lin.push(striped);
+                    }
+                    else {
+                        lin.push(emptyValue);
+                    }
+                });
+                lines.push(lin);
+            };
+            for (var i in jsonArray) {
+                _loop_1(i);
+            }
+            return new CSVFile(headers_1, lines, delimiter, newLine, opts);
+        }
+        else {
+            throw new Error("Provided JSON is not of type array");
+        }
+    };
+    return CSVFile;
+}());
+exports.default = CSVFile;
+return exports;]]></script>
+</dunes-script-module>

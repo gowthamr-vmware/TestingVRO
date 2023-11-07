@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ConfigElementAccessor" result-type="Any" api-version="6.0.0" id="cb345807-4f3e-4f7f-b4f6-e73fd0b6c1af" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var ConfigElementAccessor = /** @class */ (function () {
+    function ConfigElementAccessor(configPath, throwIfMissing) {
+        var _this = this;
+        this.configPath = configPath;
+        var sepIndex = configPath.lastIndexOf("/");
+        this.categoryPath = configPath.substring(0, sepIndex);
+        this.elementName = configPath.substring(sepIndex + 1);
+        var category = Server.getConfigurationElementCategoryWithPath(this.categoryPath);
+        if (category) {
+            this.configElement = VROES.Shims.arrayFind((category.configurationElements || []), function (ce) { return ce.name === _this.elementName; });
+        }
+        if (!this.configElement && throwIfMissing) {
+            throw new Error("Configuration element " + this.elementName + " with path " + this.categoryPath + " not found.");
+        }
+    }
+    ConfigElementAccessor.prototype.get = function (name, throwIfMissing) {
+        var value;
+        if (this.configElement) {
+            var attrib = this.configElement.getAttributeWithKey(name);
+            value = attrib ? attrib.value : null;
+        }
+        if (throwIfMissing && value == null) {
+            throw new Error("Configuration at " + this.configPath + "/" + name + " does not have a value.");
+        }
+        return value;
+    };
+    ConfigElementAccessor.prototype.getNames = function () {
+        return (this.configElement && this.configElement.attributes) ? this.configElement.attributes.map(function (att) { return att.name; }) : [];
+    };
+    // Add saveToVersionRepository as optional, as it might cause internal performance vRO issues when saving configuration element
+    ConfigElementAccessor.prototype.set = function (name, value, typeHint, saveToVersionRepository) {
+        if (saveToVersionRepository === void 0) { saveToVersionRepository = true; }
+        var configurationElement = this.getElement();
+        configurationElement.setAttributeWithKey(name, value, typeHint);
+        // This method is required for vRA8, as it is expected to have an issue with RE and CE when upgrading to vRA 8.2
+        if (saveToVersionRepository && configurationElement.saveToVersionRepository && typeof configurationElement.saveToVersionRepository === "function") {
+            configurationElement.saveToVersionRepository();
+        }
+    };
+    ConfigElementAccessor.prototype.remove = function (name) {
+        if (this.configElement) {
+            this.configElement.removeAttributeWithKey(name);
+        }
+    };
+    ConfigElementAccessor.prototype.reload = function () {
+        if (this.configElement) {
+            this.configElement.reload();
+        }
+    };
+    ConfigElementAccessor.prototype.getElement = function () {
+        if (!this.configElement) {
+            this.configElement = Server.createConfigurationElement(this.categoryPath, this.elementName);
+        }
+        return this.configElement;
+    };
+    return ConfigElementAccessor;
+}());
+exports.ConfigElementAccessor = ConfigElementAccessor;
+return exports;]]></script>
+</dunes-script-module>

@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="writeFile" result-type="Any" api-version="6.0.0" id="64ec84ad-9ad9-44d4-b0f2-f76824ff41ee" version="1.1.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.filesystem">
+  <param n="fileName" t="Any"><![CDATA[]]></param>
+  <param n="content" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var CustomFile = System.getModule("com.vmware.pscoe.library.filesystem").CustomFile();	
+var file = new CustomFile(fileName);
+file.write(content);]]></script>
+</dunes-script-module>

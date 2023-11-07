@@ -1,0 +1,270 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="IpV4Util" result-type="Any" api-version="6.0.0" id="2978c940-1abb-4ddc-9f67-2355b9bca0ca" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.util.IpV4Util");
+
+var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+/**
+ * Defines a helper class that hold utility methods for working with Ips
+ */
+return Class.define("IpV4Util", function () {
+    /**
+     * Private Methods
+    */
+    var isIpValid = function (ip) {
+        var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
+        if (ipPattern.test(ip)) {
+            return true;
+        }
+        return false;
+    };
+    var validateIp = function (ip) {
+        if (!isIpValid(ip)) {
+            throw "Supplied string is not an IP: " + ip;
+        }
+    };
+
+    var isValidCIDR = function (networkAddressCIDR) {
+        var re = new RegExp('^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$');
+        if (networkAddressCIDR.match(re)) {
+            return true;
+        }
+        return false;
+    };
+
+    var parseCIDR = function (ip, errorMessagePrefix) {
+        errorMessagePrefix = errorMessagePrefix || "Address";
+        if (!isValidCIDR(ip)) {
+            throw new Error(errorMessagePrefix + " " + ip + " is invalid. Expected. CIDR, e.g. 172.16.0.1/24");
+        }
+        var parts = ip.split("/");
+        return {
+            ip: parts[0],
+            prefixLength: parseInt(parts[1])
+        }
+    }
+
+    var numberToIpInt = function (number) {
+        var d = number % 256;
+        for (var i = 3; i > 0; i--) {
+            number = Math.floor(number / 256);
+            d = number % 256 + '.' + d;
+        }
+        return d;
+    };
+    var ipToNumberInt = function (ip) {
+        validateIp(ip);
+        var d = ip.split('.');
+        return ((((((+d[0]) * 256) + (+d[1])) * 256) + (+d[2])) * 256) + (+d[3]);
+    };
+
+    var getWildcardMask = function (mask) {
+        var subnetArray = [0, 0, 0, 0];
+        for (var i = 0; i < 4; i++) {
+            subnetArray[i] = 255 - mask.split(".")[i];
+        }
+        return subnetArray.join(".");
+    };
+    var getBroadcastAddress = function (network, mask) {
+        var wild = getWildcardMask(mask);
+        var subnetArray = [0, 0, 0, 0];
+        for (var i = 0; i < 4; i++) {
+            subnetArray[i] = network.split(".")[i] | wild.split(".")[i];
+        }
+        return subnetArray.join(".");
+    };
+
+    /**
+     * Checks if the provided address in a valid CIDR.
+     * @param {string} ip - network address
+     */
+    this.isValidCIDR = function (ip) {
+        return isValidCIDR(ip);
+    };
+
+    /**
+     * Parses the provided address in CIDR format to IP and prefix length. Will throw an error if the provided 
+     * input is not in the correct format.
+     * @example
+     * var cidr = ipV4Util.parseCIDR("192.168.0.0/24");
+     * System.log(cidr.ip); // will log 192.168.0.0
+     * System.log(cidr.prefixLength); // will log 24
+     * @param {string} ip - network address in CIDR format.
+     * @param {string} errorMessagePrefix = optional, override the subject of the erro message, e.g. ESG IP.
+     */
+    this.parseCIDR = function (ip, errorMessagePrefix) {
+        return parseCIDR(ip, errorMessagePrefix);
+    };
+
+    /**
+     * Returns the IP imediately following the provided address.
+     * @param {string} ip - the current ip or network address, e.g. 192.168.0.0.
+     */
+    this.nextIp = function (ip) {
+        var ipNumber = this.ipToNumber(ip);
+        return this.numberToIp(ipNumber + 1);
+    };
+
+    /**
+        * Checks if string is in IP format
+        * @param ip - a string representation of IP
+        * @return boolean
+        * Ex: 255.255.255.0 -> true
+        * Ex: 255.255.255. -> false
+        */
+    this.isIpValid = function (ip) {
+        return isIpValid(ip);
+    };
+    /**
+     * Converts Subnet Mask to Subnet Prefix
+     * @param mask - a string representation of the Subnet Mask
+     * @return numeric value of the Subnet Prefix
+     * Ex: 255.255.255.0 -> 24
+     */
+    this.maskToPrefix = function (mask) {
+        var maskNum = ipToNumberInt(mask);
+        var maskBit = maskNum.toString(2);
+        return maskBit.indexOf(0) == -1 ? 32 : maskBit.indexOf(0);
+    };
+    /**
+     * Converts Subnet Prefix to Subnet Mask
+     * @param prefix - an integer/string representation of the Subnet Prefix
+     * @return a string representation of the Subnet Mask
+     * Ex: 24 -> 255.255.255.0
+     */
+    this.prefixToMask = function (prefix) {
+        if (!(/^\d+$/.test(prefix)) || parseInt(prefix) < 0 || parseInt(prefix) > 32) {
+            throw "Prefix should be numeric value between 0 and 32.";
+        }
+        var binaryMask = "";
+        for (var i = 0; i < 32; i++) {
+            binaryMask += i < parseInt(prefix) ? "1" : "0";
+        }
+        var intMask = parseInt(binaryMask, 2);
+        return numberToIpInt(intMask);
+    };
+    /**
+     * Calculates the Start IP of a Subnet
+     * @param network - a string representation of the Subnet
+     * @param mask - a string representation of the Subnet Mask or a numeric prefix length
+     * @return a string representation of the first IP in the Subnet
+     * Ex: 192.168.0.0, 255.255.0.0 -> 192.168.0.1
+     */
+    this.getBeginIp = function (network, mask) {
+        if (typeof (mask) == "number") {
+            mask = this.prefixToMask(mask);
+        }
+        validateIp(network);
+        validateIp(mask);
+        var subnet = this.getSubnet(network, mask);
+        return numberToIpInt(ipToNumberInt(subnet) + 1);
+    };
+    /**
+     * Calculates the Last IP of a Subnet
+     * @param network - a string representation of the Subnet
+     * @param mask - a string representation of the Subnet Mask or a numeric prefix length
+     * @return a string representation of the last IP in the Subnet
+     * Ex: 192.168.0.0, 255.255.0.0 -> 192.168.0.254
+     */
+    this.getEndIp = function (network, mask) {
+        if (typeof (mask) == "number") {
+            mask = this.prefixToMask(mask);
+        }
+        validateIp(network);
+        validateIp(mask);
+        var broadcast = getBroadcastAddress(network, mask);
+        return numberToIpInt(ipToNumberInt(broadcast) - 1);
+    };
+    /**
+     * Calculates all the IP addresses in the range of beginIp and endIp
+     * @param beginIp - a string representation of the first IP in the range
+     * @param endIp - a string representation of the first IP in the range
+     * @return an array of string representations of the IPs
+     */
+    this.getAllIpsInRange = function (beginIp, endIp) {
+        var startNum = this.ipToNumber(beginIp);
+        var endNum = this.ipToNumber(endIp);
+
+        if (startNum > endNum) {
+            throw "Beginning of the range is bigger than the end."
+        }
+
+        var ipList = [];
+        logger.debug("Total Addresses in Range: " + ((endNum + 1) - startNum));
+
+        for (var i = startNum; i <= endNum; i++) {
+            ipList.push(this.numberToIp(i));
+        }
+        return ipList;
+    };
+    /**
+     * Converts an IP to the number it represents.
+     * @param ip - a string representation of IP
+     * @return a number
+     */
+    this.ipToNumber = function (ip) {
+        return ipToNumberInt(ip);
+    };
+    /**
+     * Converts a number to an IP
+     * @param number
+     * @return a string representation of the IP
+     */
+    this.numberToIp = function (number) {
+        if (!number) {
+            throw "Number is not supplied.";
+        }
+
+        if (isNaN(number)) {
+            throw "Only number values are allowed.";
+        }
+
+        if (number < 0) {
+            throw "Only positive numbers are allowed."
+        }
+
+        if (number > 256 * 256 * 256 * 256 - 1) { //255.255.255.255
+            throw "Number is too big for IP."
+        }
+
+        return numberToIpInt(number);
+    };
+    /**
+     * Checks if an IP is in the range of the beginnning IP and the end IP
+     * @param ip - the IP to check
+     * @param beginIp - a string representation of the first IP in the range
+     * @param endIp - a string representation of the first IP in the range
+     * @return {boolean}
+     */
+    this.isIpInRange = function (ip, beginIp, endIp) {
+        var startNum = this.ipToNumber(beginIp);
+        var endNum = this.ipToNumber(endIp);
+
+        if (startNum > endNum) {
+            throw "Beginning of the range is bigger than the end."
+        }
+
+        var ipNum = this.ipToNumber(ip);
+
+        var isInRange = ipNum >= startNum && ipNum <= endNum;
+        logger.debug("IP '" + ip + "' is " + (isInRange ? "" : "not ") +
+            "in range (" + beginIp + " - " + endIp + ").");
+        return isInRange;
+    };
+    /**
+     * Gets the subnet for a given IP and Subnet Prefix max
+     * @param ip - IP from the Subnet
+     * @param beginIp - a string representation of the Subnet Mask
+     * @param endIp - a string representation of the Subnet
+     * @return {boolean}
+     * Ex: 192.168.100.253, 255.255.255.0 -> 192.168.100.0
+     */
+    this.getSubnet = function (ip, mask) {
+        var subnetArray = [0, 0, 0, 0];
+        for (var i = 0; i < 4; i++) {
+            subnetArray[i] = ip.split(".")[i] & mask.split(".")[i];
+        }
+        return subnetArray.join(".");
+    };
+}, {});]]></script>
+</dunes-script-module>

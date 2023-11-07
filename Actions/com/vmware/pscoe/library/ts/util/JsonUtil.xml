@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="JsonUtil" result-type="Any" api-version="6.0.0" id="ce348645-7680-436a-96cd-2b5600bf3cbf" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var JsonUtil = /** @class */ (function () {
+    function JsonUtil() {
+        throw new Error("Private constructor");
+    }
+    JsonUtil.parse = function (content, revivers) {
+        var reviver;
+        if (revivers && revivers.length) {
+            reviver = function (key, value) {
+                revivers.forEach(function (r) {
+                    value = r(key, value);
+                });
+                return value;
+            };
+        }
+        return reviver ? JSON.parse(content, reviver) : JSON.parse(content);
+    };
+    JsonUtil.stringify = function (object, replacers) {
+        var replacer;
+        if (replacers && replacers.length) {
+            replacer = function (key, value) {
+                replacers.forEach(function (r) {
+                    value = r(key, value);
+                });
+                return value;
+            };
+        }
+        return replacer ? JSON.stringify(object, replacer) : JSON.stringify(object);
+    };
+    JsonUtil.clone = function (object) {
+        var _this = this;
+        if (object != null && typeof object === "object") {
+            if (object instanceof Date) {
+                return object;
+            }
+            else if (Array.isArray(object)) {
+                return object.map(function (item) { return _this.clone(item); });
+            }
+            else {
+                var clone = {};
+                for (var key in object) {
+                    clone[key] = this.clone(object[key]);
+                }
+                return clone;
+            }
+        }
+        else {
+            return object;
+        }
+    };
+    return JsonUtil;
+}());
+exports.JsonUtil = JsonUtil;
+return exports;]]></script>
+</dunes-script-module>

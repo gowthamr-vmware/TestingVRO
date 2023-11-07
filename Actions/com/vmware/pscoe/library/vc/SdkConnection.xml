@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="SdkConnection" result-type="Any" api-version="6.0.0" id="64654679-730a-4f05-b744-02111027f4b3" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+/**
+ * @param {VC:SdkConnection} vcSdkConnecton
+ */
+return Class.define(function SdkConnecton(vcSdkConnecton) {
+
+	/**
+	 * Returns vCenter TLS certificate thumbprint
+	 * @param {string} thumbDelimiter (optional) Delimiter between hex character in the cert thumbprint
+	 * @returns {string}
+	 */
+	this.getCertificateThumbprint = function (thumbDelimiter) {
+		var delim = thumbDelimiter ? thumbDelimiter : ":";
+		return vcSdkConnecton.sessionManager.acquireCloneTicket().split("--tp-")[1].replace(/-/g, delim).toLowerCase();
+	};
+
+	this.getByMoref = function (type, moRefId) {
+		// try to find as moRef first
+		var moRef = new VcManagedObjectReference();
+		moRef.type = type;
+		moRef.value = moRefId;
+
+		var obj = VcPlugin.convertToVimManagedObject(vcSdkConnecton, moRef);
+
+		// ensure the object is referencing an actual thing otherwise a shallow invalid ref is returned.
+		return obj && (obj.id || obj.name) ? obj : undefined;
+	};
+});]]></script>
+</dunes-script-module>

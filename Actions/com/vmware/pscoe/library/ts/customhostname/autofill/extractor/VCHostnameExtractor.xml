@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VCHostnameExtractor" result-type="Any" api-version="6.0.0" id="a1251372-8faf-4fc8-916f-c6a9d7d84ce7" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.autofill.extractor">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var ExtractorUtil_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.autofill/extractor/ExtractorUtil");
+var VCHostnameExtractor = /** @class */ (function () {
+    function VCHostnameExtractor(machinePrefix, machineSuffix) {
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.autofill.extractor.VCHostnameExtractor');
+        this.prefix = machinePrefix;
+        this.postfix = machineSuffix;
+    }
+    VCHostnameExtractor.prototype.extract = function () {
+        this.logger.debug("Extracting VC machines for prefix " + this.prefix + " and suffix: " + this.postfix + " ...");
+        var vms = VcPlugin.getAllVirtualMachines(null, "xpath:contains(name,'" + this.prefix + "')");
+        return vms
+            .filter(function (vm) {
+            var vmPrefix = ExtractorUtil_1._.ExtractorUtil.getExtractedVmPrefix(vm.name);
+            var vmSuffix = ExtractorUtil_1._.ExtractorUtil.getExtractedVmSuffix(vm.name, this.postfix);
+            return vmPrefix === this.prefix && vmSuffix === this.postfix;
+        }, this)
+            .map(function (vm) {
+            return parseInt(vm.name.replace(this.prefix, ''), 10);
+        }, this);
+    };
+    return VCHostnameExtractor;
+}());
+exports.VCHostnameExtractor = VCHostnameExtractor;
+return exports;]]></script>
+</dunes-script-module>

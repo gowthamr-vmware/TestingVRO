@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="URL" result-type="Any" api-version="6.0.0" id="9290c17a-90df-4f9a-aba9-8eb1c7ec1060" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.util.URL");
+
+var URL = function (url) {
+	this.url = url;
+
+	assignUrlParams(this, url);
+
+	this.getRelativeUrl = function getRelativeUrl() {
+		var relativeUrl = this.path;
+		relativeUrl += this.page;
+		relativeUrl += this.fileExtension;
+		relativeUrl += this.queryString ? "?" + this.queryString : "";
+		relativeUrl += this.anchor ? "#" + this.anchor : "";
+		return relativeUrl;
+	}
+
+	this.getUrl = function getUrl() {
+		var completeUrl = this.protocol ? this.protocol + "://" : "";
+		completeUrl += this.userinfo ? this.userinfo + "@" : "";
+		completeUrl += this.hostname;
+		completeUrl += this.port ? ":" + this.port : "";
+		completeUrl += this.getRelativeUrl();
+
+		logger.debug("Constructed URL: " + completeUrl);
+
+		return completeUrl;
+	};
+
+	this.addQueryParam = function addQueryParam(param) {
+		logger.debug("Adding parameter to URL: " + param);
+
+		if (this.queryString && this.queryString.length > 0) {
+			this.queryString += "&";
+		}
+		this.queryString += param;
+
+		return this.getUrl();
+	};
+	this.getQueryParams = function getQueryParams() {
+		var queryParams = {};
+		if (this.queryString) {
+			this.queryString.split("&").forEach(function (param) {
+				logger.debug("Processing param: " + param);
+				queryParams[param.split("=")[0]] = param.split("=")[1];
+			});
+		}
+		return queryParams;
+	};
+	this.setQueryParams = function setQueryParams(params) {
+		this.queryString = Object.keys(params).map(function (key) {
+			return key + "=" + params[key];
+		}).join("&");
+	};
+};
+
+function parseUrl(href) {
+	var protocolReg = /(?:(http|https|ftp):\/\/)?/;
+	var userinfoReg = /(?:((?:[^\W\s]|\.|-|[:]{1})+)@{1})?/;
+	var hostnameReg = /(?:((?:www.)?(?:[^\W\s]|\.|-)+[\.][^\W\s]+|localhost(?=\/)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))?/;
+	var portReg = /(?::(\d*))?/;
+	var pathReg = /(?:([\/]?[^\s\?]*[\/]{1})*)?/;
+	var pageReg = /(?:\/?([^\s\n\?\[\]\#]*(?:(?=\.)){1}|[^\s\n\?\[\]\.\#]*)?)?/;
+	var fileExtensionReg = /(?:(\.[^\s\?\#]*))?/;
+	var queryStringReg = /(?:\?([^\s\n\#\[\]]*))?/;
+	var anchorReg = /(?:\#([^\s\n]*))?/;
+
+	var regex = new RegExp(protocolReg.source + userinfoReg.source + hostnameReg.source +
+		portReg.source + pathReg.source + pageReg.source + fileExtensionReg.source +
+		queryStringReg.source + anchorReg.source);
+
+	return regex.exec(href);
+}
+
+function assignUrlParams(urlObj, url) {
+	var match = parseUrl(url);
+	if (!match) {
+		throw "Could not parse URL " + url + ".";
+	}
+	logger.debug("match=" + JSON.stringify(match, null, 2));
+
+	urlObj.url = match[0];
+	urlObj.protocol = match.length > 1 && match[1] ? match[1] : "";
+	urlObj.userinfo = match.length > 2 && match[2] ? match[2] : "";
+	urlObj.hostname = match.length > 3 && match[3] ? match[3] : "";
+	urlObj.port = match.length > 4 && match[4] ? match[4] : "";
+	urlObj.path = match.length > 5 && match[5] ? match[5] : "";
+	urlObj.page = match.length > 6 && match[6] ? match[6] : "";
+	urlObj.fileExtension = match.length > 7 && match[7] ? match[7] : "";
+	urlObj.queryString = match.length > 8 && match[8] ? match[8] : "";
+	urlObj.anchor = match.length > 9 && match[9] ? match[9] : "";
+}
+
+return URL;]]></script>
+</dunes-script-module>

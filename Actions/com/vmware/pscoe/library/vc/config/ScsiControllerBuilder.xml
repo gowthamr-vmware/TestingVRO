@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ScsiControllerBuilder" result-type="Any" api-version="6.0.0" id="e3809d72-9229-414a-979c-a95f27f008f9" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building device spec for adding a new SCSI controller to a VM.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var Storage = Class.load("com.vmware.pscoe.library.vc", "Storage");
+
+return Class.define(function ScsiControllerBuilder(storage) {
+    var saved = null;
+    var sharing = VcVirtualSCSISharing.noSharing;
+    var type = Storage.ScsiControllerTypes.LsiLogic;
+    var busNumber = null;
+
+    /**
+     * Optional. noSharing by default
+     * @param {VcVirtualSCSISharing} value - VcVirtualSCSISharing.<noSharing|physicalSharing|virtualSharing>.
+     */
+    this.setSharing = function (value) {
+        sharing = value;
+        return this;
+    }
+
+    /**
+     * Optional. Lsi Logic by default
+     * @param {Storage.ScsiControllerTypes} value - Storage.ScsiControllerTypes.<LsiLogic|ParaVirtual|LsiLogicSAS|BusLogic>. Storage.ScsiControllerTypes.LsiLogic by default.
+     */
+    this.setType = function (value) {
+        type = value;
+        return this;
+    }
+
+    /**
+     * Optional. Next available bus number by default
+     * @param {number} value - <0|1|2|3> The bus number which the Scsi Controller should use
+     */
+    this.setBusNumber = function (value) {
+        busNumber = value;
+        return this;
+    }
+
+    /**
+     * @returns {VcVirtualDeviceConfigSpec} - the device spec to be used for reconfiguration
+     */
+    this.build = function () {
+        var controller;
+        switch (type) {
+            case Storage.ScsiControllerTypes.ParaVirtual:
+                controller = new VcParaVirtualSCSIController();
+                break;
+            case Storage.ScsiControllerTypes.LsiLogicSAS:
+                controller = new VcVirtualLsiLogicSASController();
+                break;
+            case Storage.ScsiControllerTypes.BusLogic:
+                controller = new VcVirtualBusLogicController();
+                break;
+            case Storage.ScsiControllerTypes.LsiLogic:
+            default:
+                controller = new VcVirtualLsiLogicController();
+        }
+
+        controller.device = new Array(0);
+        controller.busNumber = busNumber || storage.nextBusNumber();
+        controller.sharedBus = sharing || VcVirtualSCSISharing.noSharing;
+
+        var deviceConfigSpec = new VcVirtualDeviceConfigSpec();
+        deviceConfigSpec.device = controller;
+        deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.add;
+        return deviceConfigSpec
+    }
+
+    /**
+     * Builds the device spec and saves it to the storage system specified
+     * @returns - this
+     */
+    this.save = function () {
+        saved = this.build();
+        storage.add(saved);
+        return this;
+    }
+
+    /**
+     * Retrieves the created SCSI controller. Null if the controller was not created.
+     * @returns {Any} - the SCSI controller
+     */
+    this.created = function () {
+        return storage.getControllerByBusNumber(saved.device.busNumber);
+    }
+});]]></script>
+</dunes-script-module>

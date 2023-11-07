@@ -1,0 +1,27 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item4" object-name="workflow:name=generic" id="1154bf2b-1d9e-487a-bf2d-d75c6f0cf52d" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="1.6" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Domain vRA8]]></display-name><description><![CDATA[Workflow template to use for vCAC extensibility
+
+Input parameters can be used using vCAC VM properties using the format ExternalWFStubs.[workflow stub name].[vCO input parameter name]. If using plug-in types you need to pass their unique vCO IDs.
+
+Input parameters was tested successfully with : 
+- string
+- plug-in input types
+- number
+- boolean]]></description><position y="45.90909090909091" x="125.0"/><input><param name="vm" type="VC:VirtualMachine"/><param name="machineDomain" type="string"/><param name="machineOU" type="string"/></input><output><param name="scriptExitCodeOut" type="number"/><param name="scriptOutputTextOut" type="string"/></output><attrib name="scriptVariables" type="Array/CompositeType(stringToReplace:string,replacingString:string):scriptVariables" read-only="false"><value encoded="n"/></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="45.40909090909091" x="664.5"/></workflow-item><workflow-item name="item4" out-name="item1" type="task"><display-name><![CDATA[Select Domain]]></display-name><script encoded="false"><![CDATA[var AdDomain = machineDomain 
+var AdOU = machineOU
+
+System.log("AdDomain from custom properties: " + AdDomain); 
+System.log("AdOU from custom properties: " + AdOU); 
+VmDomain = new Array();
+VmDomainToReplace = new Array();
+VmDomain.push(AdDomain);
+VmDomainToReplace.push("[domain]");
+VmDomain.push(AdOU);
+VmDomainToReplace.push("[OU]");
+System.log("VM AD Domain: " + VmDomain[0]);
+System.log("VM AD Domain Replacement String: " + VmDomainToReplace[0]);
+System.log("VM AD OU: " + VmDomain[1]);
+System.log("VM AD OU Replacement String: " + VmDomainToReplace[1]);]]></script><in-binding><bind name="machineDomain" type="string" export-name="machineDomain"/><bind name="machineOU" type="string" export-name="machineOU"/></in-binding><out-binding><bind name="VmDomain" type="Array/string" export-name="scriptVariables.replacingString"/><bind name="VmDomainToReplace" type="Array/string" export-name="scriptVariables.stringToReplace"/></out-binding><position y="55.40909090909091" x="244.5"/></workflow-item><workflow-item name="item1" out-name="item0" type="link" linked-workflow-id="b21f3b9a-e4fa-4105-b915-624fa7650791"><display-name><![CDATA[Add to Domain]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"/><bind name="scriptVariables" type="Array/CompositeType(stringToReplace:string,replacingString:string):scriptVariables" export-name="scriptVariables"/></in-binding><out-binding><bind name="scriptExitCodeOut" type="number" export-name="scriptExitCodeOut"/><bind name="scriptOutputTextOut" type="string" export-name="scriptOutputTextOut"/></out-binding><description><![CDATA[Run a script in a guest using existing script configurations. Replaces variables in the script. Optionaly copy additional file and replace its variables as well.
+
+If no working directory is specified:
+- it is set to the guest default temp directory if there is a resource file copied
+- it is set to default (c:\windows\system32 for Windows /root for Linux) if there is no resource file copied.]]></description><position y="55.90909090909091" x="445.0"/></workflow-item><presentation><p-param name="vm"><desc><![CDATA[vm]]></desc></p-param></presentation></workflow>

@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="PortgroupConfigBuilder" result-type="Any" api-version="6.0.0" id="046db288-81ed-4687-a5f1-f7b4b139c325" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building a device spec for DV Portgroup creation/reconfiguration.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+return Class.define(function PortgroupConfigBuilder() {
+    var name = null;
+    var ports = null;
+    var binding = null;
+    var autoExpand = null;
+    var vlan = null;
+
+    /**
+     * @param {string} portgroupName
+     */
+    this.setName = function (portgroupName) {
+        name = portgroupName;
+        return this;
+    };
+
+    /**
+     * @param {number} portsNumber
+     */
+    this.setPorts = function (portsNumber) {
+        ports = portsNumber;
+        return this;
+    };
+
+    /**
+     * @param {string} bindingType - possible values: "earlyBinding" corresponds to "Static binding", "lateBinding" for "Dynamic binding", "ephemeral" for "No binding".
+     */
+    this.setBinding = function (bindingType) {
+        binding = bindingType;
+        return this;
+    };
+
+    /**
+     * @param {boolean} elasticAllocation - "true" value corresponds to port allocation "Elastic", "false" for "Fixed".
+     */
+    this.enableAutoexpand = function (elasticAllocation) {
+        autoExpand = elasticAllocation;
+        return this;
+    };
+
+    /**
+     * @param {string} vlanId
+     */
+    this.setVlan = function (vlanId) {
+        vlan = vlanId;
+        return this;
+    }
+
+    /**
+     * @returns {VcDVPortgroupConfigSpec} - the device spec to be used for DV Portgroup reconfiguration
+     */
+    this.build = function () {
+        var dVPortgroupConfigSpec = new VcDVPortgroupConfigSpec();
+
+        dVPortgroupConfigSpec.name = name;
+        dVPortgroupConfigSpec.numPorts = ports;
+        dVPortgroupConfigSpec.type = binding;
+        dVPortgroupConfigSpec.autoExpand = autoExpand;
+
+        if (vlan) {
+            var defaultPortConfig = new VcVMwareDVSPortSetting();
+            var vcVlan = new VcVmwareDistributedVirtualSwitchVlanIdSpec(false, vlan);
+            defaultPortConfig.vlan = vcVlan;
+            dVPortgroupConfigSpec.defaultPortConfig = defaultPortConfig;
+        }
+
+        return dVPortgroupConfigSpec;
+    };
+});]]></script>
+</dunes-script-module>

@@ -1,0 +1,184 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="LoggerConfiguration" result-type="Any" api-version="6.0.0" id="c4f49bd5-e2f1-4ae1-9858-82a7927251d7" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging.configuration">
+  <description><![CDATA[Logger Configuration Action Wrapper]]></description>
+  <script encoded="false"><![CDATA[/**
+ * LoggerConfiguration class. Manages Logging configuration.
+ */
+function LoggerConfiguration(configPath) {
+	var failingToLoadInTCs = false;
+	var RESOURCE_ELEMENT = {
+		CATEGORY: configPath || "PSCoE/Library/Logging/",
+		NAME: "LoggerConfig.json",
+          LEGACY_CATEGORY_PATHS:[
+          	"Library/Logging",
+          	"PSCoE/Library"
+          ]
+	};
+
+	var self = this;
+
+	function populate(configuration) {
+		Object.keys(configuration).forEach(function (key) {
+			self[key] = configuration[key];
+		});
+	}
+
+	function getResourceElement() {
+          var resElem = undefined;
+          try{
+            var category = Server.getResourceElementCategoryWithPath(RESOURCE_ELEMENT.CATEGORY);
+            if(!category){
+                var skip = false;
+                RESOURCE_ELEMENT.LEGACY_CATEGORY_PATHS.forEach(function(path){
+                    var cat = Server.getResourceElementCategoryWithPath(path);
+                    if(!skip && !!cat){
+                        category = cat;
+                        skip = true;
+                    }
+                }, this);
+            }
+
+            var result = Server.query("ResourceElement", "categoryid='" + System.getObjectId(category)
+                + "' and name='" + RESOURCE_ELEMENT.NAME + "'");
+            if(result.length > 0){
+                resElem = result[0];
+            }
+              return resElem;
+        }catch(exp){
+            if(!(exp.toString().indexOf("InternalError")>=0)){
+                throw exp;
+            }else{
+                  System.error(exp);
+            }
+              failingToLoadInTCs = true;
+              return resElem;
+        }
+	}
+
+	/**
+	 * Loads Logger configuration from a predefined Resource Element or built default one in-memory
+	 */
+	this.loadWithDefaults = function () {
+		if (!this.load()) {
+			populate({
+				"name": "DefaultLoggerConfiguration",
+				"root": {
+					"level": "debug",
+					"AppenderRef": [{
+						"ref": "System"
+					}]
+				},
+				"loggers": {
+					"com.vmware.pscoe": {
+						"level": (failingToLoadInTCs ? "debug" : "info"), // ensure in TCs the debug is enabled for tracing purposes, but not in deliverables with no explicit need.
+						"AppenderRef": [{
+							"ref": "System"
+						}]
+					}
+				},
+				"appenders": {
+					"System": {
+						"modulePath": "com.vmware.pscoe.library.logging.appenders",
+						"moduleName": "SystemAppender"
+					},
+					"Server": {
+						"modulePath": "com.vmware.pscoe.library.logging.appenders",
+						"moduleName": "ServerAppender"
+					},
+					"File": {
+						"modulePath": "com.vmware.pscoe.library.logging.appenders",
+						"moduleName": "FileAppender",
+						"fileName": "pscoe/logger/vro-log.log"
+					},
+					"ResourceElement": {
+						"modulePath": "com.vmware.pscoe.library.logging.appenders",
+						"moduleName": "ResourceElementAppender"
+					}
+				}
+			});
+		}
+	};
+
+	/**
+	 * Loads Logger configuration from a predefined Resource Element
+	 */
+	this.load = function () {
+		var resourceElement = getResourceElement();
+		if (resourceElement) {
+			populate(JSON.parse(resourceElement.getContentAsMimeAttachment().content));
+		}
+		return !!resourceElement;
+	};
+
+	/**
+	 * Saves logging configuration into the Resource Element
+	 *
+	 * @param {JSON} newConfiguration - logger configuraiton object
+	 */
+	this.save = function (newConfiguration) {
+		var resourceElement = getResourceElement();
+		if (!resourceElement) {
+			resourceElement = Server.createResourceElement(RESOURCE_ELEMENT.CATEGORY, RESOURCE_ELEMENT.NAME, null, "text/json");
+		}
+		var mimeContent = new MimeAttachment();
+		mimeContent.content = JSON.stringify(newConfiguration, null, 2);
+		mimeContent.mimeType = "text/json";
+		resourceElement.setContentFromMimeAttachment(mimeContent);
+		populate(newConfiguration);
+	};
+
+	/**
+	 * Search in configuration for logger with name that matches most the {name}
+	 * otherwise if name is empty return first found
+	 * @param {string} name - Logger Name
+	 * @return {string} - Logger name that best matches the {name}
+	 */
+	this.getLoggerName = function (name) {
+		if (!name) {
+			return Object.keys(this.loggers).shift() || "Default Logger";
+		} else {
+			return Object
+				.keys(this.loggers)
+				.filter(function (loggerName) {
+					return name.match(new RegExp(loggerName));
+				})
+				.sort(function (a, b) {
+					return a.length - b.length;
+				})
+				.pop();
+		}
+	};
+
+	/**
+	 * Get the names of the Appenders defined for logger with name {name}
+	 * @param {string} loggerName - Logger Name from the configuration
+	 * @return {Array/string} - Appenders Names
+	 */
+	this.getAppendersNames = function (loggerName) {
+		var logger = (loggerName && this.loggers[loggerName]) ? this.loggers[loggerName] : this.root;
+		return logger.AppenderRef.map(function (appndenderRef) {
+			return appndenderRef.ref;
+		});
+	};
+
+	/**
+	 * Get pattern from logger configuration properties
+	 * @param patternName - name of the pattern, without the symbols: $,{,}
+	 * @return {pattern}
+	 */
+	this.getPattern = function (patternName) {
+		var props = (this.properties || []).filter(function (patt) {
+			return patt.name == patternName;
+		});
+		if(props && props.length>0){
+			//if pattern is found, return the first in the list
+			return props[0].value;
+		}else{
+			return null;
+		}
+	}
+
+}
+
+return LoggerConfiguration;]]></script>
+</dunes-script-module>

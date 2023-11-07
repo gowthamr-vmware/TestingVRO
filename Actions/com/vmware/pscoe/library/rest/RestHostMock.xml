@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RestHostMock" result-type="Any" api-version="6.0.0" id="b1e237dd-90c9-455d-a107-f66292a07f6e" version="2.5.8" allowed-operations="vef" category-name="com.vmware.pscoe.library.rest">
+  <param n="handlers" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.rest.RestHostMock");
+var Request = function (method, urlTemplate, params, content) {
+	this.getMethod = function () {
+		return method;
+	};
+	this.headers = {};
+	this.setHeader = function (key, value) {
+		logger.info("Set Header: " + key + "=" + value);
+		this.headers[key] = value;
+	};
+	this.execute = function () {
+		logger.info("Execute REST Request:");
+		logger.info("\tMethod: " + method);
+		logger.info("\tURL Template: " + urlTemplate);
+		logger.info("\tParams: " + params);
+		logger.info("\tContent: " + content);
+		var response = handlers[method + ":" + urlTemplate](params, content, this.headers);
+		if (!response) {
+			logger.info("Handler didn't return valid response");
+			response = {
+				statusCode: 500,
+				contentAsString: "Handler didn't return valid response",
+				getAllHeaders: function () {/*empty handler*/ }
+			};
+		}
+		logger.info("REST Response:");
+		logger.info("\tStatus Code: " + response.statusCode);
+		logger.info("\tContent: " + response.contentAsString);
+		return response;
+	};
+};
+
+var Host = function () {
+	this.ops = {};
+	this.skipRestHostUpdate = true;
+
+	this.createRequest = function (method, url, content) {
+		return new Request(method, url, [], content);
+	};
+};
+
+return new Host();]]></script>
+</dunes-script-module>

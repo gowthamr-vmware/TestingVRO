@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Promise" result-type="Any" api-version="6.0.0" id="a1a3fdf8-818c-417f-92d8-7ac2429569c0" version="2.30.0" allowed-operations="vef" category-name="com.vmware.pscoe.library.ecmascript">
+  <script encoded="false"><![CDATA[var exports = {};
+/*-
+ * #%L
+ * ecmascript
+ * %%
+ * Copyright (C) 2023 VMware
+ * %%
+ * Build Tools for VMware Aria
+ * Copyright 2023 VMware, Inc.
+ *
+ * This product is licensed to you under the BSD-2 license (the "License"). You may not use this product except in compliance with the BSD-2 License.
+ *
+ * This product may include a number of subcomponents with separate copyright notices and license terms. Your use of these subcomponents is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
+ * #L%
+ */
+function sentinelExecutor(fulfill, reject) { }
+function isPromise(value) {
+    return value instanceof Promise;
+}
+var PromiseState;
+(function (PromiseState) {
+    PromiseState[PromiseState["Pending"] = 0] = "Pending";
+    PromiseState[PromiseState["Fulfilled"] = 1] = "Fulfilled";
+    PromiseState[PromiseState["Rejected"] = 2] = "Rejected";
+})(PromiseState || (PromiseState = {}));
+var Promise = /** @class */ (function () {
+    function Promise(executor) {
+        var _this = this;
+        this.state = PromiseState.Pending;
+        this.handlers = [];
+        if (executor === sentinelExecutor) {
+            return;
+        }
+        if (typeof executor !== "function") {
+            throw new TypeError("Promise executor is not a function");
+        }
+        try {
+            executor(function (value) { return _this.fulfill(value); }, function (reason) { return _this.reject(reason); });
+        }
+        catch (e) {
+            this.reject(e);
+        }
+    }
+    Promise.await = function (promise, pullTimeInSeconds) {
+        while (promise.state == PromiseState.Pending) {
+            System.sleep((pullTimeInSeconds || 1) * 1000);
+        }
+        if (promise.state == PromiseState.Fulfilled) {
+            return promise.result;
+        }
+        else {
+            var error = promise.result;
+            throw error instanceof Error ? error : new Error("Promise was rejected with reason: " + error);
+        }
+    };
+    Promise.all = function (values) {
+        var promise = Promise.resolve(), result;
+        if (values && values.length) {
+            var _loop_1 = function (value) {
+                promise = promise.then(function (v) {
+                    if (result) {
+                        result.push(v);
+                    }
+                    else {
+                        result = [];
+                    }
+                    return value;
+                });
+            };
+            for (var _i = 0, values_1 = values; _i < values_1.length; _i++) {
+                var value = values_1[_i];
+                _loop_1(value);
+            }
+        }
+        promise = promise.then(function (v) {
+            if (!result) {
+                result = [];
+            }
+            result.push(v);
+            return result;
+        });
+        return promise;
+    };
+    Promise.resolve = function (value) {
+        if (isPromise(value)) {
+            var promise_1 = value;
+            return new Promise(function (resolve, reject) {
+                promise_1.then(function (value) { return resolve(value); }, function (reason) { return reject(reason); });
+            });
+        }
+        else {
+            return new Promise(function (resolve, reject) {
+                resolve(value);
+            });
+        }
+    };
+    Promise.reject = function (reason) {
+        return new Promise(function (resolve, reject) {
+            reject(reason);
+        });
+    };
+    Promise.prototype.always = function (callback) {
+        return this.then(function (value) {
+            var result = callback(value);
+            if (result === undefined) {
+                result = value;
+            }
+            if (!isPromise(result)) {
+                result = Promise.resolve(result);
+            }
+            return result;
+        }, function (reason) {
+            var result = callback(reason);
+            if (result === undefined) {
+                result = reason;
+            }
+            if (!isPromise(result)) {
+                result = Promise.reject(result);
+            }
+            return result;
+        });
+    };
+    Promise.prototype.then = function (onfulfilled, onrejected) {
+        var child = new Promise(sentinelExecutor);
+        this.enqueue(onfulfilled, onrejected, child);
+        return child;
+    };
+    Promise.prototype.catch = function (onrejected) {
+        return this.then(undefined, onrejected);
+    };
+    Promise.prototype.fulfill = function (value) {
+        var _this = this;
+        if (this.state === PromiseState.Pending) {
+            if (isPromise(value)) {
+                var promise = value;
+                promise.then(function (value) { return _this.fulfill(value); }, function (reason) { return _this.reject(reason); });
+            }
+            else {
+                this.state = PromiseState.Fulfilled;
+                this.result = value;
+                this.flush();
+            }
+        }
+    };
+    Promise.prototype.reject = function (reason) {
+        if (this.state === PromiseState.Pending) {
+            this.state = PromiseState.Rejected;
+            this.result = reason;
+            this.flush();
+        }
+    };
+    Promise.prototype.enqueue = function (onFulfilled, onRejected, child) {
+        this.handlers.push({
+            onFulfilled: onFulfilled,
+            onRejected: onRejected,
+            child: child
+        });
+        if (this.state !== PromiseState.Pending) {
+            this.flush();
+        }
+    };
+    Promise.prototype.flush = function () {
+        if (this.handlers.length) {
+            var _loop_2 = function () {
+                var handler = this_1.handlers.shift();
+                var result = this_1.result;
+                var failed = this_1.state === PromiseState.Rejected;
+                var callback = this_1.state === PromiseState.Fulfilled ? handler.onFulfilled : handler.onRejected;
+                if (callback) {
+                    try {
+                        result = callback(this_1.result);
+                        failed = false;
+                    }
+                    catch (e) {
+                        result = e;
+                        failed = true;
+                    }
+                }
+                if (isPromise(result)) {
+                    var promise = result;
+                    promise.then(function (value) { return handler.child.fulfill(value); }, function (reason) { return handler.child.reject(reason); });
+                }
+                else if (failed) {
+                    handler.child.reject(result);
+                }
+                else {
+                    handler.child.fulfill(result);
+                }
+            };
+            var this_1 = this;
+            while (this.handlers.length) {
+                _loop_2();
+            }
+        }
+    };
+    return Promise;
+}());
+exports.default = Promise;
+return exports;]]></script>
+</dunes-script-module>

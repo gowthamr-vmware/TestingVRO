@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AppConfig" result-type="Any" api-version="6.0.0" id="6f39a25c-3b82-496d-a678-ad0a38ecf4a8" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Base class which needs to be extended and provided with the default values for 
+ config folder (ResourceElementCategory) and location of the ConfigurationElement.
+ It loads and merges the configuration from all json files in the specified config folder.]]></description>
+  <script encoded="false"><![CDATA[var ObjectWrapper = System.getModule("com.vmware.pscoe.library.util").ObjectWrapper();
+var ConfigElementAccessor = System.getModule("com.vmware.pscoe.library.util").ConfigElementAccessor();
+var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger(
+		"com.vmware.pscoe.library.util.AppConfig");
+
+return function(configFolder, defaultFolder, configElementPath, configElementName){
+	if (!configFolder || configFolder == "") {
+		configFolder = defaultFolder;
+		try {
+			config = new ConfigElementAccessor(configElementPath, configElementName);
+			configFolder = config.get("configFolder", configFolder);
+		} catch (e) {
+			logger.warn("Unable to read configuration from Configuraiton element: " + 
+					configElementPath + "/" + configElementName + ": " + e);
+			logger.warn("Using default config folder: " + configFolder);
+		}
+	}
+	var folders = [];
+	if(typeof configFolder === "string" ){
+		folders.push(configFolder);
+	} else {
+		folders = configFolder;
+	}
+	var wrapper = new ObjectWrapper({});
+	for (var cf in folders){
+		var category = Server.getResourceElementCategoryWithPath(folders[cf]);
+		for (var i in category.resourceElements) {
+			var re = category.resourceElements[i];
+			try {
+				wrapper.merge(JSON.parse(re.getContentAsMimeAttachment().content));
+			} catch (e) {
+				logger.warn("Unable to parse: " + re.name + " with error: " + e + ". Skipping...");
+			}
+		}
+	}
+	for (var key in wrapper.obj) {
+		this[key] = wrapper.obj[key];
+	}
+};]]></script>
+</dunes-script-module>

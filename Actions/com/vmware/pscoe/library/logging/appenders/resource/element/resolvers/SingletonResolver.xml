@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="SingletonResolver" result-type="Any" api-version="6.0.0" id="4a66447e-b748-4adf-8315-0e4bc8f0deae" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging.appenders.resource.element.resolvers">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+// Taking advantage of the load functionality of Class implementation
+// the resource element will be persisted in the context of the execution
+// so is no needed to search for the element every time the appender is created
+var resourceElement = null;
+
+var createConfigElement = function () {
+    return Server.createConfigurationElement("PSCoE/Library", "Logging");
+}
+
+var getConfigElement = function () {
+    var category = Server.getConfigurationElementCategoryWithPath("PSCoE/Library");
+
+    if (!category) {
+        return createConfigElement();
+    }
+
+    var result = Server.query("ConfigurationElement", "categoryid='" + System.getObjectId(category)
+        + "' and name = 'Logging'");
+
+    if (result.length > 1) {
+        throw new Error("Found more than 1 configuration element with the same name 'PSCoE/Library/Logging'. "
+            + "This is not supported and indicates an inconsistency.");
+    }
+
+    return result[0] ? result[0] : createConfigElement();
+}
+
+var createNewResourceElement = function (baseCategoryPath, name) {
+    var timestamp = System.formatDate(new Date(), "dd.MM.yyyy HH:mm:ss");
+    var resourceElementName = name + "_" + timestamp + ".log";
+    var resourceElement = Server.createResourceElement(baseCategoryPath, resourceElementName, null, "text/plain");
+
+    var configElement = getConfigElement();
+    configElement.setAttributeWithKey("SingletonResourceElement", resourceElement);
+
+    return resourceElement;
+}
+
+return Class.define(function SingletonResolver(properties) {
+    //populate properties
+    var baseCategoryPath = properties.baseCategoryPath || "Logging";
+    var maxSize = properties.maxSize || 10; // size in MB
+    var resourceElementName = properties.resourcePrefixElementName || "Workflows_Log";
+
+    // The name of the resource element can't be longer than 100 character because
+    // is used as lock id when the appender is going to write in the resource element
+    // To the name is appended the following pattern  "_dd.MM.yyyy HH:mm:ss.log" -> length = 24
+    // 24 + 75 = 99 < 100 max length the lock id allows
+    if (resourceElementName.length > 75) {
+        resourceElementName = resourceElementName.substring(0, 75);
+        System.warn("Truncating 'resourcePrefixElementName' to '" + resourceElementName + "'. Max length is 75 characters");
+    }
+
+    this.getResourcesElement = function () {
+        if (!resourceElement) {
+            // getting the element from the configuration
+            var config = getConfigElement();
+            var configAttr = config.getAttributeWithKey("SingletonResourceElement");
+            resourceElement = configAttr ? configAttr.value : null;
+
+            // If the configuration element is referencing to a resource element that has been
+            // removed, is returning a "NotFound" object
+            resourceElement = resourceElement && resourceElement.constructor.name  == "ResourceElement" ? resourceElement : null;
+
+            // if the config attr is not set or the resource element size in MB is bigger than maxSize
+            // create a new resource element
+            if (!resourceElement
+                || (resourceElement.getContentAsMimeAttachment().content.length / 1048576) >= maxSize) {
+                resourceElement = createNewResourceElement(baseCategoryPath, resourceElementName);
+            }
+        }
+        return {
+            state: "resolved" ,
+            resourceElement: resourceElement 
+        };
+    }.bind(this);
+}, null);]]></script>
+</dunes-script-module>

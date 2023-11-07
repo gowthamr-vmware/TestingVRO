@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AbstractDiskBuilder" result-type="Any" api-version="6.0.0" id="4f580f3b-55f9-48a4-92ab-7f8d82c67773" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Abstract base class for building disks]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+/**
+ * @param {Any} storage - storage system, e.g. com.vmware.pscoe.library.vc.Storage
+ */
+return Class.define(function AbstractDiskBuilder(storage) {
+    this.storage = storage;
+    this.saved = null;
+    this.datastore = null;
+    this.controller = null;
+    this.profile = null;
+    this.unitNumber = null;
+}, {
+        getUnitNumber: function () {
+            return this.unitNumber;
+        },
+        setUnitNumber: function (unitNumber) {
+            if (unitNumber < 0 || unitNumber > 15 || unitNumber == 7) {
+                throw new Error("Unit number should be between 0 and 15. 7 is reserved.");
+            }
+            this.unitNumber = unitNumber;
+            return this;
+        },
+        /**
+         * Optional.
+         * @param {PbmProfile} storageProfile
+         */
+        setProfile: function (storageProfile) {
+            this.profile = storageProfile;
+            return this;
+        },
+
+        /**
+         * @returns {PbmProfile}
+         */
+        getProfile: function () {
+            return this.profile;
+        },
+
+        /**
+         * Required.
+         * @param {Any} ctrl - a VC controller to attach the disk to, e.g. VcVirtualLsiLogicController
+         */
+        setController: function (ctrl) {
+            this.controller = ctrl;
+            return this;
+        },
+
+        /**
+         * @returns {Any}
+         */
+        getController: function () {
+            if (!this.controller) {
+                var controllers = this.storage.getControllers();
+                return controllers.length ? controllers[0] : null;
+            }
+            return this.controller;
+        },
+
+        /**
+         * Required.
+         * @param {VcDatastore} ds - A datastore where to create the disk.
+         */
+        setDatastore: function (ds) {
+            this.datastore = ds;
+            return this;
+        },
+        /**
+         * Required.
+         * @returns {VcDatastore}
+         */
+        getDatastore: function () {
+            return this.datastore;
+        },
+        /**
+         * Capacity in kilobytes. Override in derived clases.
+         */
+        getCapacity: function () {
+            throw new Error("Not implemented.");
+        },
+
+        buildFileName: function () {
+            var datastore = this.getDatastore();
+            if (datastore) {
+                var datastorePath = "[" + datastore.info.name + "]";
+                return datastorePath;
+            }
+            return null;
+        },
+
+        /**
+         * Override in derived class.
+         */
+        buildBackingInfo: function () {
+            throw new Error("Not implemented.");
+        },
+        buildDisk: function () {
+            var controller = this.getController();
+            if (!controller) {
+                throw new Error("SCSI controller not set.")
+            }
+            var unitNumber = this.getUnitNumber();
+            if (unitNumber === null || unitNumber === undefined) {
+                unitNumber = this.storage.nextUnitNumber(controller.key);
+            }
+
+            var disk = new VcVirtualDisk();
+            disk.backing = this.buildBackingInfo();
+            disk.controllerKey = controller.key;
+            disk.key = -2;
+            disk.unitNumber = unitNumber;
+            disk.capacityInKB = this.getCapacity();
+            return disk;
+        },
+
+        /**
+         * @returns {VcVirtualDeviceConfigSpec} - the device spec to be used for reconfiguration
+         */
+        build: function () {
+            var deviceConfigSpec = new VcVirtualDeviceConfigSpec();
+            deviceConfigSpec.device = this.buildDisk();
+            deviceConfigSpec.fileOperation = VcVirtualDeviceConfigSpecFileOperation.create;
+            deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.add;
+            if (this.getProfile()) {
+                var definedProfileSpec = new VcVirtualMachineDefinedProfileSpec();
+                definedProfileSpec.profileId = this.getProfile().profileId.uniqueId;
+                deviceConfigSpec.profile = [definedProfileSpec];
+            }
+
+            return deviceConfigSpec;
+        },
+        /**
+         * Builds the device spec and saves it to the storage system specified
+         * @returns - this
+         */
+        save: function () {
+            this.saved = this.build();
+            this.storage.add(this.saved);
+            return this;
+        },
+        /**
+         * Retrieves the created disk. Null if the disk was not created.
+         * @returns {VcVirtualDisk}
+         */
+        created: function () {
+            return this.storage.getDiskByUnitNumber(this.saved.device.unitNumber, this.saved.device.controllerKey);
+        }
+    });]]></script>
+</dunes-script-module>

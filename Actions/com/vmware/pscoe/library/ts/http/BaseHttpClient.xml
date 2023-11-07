@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="BaseHttpClient" result-type="Any" api-version="6.0.0" id="3ab0c379-7217-3e91-9f7e-c0d54aef6cfa" version="2.0.6" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.http">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+/*
+ * #%L
+ * http
+ * %%
+ * Copyright (C) 2020 VMWARE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var JsonUtil_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/JsonUtil");
+var BaseHttpClient = /** @class */ (function () {
+    function BaseHttpClient(options) {
+        this.options = options || {};
+        this.logger = Logger_1._.Logger.getLogger("com.vmware.pscoe.library.http.BaseHttpClient");
+    }
+    BaseHttpClient.prototype.getString = function (requestOrPath) {
+        return this.rawRequest("GET", requestOrPath);
+    };
+    BaseHttpClient.prototype.get = function (requestOrPath) {
+        return this.jsonRequest("GET", requestOrPath);
+    };
+    BaseHttpClient.prototype.tryGet = function (requestOrPath) {
+        var request = this.createRequest(requestOrPath);
+        request.doNotThrowOnErrors = request.doNotThrowOnErrors || [];
+        request.doNotThrowOnErrors.push(404);
+        return this.jsonRequest("GET", request);
+    };
+    BaseHttpClient.prototype.post = function (requestOrPath, data) {
+        return this.jsonRequest("POST", requestOrPath, data);
+    };
+    BaseHttpClient.prototype.put = function (requestOrPath, data) {
+        return this.jsonRequest("PUT", requestOrPath, data);
+    };
+    BaseHttpClient.prototype.patch = function (requestOrPath, data) {
+        return this.jsonRequest("PATCH", requestOrPath, data);
+    };
+    BaseHttpClient.prototype.delete = function (requestOrPath, data) {
+        return this.jsonRequest("DELETE", requestOrPath, data);
+    };
+    BaseHttpClient.prototype.request = function (request) {
+        return this.executeRequest(request);
+    };
+    BaseHttpClient.prototype.rawRequest = function (method, requestOrPath, data) {
+        var request = this.createRequest(requestOrPath);
+        request.method = method;
+        if (data !== undefined) {
+            request.content = data;
+        }
+        var response = this.executeRequest(request);
+        if (!response.isSuccessStatusCode()) {
+            if ((request.doNotThrowOnErrors || []).indexOf(response.statusCode) < 0) {
+                this.onError(response);
+            }
+            return null;
+        }
+        return response.content;
+    };
+    BaseHttpClient.prototype.jsonRequest = function (method, requestOrPath, data) {
+        var request = this.createRequest(requestOrPath);
+        if (!request.accept) {
+            request.accept = this.options.accept || "application/json";
+        }
+        var content = this.rawRequest(method, request, data);
+        return content ? JsonUtil_1._.JsonUtil.parse(content, this.options.revivers) : null;
+    };
+    BaseHttpClient.prototype.createRequest = function (requestOrPath) {
+        return typeof requestOrPath == "string" ? { path: requestOrPath } : requestOrPath;
+    };
+    BaseHttpClient.prototype.executeRequest = function (request) {
+        var _this = this;
+        request.method = request.method || "GET";
+        request.headers = request.headers || this.options.headers || {};
+        request.contentType = request.contentType || request.headers["Content-Type"] || this.options.contentType;
+        request.accept = request.accept || request.headers["Accept"] || this.options.accept;
+        if (this.options.basePath) {
+            request.path = this.options.basePath + request.path;
+        }
+        if (request.content && request.contentType && VROES.Shims.stringStartsWith(request.contentType, "application/x-www-form-urlencoded")) {
+            request.content = Object.keys(request.content)
+                .sort()
+                .map(function (key) { return encodeURIComponent(key) + "=" + encodeURIComponent(request.content[key]); })
+                .join("&");
+        }
+        else if (request.content != null && typeof request.content == "object") {
+            request.content = JsonUtil_1._.JsonUtil.stringify(request.content, this.options.replacers);
+            request.contentType = request.contentType || "application/json";
+        }
+        if (this.options.onBeforeRequest) {
+            this.options.onBeforeRequest(request);
+        }
+        this.logger.debug(function () { return "HTTP request: " + JsonUtil_1._.JsonUtil.stringify(request, _this.options.replacers); });
+        var response = this.executeRequestWithRetry(request);
+        this.logger.debug(function () {
+            return "HTTP response: " +
+                JsonUtil_1._.JsonUtil.stringify({
+                    path: request.path,
+                    statusCode: response.statusCode,
+                    content: response.content
+                }, _this.options.replacers);
+        });
+        if (this.options.onAfterRequest) {
+            this.options.onAfterRequest(response);
+        }
+        return response;
+    };
+    BaseHttpClient.prototype.executeRequestWithRetry = function (request) {
+        var providerRequest = this.providerCreateRequestFrom(request);
+        var retryCount = request.retryCount || this.options.retryCount || 0;
+        var retryWaitInSeconds = request.retryWaitInSeconds || this.options.retryWaitInSeconds || 0;
+        var num = 0;
+        var response;
+        do {
+            if (num) {
+                this.logger.debug("HTTP error: " + (response && response.contentAsString));
+                this.logger.debug("Request execution threw error or returned a server error on attempt " + num + ". Sleeping for " + retryWaitInSeconds + " seconds.");
+                System.sleep(retryWaitInSeconds * 1000);
+            }
+            num++;
+            response = this.providerExecuteRequest(providerRequest);
+        } while (num <= retryCount && (!response || response.statusCode >= 500));
+        return VROES.Shims.objectAssign({}, response, { path: request.path,
+            isSuccessStatusCode: function () { return response.statusCode >= 200 && response.statusCode <= 299; } });
+    };
+    BaseHttpClient.prototype.checkResponse = function (response, doNotThrowOnErrors) {
+        if (!response.isSuccessStatusCode() && (doNotThrowOnErrors || []).indexOf(response.statusCode) < 0) {
+            this.onError(response);
+        }
+    };
+    BaseHttpClient.prototype.onError = function (response) {
+        this.logger.debug("Http error: " + JsonUtil_1._.JsonUtil.stringify(response, this.options.replacers));
+        var error = new Error("Http error " + response.statusCode + " while requesting '" + response.path + "'.Content: " + response.content);
+        error.response = response;
+        throw error;
+    };
+    return BaseHttpClient;
+}());
+exports.BaseHttpClient = BaseHttpClient;
+return exports;
+]]></script>
+</dunes-script-module>

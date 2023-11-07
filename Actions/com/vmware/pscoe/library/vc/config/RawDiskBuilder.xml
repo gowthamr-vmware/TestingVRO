@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RawDiskBuilder" result-type="Any" api-version="6.0.0" id="8b764d1f-db43-4525-861d-dfc71cffe900" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building device spec for adding a raw disk (RDM) to a VM.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var AbstractDiskBuilder = Class.load("com.vmware.pscoe.library.vc.config", "AbstractDiskBuilder");
+
+/**
+ * @param {Any} storage - storage system, e.g. com.vmware.pscoe.library.vc.Storage
+ */
+return Class.define(function RawDiskBuilder(storage) {
+	AbstractDiskBuilder.call(this, storage);
+
+	var compatibilityMode = VcVirtualDiskCompatibilityMode.physicalMode;
+	var diskMode = VcVirtualDiskMode.persistent;
+	var sharing = null;
+	var lun = null; //required, if deviceName is not set
+	var deviceName = ""; //required, if LUN is not set
+	var size = null; //required, if LUN is not set
+
+	/**
+	 * Required.
+	 * @param {VcVirtualDiskCompatibilityMode} value - VcVirtualDiskCompatibilityMode.<physicalMode|virtualMode>
+	 */
+	this.setCompatibilityMode = function (value) {
+		compatibilityMode = value;
+		return this;
+	};
+	/**
+	 * @returns {VcVirtualDiskCompatibilityMode}
+	 */
+	this.getCompatibilityMode = function () {
+		return compatibilityMode;
+	};
+
+	/**
+	 * Required, if deviceName is not set
+	 * @param inLun - lun to be used for
+	 * @return {this}
+	 */
+	this.setLun = function (inLun) {
+		lun = inLun;
+		return this;
+	};
+
+	/**
+	 * Required, if LUN is not set
+	 * Example: /vmfs/devices/disks/t10.F405E46494C454250567B4B4A577D237743334D217F613A4
+	 * @param {string} inDeviceName - Required.
+	 */
+	this.setDeviceName = function (inDeviceName) {
+		deviceName = inDeviceName;
+		return this;
+	};
+	/**
+	 * @returns {string}
+	 */
+	this.getDeviceName = function () {
+		return !lun ? deviceName : lun.disk.canonicalName;
+	};
+
+	/**
+	 * Optional. None by default.
+	 * @param {Storage.DiskSharing} inSharing - Storage.DiskSharing.<sharingMultiWriter|sharingNone>
+	 */
+	this.setSharing = function (inSharing) {
+		sharing = inSharing;
+		return this;
+	}
+
+	/**
+	 * Optional. Default is persistent
+	 * @param {VcVirtualDiskMode} mode - Required. VcVirtualDiskMode.<append|independent_nonpersistent|independent_persistent|nonpersistent|persistent|undoable>. Default is persistent.
+	 */
+	this.setMode = function (mode) {
+		diskMode = mode;
+		return this;
+	};
+	/**
+	 * @return {VcVirtualDiskMode}
+	 */
+	this.getMode = function () {
+		return diskMode;
+	}
+
+	/**
+	 * Capacity in kilobytes. Override in derived clases.
+	 */
+	this.getCapacity = function () {
+		return (!lun ? size : (lun.capacity / 1024)); //to KB
+	};
+	/**
+	 * Required, if LUN is not set
+	 * @param {number} sizeGB - size in GB
+	 * @return {this}
+	 */
+	this.setCapacityInGB = function (sizeGB) {
+		size = sizeGB * 1024 * 1024;
+		return this;
+	}
+
+	this.buildBackingInfo = function () {
+		if (!lun || !deviceName) {
+			throw new Error("You must provide a lun or device name.");
+		}
+		if(!lun && !size){
+			throw new Error("You must set size of the RDM disk, if you don't provide a LUN and use device name.");
+		}
+		if (!this.datastore) {
+			throw  new Error("You must provide a datastore. Datastore must be RDM compatible.");
+		}
+
+		var diskBackingInfo = new VcVirtualDiskRawDiskMappingVer1BackingInfo();
+		diskBackingInfo.fileName = this.buildFileName();
+		diskBackingInfo.diskMode = this.getMode().value;
+		diskBackingInfo.compatibilityMode = this.getCompatibilityMode().value;
+		diskBackingInfo.deviceName = this.getDeviceName();
+		if(!!sharing){
+			diskBackingInfo.sharing = sharing;
+		}
+
+		return diskBackingInfo;
+	};
+}, null, AbstractDiskBuilder);]]></script>
+</dunes-script-module>

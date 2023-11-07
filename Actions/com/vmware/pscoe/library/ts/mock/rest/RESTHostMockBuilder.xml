@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RESTHostMockBuilder" result-type="Any" api-version="6.0.0" id="a90275b0-47a8-37ba-98ab-f89edb7e8020" version="2.0.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock.rest">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var RESTHostMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.rest.RESTHostMock");
+var RESTUtils_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.rest.RESTUtils");
+var RESTResponseMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.rest.RESTResponseMock");
+var RESTResponseBuilder = /** @class */ (function () {
+    function RESTResponseBuilder(hostBuilder, handler) {
+        this.hostBuilder = hostBuilder;
+        this.handler = handler;
+        this._headers = new Properties();
+    }
+    // common response types
+    /**
+     * Usability method to return 401 response.
+     */
+    RESTResponseBuilder.prototype.unauthorized401 = function () {
+        return this.statusCode(401).content();
+    };
+    /**
+     * Usability method to return 403 response.
+     */
+    RESTResponseBuilder.prototype.forbidden403 = function () {
+        return this.statusCode(403).content();
+    };
+    /**
+     * Usability method to return 404 response.
+     */
+    RESTResponseBuilder.prototype.notFound404 = function () {
+        return this.statusCode(404).content();
+    };
+    /**
+     * Usability method to return 405 response.
+     */
+    RESTResponseBuilder.prototype.methodNotAllowed405 = function () {
+        return this.statusCode(405).content();
+    };
+    /**
+     * Usability method to return 406 response.
+     */
+    RESTResponseBuilder.prototype.notAcceptable406 = function () {
+        return this.statusCode(406).content();
+    };
+    /**
+     * Usability method to return 410 response.
+     */
+    RESTResponseBuilder.prototype.gone410 = function () {
+        return this.statusCode(410).content();
+    };
+    /**
+     * Usability method to return 500 response.
+     */
+    RESTResponseBuilder.prototype.serverError500 = function () {
+        return this.statusCode(500).content();
+    };
+    /**
+     * Usability method for setting "Content-Type" header
+     * @param contentType the value to set
+     */
+    RESTResponseBuilder.prototype.contentType = function (contentType) {
+        return this.header("Content-Type", contentType);
+    };
+    /**
+     * Usability method for setting "Accept" header
+     * @param accept the value to set
+     */
+    RESTResponseBuilder.prototype.accept = function (accept) {
+        return this.header("Accept", accept);
+    };
+    /**
+     * Specify the code to return.
+     * @param code The code to respond with
+     */
+    RESTResponseBuilder.prototype.statusCode = function (code) {
+        this._statusCode = code;
+        return this;
+    };
+    /**
+     * Set/Append a header value
+     * @param key the header key
+     * @param values the header value(s)
+     */
+    RESTResponseBuilder.prototype.header = function (key) {
+        var values = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            values[_i - 1] = arguments[_i];
+        }
+        var newValues = values;
+        if (this._headers.hasOwnProperty(key)) {
+            var header = this._headers[key];
+            var headerArr = Array.isArray(header) ? header : [header];
+            newValues = headerArr.concat(values);
+        }
+        this._headers[key] = newValues.length == 1 ? newValues[0] : newValues;
+        return this;
+    };
+    /**
+     * This is supposed to be called as final method to build the response with.
+     * If no payload, call with no argument. Status is always 200 if not set explicityl.
+     *
+     * @param content the object/string payload to return
+     */
+    RESTResponseBuilder.prototype.content = function (content) {
+        var _this = this;
+        this._content = content;
+        this.handler.respond = function (request) {
+            return new RESTResponseMock_1._.RESTResponseMock(_this._content, _this._statusCode || 200, _this._headers);
+        };
+        return this.hostBuilder;
+    };
+    return RESTResponseBuilder;
+}());
+exports.RESTResponseBuilder = RESTResponseBuilder;
+var RESTHostMockBuilder = /** @class */ (function () {
+    function RESTHostMockBuilder() {
+        this.handlers = [];
+    }
+    RESTHostMockBuilder.prototype.withBaseUrl = function (baseUrl) {
+        this.baseUrl = baseUrl;
+        return this;
+    };
+    /**
+     * Simplified request handler that returns the payload and based on that a Success (HTTP Code: 200) or Not Found (HTTP Code: 404) is produced.
+     * @param urlTemplate the url template ot top of baseUrl (if that is provided)
+     * @param method the HTTP method to return
+     * @param callback the function that can return dynamic response payload depending on the request
+     */
+    RESTHostMockBuilder.prototype.withHandler = function (urlTemplate, method, callback) {
+        this.handlers.push({
+            urlTemplate: RESTUtils_1._.RESTUtils.parseUrl(this.baseUrl ? this.baseUrl + urlTemplate : urlTemplate),
+            method: method.toUpperCase(),
+            callback: callback
+        });
+        return this;
+    };
+    /**
+     * Handle a predefined static response for return to caller
+     * @param urlTemplate the url template ot top of baseUrl (if that is provided)
+     * @param method the HTTP method to return
+     * @returns the builder of the response
+     */
+    RESTHostMockBuilder.prototype.withStatic = function (urlTemplate, method) {
+        var handler = {
+            urlTemplate: RESTUtils_1._.RESTUtils.parseUrl(this.baseUrl ? this.baseUrl + urlTemplate : urlTemplate),
+            method: method.toUpperCase()
+        };
+        this.handlers.push(handler);
+        return new RESTResponseBuilder(this, handler);
+    };
+    /**
+     * Supports complete dynamic response handler handler through the provided callback.
+     * Unlike #withHandler method, the callback allows for returning dynamic HTTP Status code and headers in addition to the dynamic payload.
+     *
+     * @param urlTemplate the url template ot top of baseUrl (if that is provided)
+     * @param method the HTTP method to return
+     * @param respond the function that can return dynamic response depending on the request
+     */
+    RESTHostMockBuilder.prototype.withResponse = function (urlTemplate, method, respond) {
+        this.handlers.push({
+            urlTemplate: RESTUtils_1._.RESTUtils.parseUrl(this.baseUrl ? this.baseUrl + urlTemplate : urlTemplate),
+            method: method.toUpperCase(),
+            respond: respond
+        });
+        return this;
+    };
+    RESTHostMockBuilder.prototype.build = function () {
+        this.handlers.sort(function (a, b) { return (!!a.urlTemplate.queryString && b.urlTemplate.queryString ? 1 : -1); });
+        return new RESTHostMock_1._.RESTHostMock(System.nextUUID(), this.handlers);
+    };
+    return RESTHostMockBuilder;
+}());
+exports.RESTHostMockBuilder = RESTHostMockBuilder;
+return exports;
+]]></script>
+</dunes-script-module>

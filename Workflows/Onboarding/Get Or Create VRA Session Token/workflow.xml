@@ -1,0 +1,47 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item4" object-name="workflow:name=generic" id="3f40bb50-7b54-4735-bfd5-74412624256a" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Get Or Create VRA Session Token]]></display-name><position y="80.0" x="20.0"/><input><param name="vraURL" type="string"/><param name="username" type="string"/><param name="password" type="SecureString"/><param name="inputSessionToken" type="string"/></input><output><param name="sessionToken" type="string"/></output><attrib name="token1" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="err_0" type="string" read-only="false"><value encoded="n"><![CDATA[Bad url]]></value></attrib><attrib name="err_1" type="string" read-only="false"><value encoded="n"><![CDATA[Bad Username]]></value></attrib><attrib name="err_2" type="string" read-only="false"><value encoded="n"><![CDATA[Incorrect Password]]></value></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="0.0" x="480.0"/></workflow-item><workflow-item name="item1" out-name="item2" type="task"><display-name><![CDATA[Get Token 1]]></display-name><script encoded="false"><![CDATA[System.log('No session token found generating new token')
+
+var opUrl = '/csp/gateway/am/api/login?access_token';
+var baseUrl = vraURL;
+var opMethod = 'POST'
+var urlParamValues = null;
+var headers = null;
+var contentType = 'application/json';
+
+var contentObject = new Object();
+contentObject.username = username;
+contentObject.password = password;
+
+var content = JSON.stringify(contentObject);
+
+response = System.getModule("com.vmware.pso.rest").executeTransientRESTOperation(baseUrl,username,password,opMethod,opUrl,urlParamValues,headers,contentType,content);
+
+var jsonObj = JSON.parse(response.responseString)
+System.log('responseString' + jsonObj.responseString)
+System.log('statusCode' + jsonObj.statusCode)
+
+statusCode = jsonObj.statusCode;
+
+token1 = jsonObj.refresh_token]]></script><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="username" type="string" export-name="username"/><bind name="password" type="SecureString" export-name="password"/></in-binding><out-binding><bind name="token1" type="string" export-name="token1"/><bind name="statusCode" type="number"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="90.0" x="300.0"/></workflow-item><workflow-item name="item2" out-name="item0" type="task"><display-name><![CDATA[Obtain Session Token]]></display-name><script encoded="false"><![CDATA[var opUrl = '/iaas/api/login';
+var baseUrl = vraURL;
+var opMethod = 'POST'
+var urlParamValues = null;
+var headers = null;
+var contentType = 'application/json';
+
+var contentObject = new Object();
+contentObject.refreshToken = token1;
+
+var content = JSON.stringify(contentObject);
+
+var username = null;
+var password = null;
+
+response = System.getModule("com.vmware.pso.rest").executeTransientRESTOperation(baseUrl,username,password,opMethod,opUrl,urlParamValues,headers,contentType,content);
+
+System.log('stringify ' + JSON.stringify(response));
+var jsonObj = JSON.parse(response.responseString)
+
+sessionToken = jsonObj.token;
+
+System.log("sessiontoken " + sessionToken)]]></script><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="token1" type="string" export-name="token1"/></in-binding><out-binding><bind name="sessionToken" type="string" export-name="sessionToken"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="90.0" x="440.0"/></workflow-item><workflow-item name="item4" out-name="item5" type="custom-condition" alt-out-name="item7"><display-name><![CDATA[Decision]]></display-name><script encoded="false"><![CDATA[return (inputSessionToken && inputSessionToken.trim() != '');]]></script><in-binding><bind name="inputSessionToken" type="string" export-name="inputSessionToken"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="80.0" x="100.0"/></workflow-item><workflow-item name="item5" out-name="item0" type="task"><display-name><![CDATA[Use Provided Session Token]]></display-name><script encoded="false"><![CDATA[sessionToken = inputSessionToken;
+System.log('Using provided token.');]]></script><in-binding><bind name="inputSessionToken" type="string" export-name="inputSessionToken"/></in-binding><out-binding><bind name="sessionToken" type="string" export-name="sessionToken"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="10.0" x="100.0"/></workflow-item><workflow-item name="item6" business-status="Incorrect input for password authorization" throw-bind-name="err_0" type="end" end-mode="1"><in-binding/><position y="140.0" x="520.0"/></workflow-item><workflow-item name="item7" out-name="item1" type="custom-condition" alt-out-name="item9"><display-name><![CDATA[Decision]]></display-name><script encoded="false"><![CDATA[return (vraURL && vraURL.trim() != '' && vraURL.indexOf('https') == 0 && username && username.trim() != '' && password && password.trim() != '');]]></script><in-binding><bind name="vraURL" type="string" export-name="vraURL"/><bind name="username" type="string" export-name="username"/><bind name="password" type="SecureString" export-name="password"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="80.0" x="200.0"/></workflow-item><workflow-item name="item8" business-status="Incorrect input for password authorization" throw-bind-name="err_1" type="end" end-mode="1"><in-binding/><position y="140.0" x="40.0"/></workflow-item><workflow-item name="item9" out-name="item11" type="custom-condition" alt-out-name="item8"><display-name><![CDATA[Username Check]]></display-name><script encoded="false"><![CDATA[return (username && username.trim() != '');]]></script><in-binding><bind name="username" type="string" export-name="username"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="140.0" x="200.0"/></workflow-item><workflow-item name="item10" business-status="Incorrect input for password authorization" throw-bind-name="err_2" type="end" end-mode="1"><in-binding/><position y="220.0" x="360.0"/></workflow-item><workflow-item name="item11" out-name="item6" type="custom-condition" alt-out-name="item10"><display-name><![CDATA[Check Password]]></display-name><script encoded="false"><![CDATA[return (password && password.trim() != '');]]></script><in-binding><bind name="password" type="SecureString" export-name="password"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="140.0" x="320.0"/></workflow-item><presentation/></workflow>

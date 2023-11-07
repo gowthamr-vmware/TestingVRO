@@ -1,0 +1,65 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="0ba57dac-7929-457d-a06d-80abdb25862d" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Salt Minion Key Delete Subscription]]></display-name><description><![CDATA[0.0.1 - Initial Release - ssb
+0.0.2 - Add domain to ID]]></description><position y="50.0" x="100.0"/><input><param name="inputProperties" type="Properties"/></input><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="50.0" x="300.0"/></workflow-item><workflow-item name="item1" out-name="item0" type="task"><display-name><![CDATA[Scriptable task]]></display-name><script encoded="false"><![CDATA[try {
+    var name = inputProperties.resourceNames[0]
+	var domain = inputProperties['customProperties']['custom.machineDomain']
+    System.log("Issuing commands to Salt Master" );
+    var saltSrv = inputProperties.customProperties.masterAddress
+    //var cmd = "echo 'y' | sudo salt-key -d " + name + "." + domain;
+    var cmd = "echo 'y' | sudo salt-key -d " + name;
+    var result = sshCommand(saltSrv, cmd);
+} catch(er) {
+    System.warn(name + " error " + er)  
+}
+    System.log("Finished deleting salt key for " + name);    
+
+function sshCommand(hostName, cmd){
+    var username = "vmware";
+    var password = "vm@dm!n";
+    var path;
+    var port = 22;
+    var passwordAuthentication = true;
+    var encoding = "UTF-8";
+    var session = null;
+    try {
+	    if (port) {
+		    session = new SSHSession(hostName, username, port);
+	    } else {
+		    System.log("A port value is not provided! Using default port 22");
+		    session = new SSHSession(hostName, username);
+	    }
+
+	    if (passwordAuthentication){
+		    System.log("Connecting with password");
+	    } else {
+		    if (path == null || path == ""){
+			    System.log("using default");
+			    path = defaultKeyPairPath;
+		    }
+		    System.log("Connecting with key pair (" + path + ")");
+		    password = passphrase;
+	    }
+
+	    session.connectWithPasswordOrIdentity(passwordAuthentication, password, path);
+	    System.log("Connected!");
+	    System.log("Executing '" + cmd + "' using encoding '" + (encoding ? encoding : "Default System Encoding") + "'");
+	    session.setEncoding(encoding);
+	    session.executeCommand(cmd, true);
+
+	    output = session.getOutput();
+	    error = session.getError();
+	    exitCode = session.exitCode;
+
+	    System.log("Output: '" + output + "'");
+	    System.log("Error: '" + error + "'");
+	    System.log("Exit code: '" + exitCode + "'");
+        return output;
+
+    } catch (e) {
+	    throw "Unable to execute command: " + e;
+    } finally {
+	    if (session) {
+		    session.disconnect();
+	    }
+    }
+    session.disconnect();
+}]]></script><in-binding><bind name="inputProperties" type="Properties" export-name="inputProperties"/></in-binding><out-binding/><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="150.0"/></workflow-item><presentation/></workflow>

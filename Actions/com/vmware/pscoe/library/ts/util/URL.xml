@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="URL" result-type="Any" api-version="6.0.0" id="edbbecc3-3c67-4329-99a2-853441df862a" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var URL = /** @class */ (function () {
+    function URL(url) {
+        var protocolReg = /(?:(http|https|ftp):\/\/)?/;
+        var userinfoReg = /(?:((?:[^\W\s]|\.|-|[:]{1})+)@{1})?/;
+        var hostnameReg = /(?:((?:www.)?(?:[^\W\s]|\.|-)+|localhost(?=\/|\:)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))?/;
+        var portReg = /(?::(\d*))?/;
+        var pathReg = /(?:([\/]?[^\s\?]*[\/]{1})*)?/;
+        var pageReg = /(?:\/?([^\s\n\?\[\]\#]*(?:(?=\.)){1}|[^\s\n\?\[\]\.\#]*)?)?/;
+        var fileExtensionReg = /(?:(\.[^\s\?\#]*))?/;
+        var queryStringReg = /(?:\?([^\s\n\#\[\]]*))?/;
+        var anchorReg = /(?:\#([^\s\n]*))?/;
+        var regex = new RegExp(protocolReg.source + userinfoReg.source + hostnameReg.source +
+            portReg.source + pathReg.source + pageReg.source + fileExtensionReg.source +
+            queryStringReg.source + anchorReg.source);
+        var match = regex.exec(url);
+        if (!match) {
+            throw new Error("Could not parse URL " + url);
+        }
+        var getMatch = function (i) { return match.length > i && match[i] ? match[i] : ""; };
+        this.url = match[0];
+        this.protocol = getMatch(1);
+        this.userinfo = getMatch(2);
+        this.hostname = getMatch(3);
+        this.port = getMatch(4);
+        this.path = getMatch(5);
+        this.page = getMatch(6);
+        this.fileExtension = getMatch(7);
+        this.queryString = getMatch(8);
+        this.anchor = getMatch(9);
+    }
+    URL.prototype.getRelativeUrl = function () {
+        var relativeUrl = this.path;
+        relativeUrl += this.page;
+        relativeUrl += this.fileExtension;
+        relativeUrl += this.queryString ? "?" + this.queryString : "";
+        relativeUrl += this.anchor ? "#" + this.anchor : "";
+        return relativeUrl;
+    };
+    URL.prototype.getUrl = function () {
+        var completeUrl = this.protocol ? this.protocol + "://" : "";
+        completeUrl += this.userinfo ? this.userinfo + "@" : "";
+        completeUrl += this.hostname;
+        completeUrl += this.port ? ":" + this.port : "";
+        completeUrl += this.getRelativeUrl();
+        return completeUrl;
+    };
+    URL.prototype.addQueryParam = function (param) {
+        if (this.queryString && this.queryString.length > 0) {
+            this.queryString += "&";
+        }
+        this.queryString += param;
+        return this.getUrl();
+    };
+    URL.prototype.getQueryParams = function () {
+        var queryParams = {};
+        if (this.queryString) {
+            this.queryString.split("&").forEach(function (param) {
+                queryParams[param.split("=")[0]] = param.split("=")[1];
+            });
+        }
+        return queryParams;
+    };
+    URL.prototype.setQueryParams = function (params) {
+        this.queryString = Object.keys(params)
+            .map(function (key) { return key + "=" + params[key]; })
+            .join("&");
+    };
+    return URL;
+}());
+exports.URL = URL;
+return exports;]]></script>
+</dunes-script-module>

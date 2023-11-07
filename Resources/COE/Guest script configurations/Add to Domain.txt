@@ -1,0 +1,4 @@
+#[#scriptContent#=#string#$d = "service.VRAAD"
+$n = "Se9n5W6j8x!" |ConvertTo-SecureString -AsPlainText -Force
+$c = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $d, $n
+Add-Computer -DomainName [domain] -OUPath "[OU]" -Cred $c#+#scriptTimeOut#=#number#30.0#+#scriptWorkingDirectory#=#string##+#scriptRefreshTime#=#number#10.0#+#deleteResourceAfterRun#=#boolean#true#+#scriptType#=#string#powershell#+#resourceSearchReplace#=#boolean#false#+#scriptInteractiveSession#=#boolean#false#+#resourceToCopy#=#Any#Any#__NULL__#+#copyResource#=#boolean#false#]#

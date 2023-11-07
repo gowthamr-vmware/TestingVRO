@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VRAHostnameExtractor" result-type="Any" api-version="6.0.0" id="26b99e24-73d9-46f5-9e74-02b0e5ec0939" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.autofill.extractor">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var CloudAssemblyService_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.actions/vra/CloudAssemblyService");
+var ExtractorUtil_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.autofill/extractor/ExtractorUtil");
+var VRAHostnameExtractor = /** @class */ (function () {
+    function VRAHostnameExtractor(machinePrefix, machineSuffix) {
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.autofill.extractor.VRAHostnameExtractor');
+        this.prefix = machinePrefix;
+        this.postfix = machineSuffix;
+    }
+    VRAHostnameExtractor.prototype.extract = function () {
+        this.logger.debug("Extracting Cloud Assembly machines for prefix " + this.prefix + " and suffix: " + this.postfix + "...");
+        var cloudAssemblyService = new CloudAssemblyService_1._.CloudAssemblyService();
+        var vms = cloudAssemblyService.getMachinesByPrefix(this.prefix);
+        return vms
+            .filter(function (vm) {
+            var vmPrefix = ExtractorUtil_1._.ExtractorUtil.getExtractedVmPrefix(vm.name);
+            var vmSuffix = ExtractorUtil_1._.ExtractorUtil.getExtractedVmSuffix(vm.name, this.postfix);
+            return vmPrefix === this.prefix && vmSuffix === this.postfix;
+        }, this)
+            .map(function (vm) {
+            return parseInt(vm.name.replace(this.prefix, ''), 10);
+        }, this);
+    };
+    return VRAHostnameExtractor;
+}());
+exports.VRAHostnameExtractor = VRAHostnameExtractor;
+return exports;]]></script>
+</dunes-script-module>

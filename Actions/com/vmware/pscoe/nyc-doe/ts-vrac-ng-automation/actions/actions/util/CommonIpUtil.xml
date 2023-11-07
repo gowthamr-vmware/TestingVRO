@@ -1,0 +1,353 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CommonIpUtil" result-type="Any" api-version="6.0.0" id="c475125a-a20d-45cb-8e4a-ff137e078a9d" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.util">
+  <script encoded="false"><![CDATA[/*-
+     * #%L
+     * actions
+     * %%
+     * Copyright (C) 2023 VMWARE
+     * %%
+     * This program is licensed under Technical Preview License by VMware.
+     * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+     * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+     * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+     * You should have received a copy of the Technical Preview License along with this program.  If not, see
+     * <https://flings.vmware.com/vrealize-build-tools/license>
+     * #L%
+     */
+    /*
+     * Copyright 2017-2018 VMware, Inc. All rights reserved. VMware Confidential
+     */
+    var exports = {};
+    var CommonIpUtil = /** @class */ (function () {
+        function CommonIpUtil() {
+        }
+        /**
+         * Provide the Subnet mask for a given CIDR block
+         * @param cidr CIDR block
+         * @return Subnet mask
+         */
+        CommonIpUtil.getSubnetMask = function (cidr) {
+            var tokens = cidr.split(CommonIpUtil.SUBNET_SEPARATOR);
+            if (tokens.length !== 2) {
+                return;
+            }
+            var maskToken = tokens[1];
+            var nonZeroBit = parseInt(maskToken, 10);
+            var netmask = 0;
+            var shift = 31;
+            for (var i = 0; i < nonZeroBit; i++) {
+                netmask += Math.pow(2, shift);
+                shift--;
+            }
+            return CommonIpUtil.ipToString(netmask);
+        };
+        /**
+         * Convert an IPv4 address to a numerical representation
+         * @param ip IP address
+         * @return IP address as number
+         */
+        CommonIpUtil.ipToNumber = function (ip) {
+            return ip.trim().split(CommonIpUtil.IP_SEPARATOR).reduce(function (acc, val) {
+                return acc * 0x100 + parseInt(val, 10);
+            }, 0);
+        };
+        /**
+         * Convert a numerial IP address value to a string representation
+         * @param ip IP address
+         * @return IP address as string
+         */
+        CommonIpUtil.ipToString = function (ip) {
+            var result = (ip & 0xff).toString();
+            for (var i = 0; i < 3; i++) {
+                ip /= 0x100;
+                result = (ip & 0xff).toString() + CommonIpUtil.IP_SEPARATOR + result;
+            }
+            return result;
+        };
+        /**
+         * Given an IP address and subnet mask, returns the IP/Subnet mask pair string.
+         * E.g. 192.168.0.1 with a 255.255.255.0 mask = "192.168.0.1/24"
+         * @param ip IP address
+         * @param subnetMask Subnet mask
+         * @return IP/Subnet mask pair
+         */
+        CommonIpUtil.getIpSubnetPair = function (ip, netmask) {
+            // Break the mask into bytes.
+            var maskParts = netmask.split(CommonIpUtil.IP_SEPARATOR);
+            // Count the 1 bits.
+            var highBitCount = 0;
+            for (var _i = 0, maskParts_1 = maskParts; _i < maskParts_1.length; _i++) {
+                var maskPart = maskParts_1[_i];
+                // E.g. "255.255.255.0" so each part better be 3 or less in length.
+                if (maskPart.length > 3) {
+                    continue;
+                }
+                // Convert to an int (there's no byte type).
+                var maskNumber = parseInt(maskPart, 10);
+                // Use the last 8 bits, count left-to-right (high-to-low).
+                for (var count = 7; count >= 0; count--) {
+                    if ((maskNumber >> count) & 1) {
+                        highBitCount++;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+            return [ip, highBitCount].join(CommonIpUtil.SUBNET_SEPARATOR);
+        };
+        /**
+         * Given a CIDR address, return the IP range covered by the cidr.
+         * @param cidr CIDR address
+         * @return IP range
+         */
+        CommonIpUtil.buildRangeFromCidr = function (cidr) {
+            var tokens = cidr.split(CommonIpUtil.SUBNET_SEPARATOR);
+            if (tokens.length !== 2) {
+                return;
+            }
+            // Netmask : 255.255.255.0
+            var netMask = CommonIpUtil.ipToNumber(CommonIpUtil.getSubnetMask(cidr));
+            // gateway : 192.168.10.11
+            var gateway = CommonIpUtil.ipToNumber(tokens[0]);
+            // (192.168.10.11 & 255.255.255.0) = 192.168.10.0 => start address
+            var start = gateway & netMask;
+            // hostMask: 0.0.0.255
+            var hostMask = ~netMask;
+            // (192.168.10.0 | 0.0.0.255) = 192.168.10.255 => end address
+            var end = (start | hostMask);
+            var routingPrefix = parseInt(tokens[1], 10);
+            if (routingPrefix === 32) {
+                start = end = gateway;
+            }
+            else if (routingPrefix === 31) {
+                if (start < gateway) {
+                    start = gateway;
+                }
+            }
+            else {
+                // For routed subnets bigger than /31 or /32, two reserved addresses need to be
+                // subtracted from the number of available host addresses: the largest address,
+                // which is used as the broadcast address, and the smallest address, which is
+                // used to identify the network itself
+                start++;
+                end--;
+            }
+            return [
+                CommonIpUtil.ipToString(start),
+                CommonIpUtil.ipToString(end),
+            ].join(CommonIpUtil.RANGE_SEPARATOR);
+        };
+        /**
+         * Check if IP address/IP range/CIDR IP is valid for a network subnet.
+         * @param ip IP address
+         * @param cidr CIDR
+         * @return True if valid, false otherwise
+         */
+        CommonIpUtil.isValidIpForNetwork = function (ip, cidr) {
+            var gateway = CommonIpUtil.ipToNumber(CommonIpUtil.getIpToken(cidr));
+            var netMask = CommonIpUtil.ipToNumber(CommonIpUtil.getSubnetMask(cidr));
+            var start = 0;
+            var end = 0;
+            if (CommonIpUtil.isCidr(ip)) {
+                // Convert cidr IP 10.147.116.196/30 => range 10.147.116.196 - 10.147.116.199
+                ip = CommonIpUtil.buildRangeFromCidr(ip);
+            }
+            if (CommonIpUtil.isValidIpRange(ip)) {
+                // Handle IP ranges 192.168.0.10 - 192.168.0.20
+                start = CommonIpUtil.ipToNumber(CommonIpUtil.getIpRangeStartAddress(ip));
+                end = CommonIpUtil.ipToNumber(CommonIpUtil.getIpRangeEndAddress(ip));
+            }
+            else {
+                // Handle normal IPv4 address 192.168.0.100
+                start = CommonIpUtil.ipToNumber(ip);
+                end = CommonIpUtil.ipToNumber(ip);
+            }
+            return CommonIpUtil.isValidIpForSubnetNumber(start, gateway, netMask, true) &&
+                CommonIpUtil.isValidIpForSubnetNumber(end, gateway, netMask, true);
+        };
+        /**
+         * Check if IP address/IP range/Cidr IP is member of a given set of ranges.
+         * @param ip IP address
+         * @param ranges Array of IP ranges
+         * @return True if valid, false otherwise
+         */
+        CommonIpUtil.isValidIpForRange = function (ip, ranges) {
+            var start = 0;
+            var end = 0;
+            if (CommonIpUtil.isCidr(ip)) {
+                // Convert cidr IP 10.147.116.196/30 => range 10.147.116.196 - 10.147.116.199
+                ip = CommonIpUtil.buildRangeFromCidr(ip);
+            }
+            if (CommonIpUtil.isValidIpRange(ip)) {
+                // Handle IP ranges 192.168.0.10 - 192.168.0.20
+                start = CommonIpUtil.ipToNumber(CommonIpUtil.getIpRangeStartAddress(ip));
+                end = CommonIpUtil.ipToNumber(CommonIpUtil.getIpRangeEndAddress(ip));
+            }
+            else {
+                // Handle normal IPv4 address 192.168.0.100
+                start = CommonIpUtil.ipToNumber(ip);
+                end = CommonIpUtil.ipToNumber(ip);
+            }
+            for (var i = start; i <= end; i++) {
+                if (!CommonIpUtil.validateIpInRanges(CommonIpUtil.ipToString(i), ranges)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        /**
+         * Check if IP address is in CIDR format
+         * @param ip IP address
+         * @return True if in CIDR format, false otherwise
+         */
+        CommonIpUtil.isCidr = function (ip) {
+            return ip.split(CommonIpUtil.SUBNET_SEPARATOR).length === 2;
+        };
+        /**
+         * Check if IP address is valid for a subnet with specified gateway and network mask.
+         * @param ip IP address
+         * @param gateway Gateway address
+         * @param netmask Network mask
+         * @param isGatewayValidIp Check if different
+         * @return True if valid, false otherwise
+         */
+        CommonIpUtil.isValidIpForSubnetNumber = function (ip, gateway, netmask, isGatewayValidIp) {
+            if (isGatewayValidIp === void 0) { isGatewayValidIp = false; }
+            if (!isGatewayValidIp) {
+                // Valid IP address must be different from gateway.
+                if (gateway === ip) {
+                    return false;
+                }
+            }
+            // Valid IP address must be in the same subnet.
+            if (((gateway ^ ip) & netmask) !== 0) {
+                return false;
+            }
+            // The subnet identifier (host-part all 0) is not valid;
+            // the broadcast address (host-part all 1) is also not valid;
+            // an exception is made for /31 network, which allows them.
+            if (netmask === 0xFFFFFFFE) {
+                return true;
+            }
+            var hostMask = ~netmask;
+            var hostPart = ip & hostMask;
+            return hostPart !== 0 && hostPart !== hostMask;
+        };
+        /**
+         * Provide the IP part of a CIDR
+         * @param cidr CIDR
+         * @return IP address
+         */
+        CommonIpUtil.getIpToken = function (cidr) {
+            var tokens = cidr.split(CommonIpUtil.SUBNET_SEPARATOR);
+            if (tokens.length !== 2) {
+                return;
+            }
+            return tokens[0];
+        };
+        /**
+         * Validate a given IP address range by checking the following
+         *  1. given input is in a.b.c.d-e.f.g.h format
+         *  2. a.b.c.d <=e.f.g.h
+         * @param range IP range
+         * @return true if valid, false otherwise
+         */
+        CommonIpUtil.isValidIpRange = function (range) {
+            if (range.trim().length === 0 || range.indexOf(CommonIpUtil.RANGE_SEPARATOR) === -1) {
+                return false;
+            }
+            var rangeStart = CommonIpUtil.getIpRangeStartAddress(range).trim();
+            var rangeEnd = CommonIpUtil.getIpRangeEndAddress(range).trim();
+            if (!CommonIpUtil.isValidIpv4Address(rangeStart) || !CommonIpUtil.isValidIpv4Address(rangeEnd)) {
+                return false;
+            }
+            if (CommonIpUtil.ipToNumber(rangeStart) <= CommonIpUtil.ipToNumber(rangeEnd)) {
+                return true;
+            }
+            return false;
+        };
+        /**
+        * Validate an IPv4 address
+        * @param ip IP address
+        * @return True if the specified IP conforms to IPv4 format, false otherwise
+        */
+        CommonIpUtil.isValidIpv4Address = function (ip) {
+            var ipRegex = new RegExp("^(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])" +
+                "\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])" +
+                "\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])" +
+                "\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])$");
+            return ipRegex.test(ip);
+        };
+        /**
+         * Convert IP range into text
+         * @param range IP range
+         * @return IP range in text format
+         */
+        CommonIpUtil.getIpRangeText = function (range) {
+            return [range.startAddress, range.endAddress].join(" " + CommonIpUtil.RANGE_SEPARATOR + " ");
+        };
+        /**
+         * Method that will verify if the child subnet falls in the parent subnet
+         * both the ranges should be in ip address range format (a.b.c.d-e.f.g.h)
+         * @param Child IP range
+         * @param Parent IP range
+         * @return True if valid, false otherwise
+         */
+        CommonIpUtil.verifySubRange = function (childRange, parentRange) {
+            // Validate ranges.
+            if (!CommonIpUtil.isValidIpRange(childRange) || !CommonIpUtil.isValidIpRange(parentRange)) {
+                return false;
+            }
+            var childStart = CommonIpUtil.ipToNumber(CommonIpUtil.getIpRangeStartAddress(childRange));
+            var childEnd = CommonIpUtil.ipToNumber(CommonIpUtil.getIpRangeEndAddress(childRange));
+            var parentStart = CommonIpUtil.ipToNumber(CommonIpUtil.getIpRangeStartAddress(parentRange));
+            var parentEnd = CommonIpUtil.ipToNumber(CommonIpUtil.getIpRangeEndAddress(parentRange));
+            return childStart >= parentStart && childEnd <= parentEnd;
+        };
+        /**
+         * Verify if the IP address falls in any of the given ranges
+         * @param ip IP address
+         * @param ranges Array of IP ranges
+         * @return true if IP address is found in any of the ranges else returns false
+         */
+        CommonIpUtil.validateIpInRanges = function (ip, ranges) {
+            for (var _i = 0, ranges_1 = ranges; _i < ranges_1.length; _i++) {
+                var range = ranges_1[_i];
+                var ipAddressRange = CommonIpUtil.isValidIpRange(ip) ? ip : [ip, ip].join(CommonIpUtil.RANGE_SEPARATOR);
+                if (CommonIpUtil.verifySubRange(ipAddressRange, range.startAddress + CommonIpUtil.RANGE_SEPARATOR + range.endAddress)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        /**
+         * Provide the start address of an IP range
+         * @param range IP range
+         * @return Start IP address
+         */
+        CommonIpUtil.getIpRangeStartAddress = function (range) {
+            if (range.trim().length === 0 || range.indexOf(CommonIpUtil.RANGE_SEPARATOR) === -1) {
+                return;
+            }
+            return range.substring(0, range.indexOf(CommonIpUtil.RANGE_SEPARATOR)).trim();
+        };
+        /**
+         * Provide the end address of an IP range
+         * @param range IP range
+         * @return End IP address
+         */
+        CommonIpUtil.getIpRangeEndAddress = function (range) {
+            if (range.trim().length === 0 || range.indexOf(CommonIpUtil.RANGE_SEPARATOR) === -1) {
+                return;
+            }
+            return range.substring(range.indexOf(CommonIpUtil.RANGE_SEPARATOR) + 1).trim();
+        };
+        CommonIpUtil.IP_SEPARATOR = ".";
+        CommonIpUtil.RANGE_SEPARATOR = "-";
+        CommonIpUtil.SUBNET_SEPARATOR = "/";
+        return CommonIpUtil;
+    }());
+    exports.CommonIpUtil = CommonIpUtil;
+    return exports;]]></script>
+</dunes-script-module>

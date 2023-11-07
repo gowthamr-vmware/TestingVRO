@@ -1,0 +1,469 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="YamlParse" result-type="Any" api-version="6.0.0" id="921c24d0-c449-4ef8-b5c0-8cefa1e50a39" version="1.0.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.yaml">
+  <script encoded="false"><![CDATA[/*-
+     * #%L
+     * yaml
+     * %%
+     * Copyright (C) 2023 VMware, WWCC CoE
+     * %%
+     * This program is licensed under Technical Preview License by VMware.
+     * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+     * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+     * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+     * You should have received a copy of the Technical Preview License along with this program.  If not, see
+     * <https://flings.vmware.com/vrealize-build-tools/license>
+     * #L%
+     */
+    var __global = System.getContext() || (function () {
+        return this;
+    }).call(null);
+    var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+    var YamlParse = /** @class */ (function () {
+        function YamlParse() {
+            // Prevent instantiation
+        }
+        YamlParse.parse = function (content) {
+            if (content == null) {
+                return null;
+            }
+            var lines = content.split("\n");
+            if (lines == null || lines.length <= 0) {
+                return "";
+            }
+            var parsed = YamlParse.parseArrayOrObject(lines, 0, 0, 0);
+            return parsed.object;
+        };
+        YamlParse.parseArrayOrObject = function (lines, index, indent, firstIndent) {
+            if (index >= lines.length) {
+                return { object: null, index: index + 1 };
+            }
+            var i = index;
+            var line = lines[i];
+            if (indent > line.length || firstIndent > line.length) {
+                return { object: null, index: index + 1 };
+            }
+            line = line.substring(firstIndent);
+            while (i < lines.length) {
+                if (!line) {
+                    line = lines[++i];
+                    continue;
+                }
+                var nonSpaceIndex = line.search(/\S|$/);
+                if (nonSpaceIndex >= line.length) {
+                    line = lines[++i];
+                    continue;
+                }
+                line = line.substring(nonSpaceIndex);
+                if (VROES.Shims.stringStartsWith(line, "#") || VROES.Shims.stringStartsWith(line, "//")) {
+                    line = lines[++i];
+                    continue;
+                }
+                break;
+            }
+            if (i >= lines.length) {
+                return { object: null, index: index + 1 };
+            }
+            var firstMeaningfulLine = lines[i];
+            firstMeaningfulLine = i == index ? firstMeaningfulLine.substring(firstIndent) : firstMeaningfulLine;
+            var nonSpacIndex = firstMeaningfulLine.search(/\S|$/);
+            firstMeaningfulLine = firstMeaningfulLine.substring(nonSpacIndex);
+            var newIndent = i == index ? firstIndent + nonSpacIndex : nonSpacIndex;
+            if (VROES.Shims.stringStartsWith(firstMeaningfulLine, "- ")) {
+                if (newIndent < indent) {
+                    throw new Error("Wrong indent of " + newIndent + " spaces on line " + i + ", near \"" + firstMeaningfulLine + "\". Expected no less than " + indent + " chars as indent of an array.");
+                }
+                var parsed = YamlParse.parseArray(lines, i, newIndent);
+                return parsed;
+            }
+            else {
+                if (newIndent < indent) {
+                    return { object: null, index: i };
+                }
+                var parsed = YamlParse.parseMap(lines, i, newIndent);
+                return parsed;
+            }
+        };
+        YamlParse.parseArray = function (lines, index, indent) {
+            var result = [];
+            var currentIndent = indent;
+            var i = index;
+            var line = lines[i];
+            while (currentIndent >= indent && i < lines.length && currentIndent <= line.length) {
+                var startIndex = i;
+                line = line.substring(currentIndent);
+                if (!VROES.Shims.stringStartsWith(line, "- ")) {
+                    return { object: result, index: i };
+                }
+                line = line.substring(2);
+                var isNull = YamlParse.isNull(line);
+                var num = YamlParse.getNumber(line);
+                var flag = YamlParse.getBoolean(line);
+                var json = YamlParse.getJsonArrayOrObject(line);
+                var isString = YamlParse.isDeffinitelyString(line);
+                if (isNull) {
+                    result.push(null);
+                    i++;
+                }
+                else if (num !== undefined) {
+                    result.push(num);
+                    i++;
+                }
+                else if (flag !== undefined) {
+                    result.push(flag);
+                    i++;
+                }
+                else if (json !== undefined) {
+                    result.push(json);
+                    i++;
+                }
+                else if (isString) {
+                    var parsed = YamlParse.parseString(lines, i, indent + 2, indent + 2);
+                    result.push(parsed.object);
+                    i = parsed.index;
+                }
+                else {
+                    var parsed = YamlParse.parseArrayOrObject(lines, i, indent + 2, indent + 2);
+                    if (parsed.index == i) {
+                        parsed = YamlParse.parseString(lines, i, indent + 2, indent + 2);
+                    }
+                    result.push(parsed.object);
+                    i = parsed.index;
+                }
+                if (i == startIndex) {
+                    throw new Error("Error in format on line " + i + ", near: \"" + line + "\".");
+                }
+                i = this.skipComments(lines, i);
+                if (i >= lines.length) {
+                    break;
+                }
+                line = lines[i];
+                currentIndent = line.search(/\S|$/);
+            }
+            return { object: result, index: i };
+        };
+        YamlParse.parseMap = function (lines, index, indent) {
+            var result = {};
+            var currentIndent = indent;
+            var i = index;
+            var line = lines[i];
+            while (currentIndent >= indent && i < lines.length && currentIndent <= line.length) {
+                var startIndex = i;
+                line = line.substring(currentIndent);
+                var colonIndex = line.indexOf(":");
+                if (colonIndex == -1) {
+                    return { object: result, index: i };
+                }
+                var key = line.substring(0, colonIndex);
+                line = colonIndex >= line.length - 1 ? "" : line.substring(colonIndex + 1);
+                var isNull = YamlParse.isNull(line);
+                var num = YamlParse.getNumber(line);
+                var flag = YamlParse.getBoolean(line);
+                var json = YamlParse.getJsonArrayOrObject(line);
+                var isString = YamlParse.isDeffinitelyString(line);
+                if (isNull) {
+                    result[key] = null;
+                    i++;
+                }
+                else if (num !== undefined) {
+                    result[key] = num;
+                    i++;
+                }
+                else if (flag !== undefined) {
+                    result[key] = flag;
+                    i++;
+                }
+                else if (json !== undefined) {
+                    result[key] = json;
+                    i++;
+                }
+                else if (isString) {
+                    var parsed = YamlParse.parseString(lines, i, indent + 2, indent + key.length + 1);
+                    result[key] = parsed.object;
+                    i = parsed.index;
+                }
+                else {
+                    var parsed = YamlParse.parseArrayOrObject(lines, i, indent, indent + key.length + 1);
+                    if (parsed.index == i) {
+                        parsed = YamlParse.parseString(lines, i, indent + 2, indent + key.length + 1);
+                    }
+                    result[key] = parsed.object;
+                    i = parsed.index;
+                }
+                if (i == startIndex) {
+                    throw new Error("Error in format on line " + i + ", near: \"" + line + "\".");
+                }
+                i = this.skipComments(lines, i);
+                if (i >= lines.length) {
+                    break;
+                }
+                line = lines[i];
+                currentIndent = line.search(/\S|$/);
+            }
+            return { object: result, index: i };
+        };
+        YamlParse.parseString = function (lines, index, indent, firstIndent) {
+            if (index >= lines.length) {
+                return { object: null, index: index + 1 };
+            }
+            var i = index;
+            var firstLine = lines[i];
+            if (indent >= firstLine.length || firstIndent >= firstLine.length) {
+                return { object: null, index: i + 1 };
+            }
+            firstLine = firstLine.substring(firstIndent);
+            if (firstLine.trim() == "") {
+                return { object: "", index: i + 1 };
+            }
+            var buf = [];
+            var firstChar = firstLine.trim().charAt(0);
+            var line = firstChar == "'" || firstChar == "\"" ? YamlParse.trimLeft(firstLine).substring(1) : YamlParse.trimLeft(firstLine);
+            do {
+                if (firstChar == "'") {
+                    var parsed = YamlParse.parseSingleQuotedString(line);
+                    buf.push(parsed.object);
+                    if (parsed.index == -1) {
+                        break;
+                    }
+                }
+                else if (firstChar == "\"") {
+                    var parsed = YamlParse.parseDoubleQuotedString(line);
+                    var lineToAdd = i == index ? parsed.object : YamlParse.trimLeft(parsed.object);
+                    buf.push(lineToAdd);
+                    if (parsed.index == -1) {
+                        break;
+                    }
+                }
+                else {
+                    var newIndentation = line.search(/\S|$/);
+                    if (newIndentation < indent && i != index) {
+                        return { object: buf.join("").trim(), index: i };
+                    }
+                    else {
+                        buf.push(YamlParse.trimLeft(line) + " ");
+                    }
+                }
+                i++;
+                if (i >= lines.length) {
+                    break;
+                }
+                line = lines[i];
+                var newIndent = line.search(/\S|$/);
+                if (YamlParse.trimLeft(line) == "") {
+                    if (((firstChar == "\"" || firstChar == "'") && i != index) || newIndent >= indent) {
+                        buf.push("\n");
+                        i++;
+                        if (i >= lines.length) {
+                            break;
+                        }
+                        line = lines[i];
+                    }
+                }
+            } while (i < lines.length);
+            return { object: buf.join(""), index: i + 1 };
+        };
+        YamlParse.isNull = function (line) {
+            if (line != null && line.trim() == "null") {
+                return true;
+            }
+            return false;
+        };
+        YamlParse.getNumber = function (line) {
+            var num;
+            if (line == null || line.trim() == "") {
+                return undefined;
+            }
+            try {
+                num = Number(line);
+            }
+            catch (notFloat) {
+            }
+            if (num != undefined && !isNaN(num)) {
+                return num;
+            }
+            return undefined;
+        };
+        YamlParse.getBoolean = function (line) {
+            if (line.trim() == "true") {
+                return true;
+            }
+            else if (line.trim() == "false") {
+                return false;
+            }
+            return undefined;
+        };
+        YamlParse.isDeffinitelyString = function (line) {
+            if (line == null) {
+                return true;
+            }
+            var trimmed = line.trim();
+            if (trimmed == "''" || trimmed == "\"\"" || trimmed == "|" || trimmed == ">") {
+                return true;
+            }
+            if (trimmed.length <= 0) {
+                return false;
+            }
+            var quote = trimmed.charAt(0);
+            if (quote == "\"" || quote == "'") {
+                var index = trimmed.indexOf(quote, 1);
+                if (index == -1) {
+                    return true;
+                }
+                if (index == trimmed.length) {
+                    return true;
+                }
+                if (trimmed.charAt(index - 1) != "\\") {
+                    var remaining = trimmed.substring(index + 1);
+                    var nextCharIndex = remaining.search(/\S|$/);
+                    if (nextCharIndex >= remaining.length) {
+                        return true;
+                    }
+                    else if (remaining.charAt(nextCharIndex) == ":") {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        YamlParse.getJsonArrayOrObject = function (line) {
+            if (line == null) {
+                return undefined;
+            }
+            line = line.trim();
+            if (VROES.Shims.stringStartsWith(line, "{{") || (!VROES.Shims.stringStartsWith(line, "[") && !VROES.Shims.stringStartsWith(line, "{"))) {
+                return undefined;
+            }
+            try {
+                var value = JSON.parse(line);
+                return value;
+            }
+            catch (e) {
+                return undefined;
+            }
+        };
+        YamlParse.skipComments = function (lines, index) {
+            var _a, _b;
+            var i = index;
+            var line = (_a = lines[i]) === null || _a === void 0 ? void 0 : _a.trim();
+            while (i < lines.length && line != null && (VROES.Shims.stringStartsWith(line, "#") || VROES.Shims.stringStartsWith(line, "//"))) {
+                i++;
+                line = (_b = lines[i]) === null || _b === void 0 ? void 0 : _b.trim();
+            }
+            return i;
+        };
+        YamlParse.trimLeft = function (str) {
+            if (str == null) {
+                return null;
+            }
+            var index = str.search(/\S|$/);
+            return str.substring(index);
+        };
+        YamlParse.parseSingleQuotedString = function (str) {
+            if (str == null) {
+                return null;
+            }
+            var result = "";
+            var quotation = false;
+            for (var i = 0; i < str.length; i++) {
+                var chr = str.charAt(i);
+                if (quotation) {
+                    if (chr == "'") {
+                        result += "'";
+                        quotation = false;
+                    }
+                    else {
+                        return { object: result, index: -1 };
+                    }
+                }
+                else {
+                    if (chr == "'") {
+                        quotation = true;
+                    }
+                    else {
+                        result += chr;
+                    }
+                }
+            }
+            return { object: result, index: quotation ? -1 : 0 };
+        };
+        YamlParse.parseDoubleQuotedString = function (str) {
+            if (str == null) {
+                return null;
+            }
+            var result = "";
+            var escape = false;
+            for (var i = 0; i < str.length; i++) {
+                var chr = str.charAt(i);
+                if (escape) {
+                    if (chr == "\\") {
+                        result += "\\";
+                        escape = false;
+                    }
+                    else if (chr == "n") {
+                        result += "\n";
+                        escape = false;
+                    }
+                    else if (chr == "r") {
+                        result += "\r";
+                        escape = false;
+                    }
+                    else if (chr == "t") {
+                        result += "\r";
+                        escape = false;
+                    }
+                    else if (chr == "b") {
+                        result += "\b";
+                        escape = false;
+                    }
+                    else if (chr == "f") {
+                        result += "\f";
+                        escape = false;
+                    }
+                    else if (chr == "v") {
+                        result += "\v";
+                        escape = false;
+                    }
+                    else if (chr == "0") {
+                        result += "\0";
+                        escape = false;
+                    }
+                    else if (chr == "'") {
+                        result += "\'";
+                        escape = false;
+                    }
+                    else if (chr == '"') {
+                        result += "\"";
+                        escape = false;
+                    }
+                    else if (chr == 'x') { /* Not implemented for now */ }
+                    else if (chr == 'u') { /* Not implemented for now */ }
+                    else if (chr == 'U') { /* Not implemented for now */ }
+                    else {
+                        result += "\\" + chr;
+                        escape = false;
+                    }
+                }
+                else {
+                    if (chr == "\\") {
+                        escape = true;
+                    }
+                    else if (chr == "\"") {
+                        return { object: result, index: -1 };
+                    }
+                    else {
+                        result += chr;
+                    }
+                }
+            }
+            if (!escape) {
+                result += " ";
+            }
+            return { object: result, index: 0 };
+        };
+        return YamlParse;
+    }());
+    exports.YamlParse = YamlParse;
+    return exports;]]></script>
+</dunes-script-module>

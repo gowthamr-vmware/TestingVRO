@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[This package is licensed under https://flings.vmware.com/vrealize-build-tools/license]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Workflow?id='1d1be9d9-b21a-3f72-9c2d-d9b0aeda0614'&dunesName='Workflow']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ConfigurationElement?id='2330703b-33fd-33de-b904-273abf5804d5'&dunesName='ConfigurationElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='4fd8ccb9-9c77-464f-9d3e-74847a754756'&dunesName='Action'&name='GuestRunner'&category='com.vmware.pscoe.library.ts.dns.actions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ResourceElement?id='617e725c-778d-312a-91f3-ae38b09ad042'&dunesName='ResourceElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='7f917114-0285-4e95-b72d-a2913786a121'&dunesName='Action'&name='DNSOperations'&category='com.vmware.pscoe.library.ts.dns.actions']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ResourceElement?id='9ac2b77c-c736-3340-9877-c9b19f433490'&dunesName='ResourceElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/ResourceElement?id='c51f2131-3f34-36c4-bf6f-35ef3293a430'&dunesName='ResourceElement']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='dd432ba9-32fa-4ce5-97aa-ba5db1b852f9'&dunesName='Action'&name='MicrosoftDNS'&category='com.vmware.pscoe.library.ts.dns.actions.provider.ms']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Workflow?id='e769b980-edfe-3b19-b296-8344d3c1e2a6'&dunesName='Workflow']]></elm>
+</package>

@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="NicBuilder" result-type="Any" api-version="6.0.0" id="7182c883-6c66-47cf-9bcc-749fcde5b4cc" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building a device spec for network adapter.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var Networking = Class.load("com.vmware.pscoe.library.vc", "Networking");
+
+function createNic(nicType) {
+    switch (nicType) {
+        case "pcnet32":
+            return new VcVirtualPCNet32();
+        case "e1000":
+            return new VcVirtualE1000();
+        case "e1000e":
+            return new VcVirtualE1000e();
+        case "vmxnet2":
+            return new VcVirtualVmxnet2();
+        case "vmxnet3":
+            return new VcVirtualVmxnet3();
+        case "sriov":
+            return new VcVirtualSriovEthernetCard();
+        default:
+            throw new Error("Unknown nic type " + nicType);
+    }
+}
+
+/**
+ * Class for building a device spec for network adapter.
+ * @param {Any} networking - A networking system to use, e.g. com.vmware.pscoe.library.vc.Networking
+ * @param {Any} [vNetwork] - An existing network device to edit
+ */
+return Class.define(function NicBuilder(networking, vNetwork) {
+    var saved = null;
+    var mac = null;
+    var nicType = null;
+    var dvPortgroup = null;
+
+    /**
+     * Required.
+     * @param {VC:DistributedVirtualPortgroup} portgroup
+     */
+    this.setPortgroup = function (portgroup) {
+        dvPortgroup = portgroup;
+        return this;
+    }
+    /**
+     * Required.
+     * @param {string} type - Can be {pcnet32|e1000|e1000e|vmxnet2|vmxnet3|sriov}, pcnet32 by default
+     */
+    this.setType = function (type) {
+        nicType = type;
+        return this;
+    }
+
+    /**
+     * Optional. If left empty, vCenter will generate the mac address.
+     * @param {string} macAddress
+     */
+    this.setMac = function (macAddress) {
+        mac = macAddress;
+        return this;
+    }
+
+    /**
+     * @returns {VcVirtualDeviceConfigSpec} - the device spec to be used for reconfiguration
+     */
+    this.build = function () {
+        if (!dvPortgroup) {
+            throw new Error("You must provide a Distributed Virtual Portgroup in order to create the nic.");
+        }
+
+        var isExistingNetwork = !!vNetwork;
+
+        if (!isExistingNetwork) {
+            vNetwork = createNic(nicType);
+            vNetwork.key = 0;
+            vNetwork.unitNumber = 0;
+
+            var connectInfo = new VcVirtualDeviceConnectInfo();
+            connectInfo.allowGuestControl = false;
+            connectInfo.connected = false;
+            connectInfo.startConnected = true;
+            vNetwork.connectable = connectInfo;
+        }
+
+        if (mac) {
+            vNetwork.addressType = Networking.MacAddressTypes.Manual;
+            vNetwork.macAddress = mac;
+        } else if (!isExistingNetwork) {
+            vNetwork.addressType = Networking.MacAddressTypes.Generated;
+        }
+
+        var netBackingInfo = new VcVirtualEthernetCardDistributedVirtualPortBackingInfo();
+        var dvsPortConnection = new VcDistributedVirtualSwitchPortConnection();
+        var dvSwitch = VcPlugin.convertToVimManagedObject(dvPortgroup, dvPortgroup.config.distributedVirtualSwitch);
+        dvsPortConnection.switchUuid = dvSwitch.uuid;
+        dvsPortConnection.portgroupKey = dvPortgroup.key;
+        netBackingInfo.port = dvsPortConnection;
+        vNetwork.backing = netBackingInfo;
+
+        // Create Network ConfigSpec
+        var deviceConfigSpec = new VcVirtualDeviceConfigSpec();
+        deviceConfigSpec.device = vNetwork;
+        deviceConfigSpec.operation = isExistingNetwork ? VcVirtualDeviceConfigSpecOperation.edit : VcVirtualDeviceConfigSpecOperation.add;
+
+        return deviceConfigSpec;
+    }
+
+    /**
+     * Builds the device spec and saves it to the network system specified
+     * @returns - this
+     */
+    this.save = function () {
+        saved = this.build();
+        networking.add(saved);
+        return this;
+    }
+
+    /**
+     * Retrieves the created network adapter. Null if the adapter was not created.
+     * @returns {Any} - the vNIC object
+     */
+    this.created = function () {
+        if (saved.device.addressType == Networking.MacAddressTypes.Manual) {
+            return networking.getNicByMac(saved.device.macAddress);
+        } else {
+            var results = networking.getNicsByPortgroupKey(saved.device.backing.port.portgroupKey);
+            if (results.length > 1) {
+                throw new Error("More that 1 nic for the given portgroup.");
+            }
+            return results.length ? results[0] : null;
+        }
+    }
+});]]></script>
+</dunes-script-module>

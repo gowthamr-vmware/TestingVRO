@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VRAHostnameAssertion" result-type="Any" api-version="6.0.0" id="5dbd0ba7-887b-4c84-8e82-808d625a92f6" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.validation.Assertions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var CloudAssemblyService_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.actions/vra/CloudAssemblyService");
+var VRAHostnameAssertion = /** @class */ (function () {
+    function VRAHostnameAssertion() {
+        this.name = 'Cloud Assembly';
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.validation.Assertions.VRAHostnameAssertion');
+    }
+    VRAHostnameAssertion.prototype.assert = function (context) {
+        if (!context.isAutofill) {
+            var testHostname = context.testHostname;
+            this.logger.debug("Cloud Assembly validation - Checking for " + testHostname);
+            var cloudAssemblyService = new CloudAssemblyService_1._.CloudAssemblyService();
+            var foundVMs = cloudAssemblyService.getMachinesByName(testHostname);
+            this.logger.debug("Cloud Assembly validation - Found VMs " + foundVMs.length);
+            if (foundVMs.length > 0) {
+                throw new Error("Cloud Assembly validation failed - Virtual Machine already exists for '" + testHostname + "'");
+            }
+            this.logger.debug("The name '" + testHostname + "' does not exist within any Cloud Assembly inventory. Validation succeeded.");
+        }
+    };
+    return VRAHostnameAssertion;
+}());
+exports.VRAHostnameAssertion = VRAHostnameAssertion;
+return exports;]]></script>
+</dunes-script-module>

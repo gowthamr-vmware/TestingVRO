@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="LoggerConfiguration" result-type="Any" api-version="6.0.0" id="eab9eddf-4567-3fa7-bd39-0f538572c049" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.logging.configuration">
+  <script encoded="false"><![CDATA[var exports = {};
+var failingToLoadInTCs = false;
+var RESOURCE_ELEMENT = {
+    CATEGORY: "PSCoE/Logging/",
+    NAME: "LoggerConfig.json"
+};
+var LoggerConfiguration = /** @class */ (function () {
+    function LoggerConfiguration() {
+    }
+    LoggerConfiguration.prototype.populate = function (configuration) {
+        var _this = this;
+        Object.keys(configuration).forEach(function (key) {
+            _this[key] = configuration[key];
+        });
+    };
+    LoggerConfiguration.prototype.getResourceElement = function () {
+        try {
+            var resourceElementCategory = Server.getResourceElementCategoryWithPath(RESOURCE_ELEMENT.CATEGORY);
+            return resourceElementCategory ? resourceElementCategory.allResourceElements.filter(function (element) {
+                return element.name === RESOURCE_ELEMENT.NAME;
+            }).pop() : undefined;
+        }
+        catch (e) {
+            // getting "InternalError: Server error : null at Dynamic Script Module name : LoggerConfiguration:22 (getResourceElement)" during TCs execution again.
+            if (!((e + "").match(/InternalError/))) {
+                throw e;
+            }
+            else {
+                System.error(e);
+            }
+            failingToLoadInTCs = true;
+            return undefined;
+        }
+    };
+    /**
+     * Loads Logger configuration from a predefined Resource Element or built default one in-memory
+     */
+    LoggerConfiguration.prototype.loadWithDefaults = function () {
+        if (!this.load()) {
+            this.populate({
+                "name": "DefaultLoggerConfiguration",
+                "root": {
+                    "level": "debug",
+                    "AppenderRef": [{
+                            "ref": "System"
+                        }]
+                },
+                "loggers": {
+                    "com.vmware.pscoe": {
+                        "level": failingToLoadInTCs ? "debug" : "info",
+                        "AppenderRef": [{
+                                "ref": "System"
+                            }]
+                    },
+                },
+                "appenders": {
+                    "System": {
+                        "modulePath": "com.vmware.pscoe.library.ts.logging.appenders",
+                        "moduleName": "SystemAppender",
+                    },
+                    "Server": {
+                        "modulePath": "com.vmware.pscoe.library.ts.logging.appenders",
+                        "moduleName": "ServerAppender",
+                    },
+                    "File": {
+                        "modulePath": "com.vmware.pscoe.library.ts.logging.appenders",
+                        "moduleName": "FileAppender",
+                        "fileName": "pscoe/logger/vro-log.log",
+                    },
+                }
+            });
+        }
+    };
+    /**
+     * Loads Logger configuration from a predefined Resource Element
+     */
+    LoggerConfiguration.prototype.load = function () {
+        var resourceElement = this.getResourceElement();
+        if (resourceElement) {
+            this.populate(JSON.parse(resourceElement.getContentAsMimeAttachment().content));
+        }
+        return !!resourceElement;
+    };
+    ;
+    /**
+     * Saves logging configuration into the Resource Element
+     *
+     * @param {JSON} newConfiguration - logger configuraiton object
+     */
+    LoggerConfiguration.prototype.save = function (newConfiguration) {
+        var resourceElement = this.getResourceElement();
+        if (!resourceElement) {
+            resourceElement = Server.createResourceElement(RESOURCE_ELEMENT.CATEGORY, RESOURCE_ELEMENT.NAME, null, "text/json");
+        }
+        var mimeContent = new MimeAttachment();
+        mimeContent.content = JSON.stringify(newConfiguration, null, 2);
+        mimeContent.mimeType = "text/json";
+        resourceElement.setContentFromMimeAttachment(mimeContent);
+        this.populate(newConfiguration);
+    };
+    ;
+    /**
+     * Search in configuration for logger with name that matches most the {name}
+     * otherwise if name is empty return first found
+     * @param {string} name - Logger Name
+     * @return {string} - Logger name that best matches the {name}
+     */
+    LoggerConfiguration.prototype.getLoggerName = function (name) {
+        if (!name) {
+            return Object.keys(this.loggers).shift() || "Default Logger";
+        }
+        else {
+            return Object
+                .keys(this.loggers)
+                .filter(function (loggerName) {
+                return name.match(new RegExp(loggerName));
+            })
+                .sort(function (a, b) {
+                return a.length - b.length;
+            })
+                .pop();
+        }
+    };
+    ;
+    /**
+     * Get the names of the Appenders defined for logger with name {name}
+     * @param {string} loggerName - Logger Name from the configuration
+     * @return {Array{string}} - Appenders Names
+     */
+    LoggerConfiguration.prototype.getAppendersNames = function (loggerName) {
+        var logger = (loggerName && this.loggers[loggerName]) ? this.loggers[loggerName] : this.root;
+        return logger.AppenderRef.map(function (appndenderRef) {
+            return appndenderRef.ref;
+        });
+    };
+    ;
+    return LoggerConfiguration;
+}());
+exports.LoggerConfiguration = LoggerConfiguration;
+return exports;
+]]></script>
+</dunes-script-module>

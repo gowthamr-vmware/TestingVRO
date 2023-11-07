@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Validator" result-type="Any" api-version="6.0.0" id="34eb6791-bc34-4f53-b86e-afdc75a4ee16" version="2.0.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.validator">
+  <description><![CDATA[The actual Validator object definition. All validation methods should be implemented here.]]></description>
+  <script encoded="false"><![CDATA[return function() {
+	this.isString = function(value){ 
+		return ((typeof value === 'string') || (value instanceof String));
+	};
+	this.minString = function(value, min){ 
+		return (this.isString(value) &&  value.length > min);
+	};	
+	this.notEmptyString = function(value){ 
+		return this.minString(value, 1);
+	};
+	this.isIPv4 = function(value) { 
+		return (!!value && 
+			value.match(/^(2[0-4][0-9]|25[0-5]|[01]?[0-9][0-9]?)\.(2[0-4][0-9]|25[0-5]|[01]?[0-9][0-9]?)\.(2[0-4][0-9]|25[0-5]|[01]?[0-9][0-9]?)\.(2[0-4][0-9]|25[0-5]|[01]?[0-9][0-9]?)$/)) 
+			? true : false; 
+	};
+	this.regex = function(value, regex) {
+		return (value.match(regex)) ? true : false;
+	};
+	this.isBlank = function(value) {
+    	return (!value || /^\s*$/.test(value));
+	};
+};]]></script>
+</dunes-script-module>

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AsyncActionRunner" result-type="Any" api-version="6.0.0" id="d58f1d6c-949f-437a-8769-8dc783581184" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Runs an action in a new Workflow context. It uses the Async Action Runner workflow to run the action.
+Returns a to workflow token to be monitored.]]></description>
+  <script encoded="false"><![CDATA[return function AsyncActionRunner(mod, act) {
+	var asyncWfRunnerId = "96a1c234-2d63-4775-bd46-8342cdde21cb";
+	var wf = Server.getWorkflowWithId(asyncWfRunnerId);
+	var tokenName = mod + ":" + act;
+
+	this.call = function(args) {
+		if (!args) {
+			args = [];
+		}
+		var props = new Properties();
+		props.put("args", args);
+		props.put("mod", mod);
+		props.put("act", act);
+		props.put("__tokenName", tokenName);
+		return wf.execute(props);
+	};
+
+	this.forEach = function(callback) {
+		wf.executions.forEach(function(token) {
+			if (token.getInputParameters().get("__tokenName") == tokenName) {
+				callback(token);
+			}
+		});
+	};
+};]]></script>
+</dunes-script-module>

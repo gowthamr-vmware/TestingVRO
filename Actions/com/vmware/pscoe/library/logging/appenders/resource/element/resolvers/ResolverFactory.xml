@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ResolverFactory" result-type="Any" api-version="6.0.0" id="228f04d3-3663-42fc-aade-b223845c0419" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging.appenders.resource.element.resolvers">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+var ResolverFactory = Class.define(function ResolverFactory() {
+    throw new Error("Private constructor");
+}, null);
+
+ResolverFactory.Type = {
+    PerExecution: "PerExecution",
+    Singleton: "Singleton"
+}
+
+var mapper = {
+    PerExecution: "PerExecutionResolver",
+    Singleton: "SingletonResolver"
+}
+
+ResolverFactory.getResolver = function (type, properties) {
+    if (!mapper[type]) {
+        throw new Error("Resolver of type: " + type + "not found");
+    }
+    var resolver = Class.load("com.vmware.pscoe.library.logging.appenders.resource.element.resolvers", mapper[type]);
+    return new resolver(properties);
+}
+
+return ResolverFactory;]]></script>
+</dunes-script-module>

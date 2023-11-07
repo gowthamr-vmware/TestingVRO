@@ -1,0 +1,12 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="993d2407-3ff6-49ec-a4f1-bdad0d05c435" version="1.0.3" api-version="6.0.0" allowed-operations="vef" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[ExportApprovalPolicy]]></display-name><position y="9.045454545454543" x="65.0"/><input><param name="cafeHost" type="vCACCAFE:VCACHost"/><param name="toCategory" type="ResourceElementCategory"/><param name="policyName" type="string"/></input><workflow-item name="item0" type="end" end-mode="0"><position y="9.045454545454543" x="344.5"/></workflow-item><workflow-item name="item1" out-name="item0" type="task"><display-name><![CDATA[Scriptable task]]></display-name><script encoded="false"><![CDATA[var ApprovalPolicy = System.getModule("com.vmware.pscoe.library.vra").ApprovalPolicy(cafeHost);
+
+var pol = ApprovalPolicy.getByName(policyName);
+
+if (!policyName) {
+	throw new Error("Missing Policy with name: " + policyName);
+}
+
+var REA = System.getModule("com.vmware.pscoe.library.util").ResourceElementAccessor();
+
+var res = new REA(toCategory.path, policyName + ".json", true);
+res.setContent(JSON.stringify(pol, null, 4));]]></script><in-binding><bind name="cafeHost" type="vCACCAFE:VCACHost" export-name="cafeHost"/><bind name="toCategory" type="ResourceElementCategory" export-name="toCategory"/><bind name="policyName" type="string" export-name="policyName"/></in-binding><out-binding/><position y="19.045454545454543" x="164.5"/></workflow-item><presentation><p-param name="cafeHost"><desc><![CDATA[cafeHost]]></desc></p-param><p-param name="toCategory"><desc><![CDATA[toCategory]]></desc></p-param><p-param name="policyName"><desc><![CDATA[policyName]]></desc></p-param></presentation></workflow>

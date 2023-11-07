@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Input" result-type="Any" api-version="6.0.0" id="e202b50f-153d-49ed-b3f9-bfc1531ad2d7" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install">
+  <description><![CDATA[Represents a complete input specification and allows it to be executed against an installation payload JSON.
+Exposes all available input specificators available under com.vmware.pscoe.library.install.spec.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.install.Input");
+
+var moduleName = "com.vmware.pscoe.library.install.spec";
+var mod = System.getModule(moduleName);
+var regex = /InputSpec$/i; // Only classes that end with InputSpec, e.g. StringInputSpec
+var classes = mod.actionDescriptions.filter(function (act) {
+	return !!regex.exec(act.name);
+}).map(function (act) {
+	return {
+		namespace: moduleName,
+		name: act.name + ""
+	};
+});
+
+var input = Class.define(function Input() {
+	this.specs = [];
+	this.context = {};
+}, {
+	validate: function (json) {
+		var validation = {
+			valid: true,
+			errors: []
+		};
+		this.specs.forEach(function (spec) {
+			var val = spec.validate(this.getValue(spec.path, json));
+			validation.errors = validation.errors.concat(val.errors.map(function (err) {
+				return spec.path + ": " + err;
+			}));
+		}, this);
+		validation.valid = !validation.errors.length;
+		return validation;
+	},
+
+	verify: function (json) {
+		var verification = {
+			valid: true,
+			errors: []
+		};
+		this.specs.forEach(function (spec) {
+			var val = spec.verify(this.getValue(spec.path, json), this.context[spec.path]);
+			verification.errors = verification.errors.concat(val.errors.map(function (err) {
+				return spec.path + ": " + err;
+			}));
+		}, this);
+		verification.valid = !verification.errors.length;
+		return verification;
+	},
+
+	getSpecsSortedByDependeny: function () {
+		var top = [];
+		var visited = {}
+		var specs = this.specs;
+
+		function getSpec(path) {
+			return specs.filter(function (x) {
+				return x.path == path;
+			})[0];
+		}
+
+		function setVisited(spec) {
+			visited[spec.path] = true;
+		}
+
+		function notVisited(spec) {
+			return !visited.hasOwnProperty(spec.path);
+		}
+
+		function notNull(spec) {
+			return !!spec;
+		}
+
+		function visit(spec) {
+			var chain = this;
+			if (chain.hasOwnProperty(spec.path)) {
+				throw new Error("Cycling dependency detected: " + Object.keys(chain));
+			}
+			if (notVisited(spec)) {
+				setVisited(spec);
+				chain[spec.path] = true;
+				spec.getDependencies().map(getSpec).filter(notNull).forEach(visit, chain);
+				delete chain[spec.path];
+				top.push(spec);
+			}
+		}
+
+		this.specs.forEach(visit.bind({})); //new chain for every root
+		return top;
+	},
+
+	process: function (json) {
+		this.getSpecsSortedByDependeny().forEach(function (spec) {
+			this.context[spec.path] = spec.process(this.getValue(spec.path, json), this.context);
+		}, this);
+	},
+
+	getValue: function (path, json) {
+		if (!json) {
+			return undefined;
+		}
+		path = path.split(".");
+		var o = json,
+			current = null;
+		while (current = path.shift()) {
+			if (o.hasOwnProperty(current)) {
+				o = o[current];
+			} else {
+				return undefined;
+			}
+		}
+		return o;
+	}
+});
+
+
+classes.forEach(function (classDefinition) {
+	var className = classDefinition.name;
+	var functionName = "read" + className.replace(regex, "");
+	logger.debug(className + " -> " + functionName);
+
+	input.prototype[functionName] = function (path) {
+		var cls = Class.load(classDefinition.namespace, classDefinition.name);
+		var spec = new cls(path);
+		this.specs.push(spec);
+		return spec;
+	}
+});
+
+return input;]]></script>
+</dunes-script-module>

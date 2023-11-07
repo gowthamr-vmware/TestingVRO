@@ -1,0 +1,84 @@
+{
+"648d41a0-49af-4dd7-b1b2-618e3685b591":[    
+    {"vRAProjectName":"Compliance", "doeProjectname":"AGS","doeProjectValue":"Appeals and Grievances"},    
+    {"vRAProjectName":"Compliance", "doeProjectname":"EC","doeProjectValue":"Emergency Contact"}    
+],
+"2ca5d8c3-721a-4829-b7da-92ae4ba89094":[    
+    {"vRAProjectName":"Family", "doeProjectname":"FAM","doeProjectValue":"Family Access Management"},    
+    {"vRAProjectName":"Family", "doeProjectname":"CAT","doeProjectValue":"Common Admin Tool"}   
+],
+"e6477882-501e-4eb6-8350-48638c9236a7":[    
+    {"vRAProjectName":"Finance and Project ENG", "doeProjectname":"CTS","doeProjectValue":"COVID Tracker"},    
+    {"vRAProjectName":"Finance and Project ENG", "doeProjectname":"MTAC","doeProjectValue":"Multiple Task Award Contract"}   
+],
+"abb4ece5-7e6f-4d38-a411-3c6fca903fd7":[    
+    {"vRAProjectName":"Human Capital", "doeProjectname":"EVP","doeProjectValue":"Employment Verification System"},    
+    {"vRAProjectName":"Human Capital", "doeProjectname":"EOIS","doeProjectValue":"Equal Opportunity Information System"}   
+],
+"6390a98a-5d78-4aaf-a120-9408f05e94ff":[    
+    {"vRAProjectName":"IET", "doeProjectname":"EDM","doeProjectValue":"IBM Security Identity Manager"},    
+    {"vRAProjectName":"IET", "doeProjectname":"EUP","doeProjectValue":"External User Portal"},
+    {"vRAProjectName":"IET", "doeProjectname":"LFS","doeProjectValue":"Enterprise Content Management System (Laserfiche)"}    
+],
+"65a5f322-e2d4-4999-a0d9-f64b5c2a2d6b":[    
+    {"vRAProjectName":"SIS", "doeProjectname":"STARS","doeProjectValue":"STARS Classroom"},    
+    {"vRAProjectName":"SIS", "doeProjectname":"PAST","doeProjectValue":"Periodic Assessment Selection Tool"}   
+],
+"f4a878d6-a831-48b5-a850-02c2bb484b47":[    
+    {"vRAProjectName":"Special Education", "doeProjectname":"IHS","doeProjectValue":"Impartial Hearing System"},    
+    {"vRAProjectName":"Special Education", "doeProjectname":"TDN","doeProjectValue":"10 Day Notice"}   
+],
+"311cf7c7-3294-4028-a5b2-ddf1dafb1f0a":[    
+    {"vRAProjectName":"App Dev Operations", "doeProjectname":"SRS","doeProjectValue":"Reporting"},
+    {"vRAProjectName":"App Dev Operations", "doeProjectname":"ADO","doeProjectValue":"App Dev Operations"}   
+],
+"89950fa9-ebd4-4bde-b93f-ce349628759b":[    
+    {"vRAProjectName":"DB", "doeProjectname":"NONE","doeProjectValue":"NONE"}   
+],
+"40aa0870-2773-4fc7-b75e-9c8b16aa929e":[    
+    {"vRAProjectName":"NOC", "doeProjectname":"NONE","doeProjectValue":"NONE"}   
+],
+"7b704d4d-439f-4f3b-a931-b392936b36df":[    
+    {"vRAProjectName":"Payroll & Accounting", "doeProjectname":"NONE","doeProjectValue":"NONE"}   
+],
+"256c99e8-6c3f-4004-9a83-9bd63a3606b4":[    
+    {"vRAProjectName":"School Food", "doeProjectname":"NONE","doeProjectValue":"NONE"}   
+],
+"a819da7d-b9b9-4ec1-af79-8cf01ba5a405":[    
+    {"vRAProjectName":"Enterprise Server Operations", "doeProjectname":"ESO","doeProjectValue":"Enterprise Server Operations"},
+    {"vRAProjectName":"Enterprise Server Operations", "doeProjectname":"LXC","doeProjectValue":"Lenovo XClarity"},
+    {"vRAProjectName":"Enterprise Server Operations", "doeProjectname":"MVT","doeProjectValue":"MoveIt"},
+    {"vRAProjectName":"Enterprise Server Operations", "doeProjectname":"SAT","doeProjectValue":"Satellite"}
+],
+"bb4465d6-3c92-46bf-9d05-24867ee401e5":[    
+    {"vRAProjectName":"Sandbox", "doeProjectname":"SBX","doeProjectValue":"Sandbox"}
+],
+"43f3f024-fa29-46ed-a198-8e7d10e85459":[    
+    {"vRAProjectName":"Office of Information Security", "doeProjectname":"OIS","doeProjectValue":"Office of Information Security"},
+    {"vRAProjectName":"Office of Information Security", "doeProjectname":"XSR","doeProjectValue":"Xsoar"},
+    {"vRAProjectName":"Office of Information Security", "doeProjectname":"DLP","doeProjectValue":"Symantec DLP Endpoint"}
+],
+"5468251f-94bc-4bd9-b5ac-e879e87331b2":[    
+    {"vRAProjectName":"Office of Central LAN", "doeProjectname":"OCL","doeProjectValue":"Central LAN"},
+    {"vRAProjectName":"Office of Central LAN", "doeProjectname":"PRT","doeProjectValue":"Printing"}
+],
+"b88d2c84-ed91-4a83-bee4-ac9c7d55e119":[    
+    {"vRAProjectName":"Office of Assessment Operations", "doeProjectname":"TAO","doeProjectValue":"Office of Assessment Operations"}
+],
+"2a1e1de8-a0cc-4ba3-b650-f009d198bd82":[    
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"IDM","doeProjectValue":"Identity Management Group"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"STF","doeProjectValue":"ISIM Staff"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"STU","doeProjectValue":"ISIM Students"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"PEX","doeProjectValue":"ISIM Parents/Ext"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"PAM","doeProjectValue":"Privledge Identity Managment / Privledged Access Managmeent"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"RBC","doeProjectValue":"IBM RBAC"}
+],
+"replace_with_vra_projectid":[    
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"IDM","doeProjectValue":"Identity Management Group"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"STF","doeProjectValue":"ISIM Staff"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"STU","doeProjectValue":"ISIM Students"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"PEX","doeProjectValue":"ISIM Parents/Ext"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"PAM","doeProjectValue":"Privledge Identity Managment / Privledged Access Managmeent"},
+    {"vRAProjectName":"Identity Management Group", "doeProjectname":"RBC","doeProjectValue":"IBM RBAC"}
+]
+}  

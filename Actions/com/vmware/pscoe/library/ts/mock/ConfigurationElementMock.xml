@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ConfigurationElementMock" result-type="Any" api-version="6.0.0" id="8a1bb85a-852f-3a74-be71-7c29072735f3" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+/*
+ * #%L
+ * mock
+ * %%
+ * Copyright (C) 2020 VMWARE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var ConfigurationElementMock = /** @class */ (function () {
+    function ConfigurationElementMock() {
+        this.versionHistoryItems = [];
+        this.attributes = [];
+    }
+    ConfigurationElementMock.prototype.getAttributeWithKey = function (key) {
+        return VROES.Shims.arrayFind(this.attributes, function (a) { return a.name == key; });
+    };
+    /**
+     * setAttributeWithKey
+     * @param key
+     * @param value
+     * @param type Non standard vRO parameter but required for CompositeTypes
+     */
+    ConfigurationElementMock.prototype.setAttributeWithKey = function (key, value, type) {
+        var index = VROES.Shims.arrayFindIndex(this.attributes, function (a) { return a.name == key; });
+        var att;
+        if (index < 0) {
+            att = {
+                name: key,
+            };
+            this.attributes.push(att);
+        }
+        else {
+            att = this.attributes[index];
+        }
+        if (!att.type) {
+            // TODO - this is incorrect "typeof value" have to be replaced with switch
+            att.type = type ? type : typeof value;
+        }
+        att.value = value;
+    };
+    ConfigurationElementMock.prototype.reload = function () { };
+    ConfigurationElementMock.prototype.saveToVersionRepository = function () { };
+    ConfigurationElementMock.prototype.removeAttributeWithKey = function (key) {
+        var index = VROES.Shims.arrayFindIndex(this.attributes, function (a) { return a.name == key; });
+        if (index >= 0) {
+            this.attributes.splice(index, 1);
+        }
+    };
+    return ConfigurationElementMock;
+}());
+exports.ConfigurationElementMock = ConfigurationElementMock;
+return exports;
+]]></script>
+</dunes-script-module>

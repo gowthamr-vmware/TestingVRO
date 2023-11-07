@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="582f9380-c1c0-46dc-a92d-e35b17db89be" version="1.0.0">
+  <display-name><![CDATA[CustomHostname]]></display-name>
+  <atts>
+    <att name="sites" type="Properties" read-only="false"/>
+    <att name="roles" type="Properties" read-only="false"/>
+    <att name="envtags" type="Properties" read-only="false"/>
+    <att name="doeprojects" type="Properties" read-only="false"/>
+    <att name="envdomains" type="Properties" read-only="false"/>
+    <att name="environments" type="Properties" read-only="false"/>
+    <att name="envous" type="Properties" read-only="false"/>
+  </atts>
+</config-element>

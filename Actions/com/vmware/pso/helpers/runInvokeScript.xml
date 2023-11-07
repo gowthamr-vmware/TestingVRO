@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="runInvokeScript" result-type="string" api-version="6.0.0" id="cb8e4ced-38a0-44e0-80c5-12b64838c1b3" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pso.helpers">
+  <runtime><![CDATA[powercli:12-powershell-7.1]]></runtime>
+  <param n="isWindows" t="boolean"><![CDATA[]]></param>
+  <param n="vmName" t="string"><![CDATA[]]></param>
+  <param n="VCFQDN" t="string"><![CDATA[]]></param>
+  <param n="vcUser" t="string"><![CDATA[]]></param>
+  <param n="vcPass" t="string"><![CDATA[]]></param>
+  <param n="toolsUser" t="string"><![CDATA[]]></param>
+  <param n="toolsPass" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[function Handler($context, $inputs) {
+    $inputsString = $inputs | ConvertTo-Json -Compress
+    Write-Host "Inputs were $inputsString"
+
+    
+
+
+
+    $output=@{status = 'done'}
+    return $output
+}]]></script>
+</dunes-script-module>

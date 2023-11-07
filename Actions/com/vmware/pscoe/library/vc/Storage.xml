@@ -1,0 +1,502 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Storage" result-type="Any" api-version="6.0.0" id="af3f8ffd-e802-4cf7-9a57-a3f121eaf36c" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc">
+  <description><![CDATA[Class for working with vCenter VM's storage]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var VCenterClusterComputeResource = Class.load("com.vmware.pscoe.library.vc", "VCenterClusterComputeResource");
+var ReconfigurationTransaction = Class.load("com.vmware.pscoe.library.vc.config", "ReconfigurationTransaction");
+
+var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.vc.Storage");
+
+function hostByVm(vm) {
+	return VcPlugin.toManagedObject(vm, vm.runtime.host);
+}
+
+function lastControllerKey(storage) {
+	var controllers = storage.getControllers();
+	if (controllers.length == 0) {
+		throw new Error("No SCSI controllers found in the virtual machine");
+	}
+	return controllers.pop().key;
+}
+
+/**
+ * @param {VC:VirtualMachine} vm
+ */
+var Storage = Class.define(function Storage(vm) {
+	this.vm = vm;
+	this.host = hostByVm(vm);
+	this.transaction = null;
+});
+
+Storage.ControllerTypes = {
+	SCSI: "SCSI",
+	SATA: "SATA",
+	IDE: "IDE",
+	ALL: "ALL"
+}
+Storage.ScsiControllerTypes = {
+	BusLogic: "BusLogic",
+	LsiLogic: "LsiLogic",
+	LsiLogicSAS: "LsiLogicSAS",
+	ParaVirtual: "ParaVirtual",
+	SATA: "SATA",
+	IDE: "IDE"
+};
+Storage.DiskProvisioning = {
+	thin: "thin",
+	thikLazy: "thikLazy",
+	thikEager: "thikEager"
+};
+Storage.DiskSharing = {
+	sharingMultiWriter: "sharingMultiWriter",
+	sharingNone: "sharingNone"
+};
+Storage.HubType = {
+	cluster: "StoragePod",
+	datastore: "Datastore"
+};
+Storage.SubProfile = {
+	name: "Rule-set 1"
+};
+Storage.isDisk = function (device) {
+	return device instanceof VcVirtualDisk;
+};
+Storage.isCdrom = function (device) {
+	return device instanceof VcVirtualCdrom;
+};
+
+Storage.isScsiController = function (device) {
+	return device instanceof VcVirtualLsiLogicController
+		|| device instanceof VcParaVirtualSCSIController
+		|| device instanceof VcVirtualLsiLogicSASController;
+}
+
+Storage.isIDEController = function (device) {
+	return device instanceof VcVirtualIDEController;
+}
+
+Storage.isSATAController = function (device) {
+	return device instanceof VcVirtualAHCIController;
+}
+
+Storage.isController = function (device, type) {
+	type = type || Storage.ControllerTypes.SCSI;
+	switch (type) {
+		case Storage.ControllerTypes.SCSI:
+			return Storage.isScsiController(device);
+		case Storage.ControllerTypes.SATA:
+			return Storage.isSATAController(device);
+		case Storage.ControllerTypes.IDE:
+			return Storage.isIDEController(device);
+		case Storage.ControllerTypes.ALL:
+		default:
+			return Storage.isScsiController(device)
+				|| Storage.isSATAController(device)
+				|| Storage.isIDEController(device);
+	}
+};
+
+/**
+ * Returns all storage policies from the PBM for a given vCenter
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @returns {Array/PbmProfile}
+ */
+Storage.getProfiles = function (sdkConnection) {
+	var resourceType = sdkConnection.storageManagement.pbmProfileManager.pbmFetchResourceType()[0]; //Only one
+	var profileIds = sdkConnection.storageManagement.pbmProfileManager.pbmQueryProfile(resourceType, PbmProfileCategoryEnum.REQUIREMENT);
+	return sdkConnection.storageManagement.pbmProfileManager.pbmRetrieveContent(profileIds);
+};
+
+/**
+ * Find storage policy profile for VM
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @param {String} vmId VM Managed Object ID
+ * @returns {PbmProfile[]}
+ */
+Storage.findProfilesForVm = function (sdkConnection, vmId) {
+	var profileManager = sdkConnection.storageManagement.pbmProfileManager;
+	var myPbmServerObjectRef = new PbmServerObjectRef("virtualMachine", vmId, null);
+	var vmProfiles = profileManager.pbmQueryAssociatedProfile(myPbmServerObjectRef);
+
+	if (!vmProfiles) {
+		logger.debug("No profiles were found for VM with ID: " + vmId);
+		return [];
+	}
+
+	return profileManager.pbmRetrieveContent([new PbmProfileId(vmProfiles[0].uniqueId)]);
+};
+
+/**
+ * Get storage policy profile for VM
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @param {String} vmId VM Managed Object ID
+ * @returns {PbmProfile[]}
+ */
+Storage.getProfilesForVm = function (sdkConnection, vmId) {
+	var vmProfiles = Storage.findProfilesForVm(sdkConnection, vmId);
+
+	if (!vmProfiles.length) {
+		throw new Error("No profiles were found for VM with ID: " + vmId);
+	}
+
+	return vmProfiles;
+};
+
+/**
+ * Get storage policy by name
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @param {String} name Storage policy name
+ * @returns {PbmProfile}
+ */
+Storage.getProfileByName = function (sdkConnection, name) {
+	if (!name) {
+		throw new Error("Profile name is mandatory for Storage.getProfileByName");
+	}
+	logger.debug("Query for storage profile with name '" + name + "'...");
+	var profiles = (Storage.getProfiles(sdkConnection) || []).filter(function (profile) {
+		return profile.name.toLowerCase() == name.toLowerCase();
+	});
+	var profile = profiles.pop();
+	if (profile) {
+		logger.debug("Storage profile with name '" + name + "' found.");
+	}
+	return profile;
+};
+/**
+ * Create storage policy
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @param {String} name Storage policy name
+ * @param {Array/PbmCapabilityInstance} rules Rules
+ * @param {String} description Storage policy description
+ */
+Storage.createStoragePolicy = function (sdkConnection, name, rules, description) {
+	var profile = Storage.getProfileByName(sdkConnection, name);
+	if (!profile) {
+		var subProfie = new PbmCapabilitySubProfile();
+		subProfie.name = Storage.SubProfile.name;
+		subProfie.capability = rules;
+		var profileSpec = new PbmCapabilityProfileCreateSpec(name, description, PbmProfileCategoryEnum.REQUIREMENT,
+			new PbmProfileResourceType(PbmProfileResourceTypeEnum.STORAGE),
+			new PbmCapabilitySubProfileConstraints([subProfie])
+		);
+		logger.debug("Creating storage policy with name '" + name + "'...");
+		var pbmProfileManager = sdkConnection.storageManagement.pbmProfileManager;
+		var profileId = pbmProfileManager.pbmCreate(profileSpec);
+		profile = new PbmProfile(profileId);
+	}
+	return profile;
+};
+/**
+ * Update storage policy
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @param {String} name Storage policy name
+ * @param {Array/PbmCapabilityInstance} rules Rules
+ * @param {String} description Storage policy description
+ * @param {String} newName optional Storage policy new name
+ */
+Storage.updateStoragePolicy = function (sdkConnection, name, rules, description, newName) {
+	var profile = Storage.getProfileByName(sdkConnection, name);
+	if (!profile) {
+		logger.warn("Storage policy with name '" + name + "' not found. Update can not be performed.");
+		return null;
+	}
+
+	var subProfie = new PbmCapabilitySubProfile();
+	subProfie.name = Storage.SubProfile.name;
+	subProfie.capability = rules;
+	var profileName = newName || name;
+	var profileSpec = new PbmCapabilityProfileUpdateSpec(profileName, description,
+		new PbmCapabilitySubProfileConstraints([subProfie])
+	);
+	logger.debug("Updating storage policy with name '" + profileName + "'...");
+	var pbmProfileManager = sdkConnection.storageManagement.pbmProfileManager;
+	pbmProfileManager.pbmUpdate(profile.profileId, profileSpec);
+	return profile;
+}
+/**
+ * checks if storage policy with a given name exists
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @param {String} name Storage policy name
+ */
+Storage.isStoragePolicyExisting = function (sdkConnection, name) {
+	var profile = Storage.getProfileByName(sdkConnection, name);
+	return !!profile;
+}
+/**
+ * Delete storage policy
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @param {String} name Storage policy name
+ */
+Storage.deleteStoragePolicy = function (sdkConnection, name) {
+	var profile = Storage.getProfileByName(sdkConnection, name);
+	if (profile) {
+		var pbmProfileManager = sdkConnection.storageManagement.pbmProfileManager;
+		var profileId = profile.profileId;
+		logger.debug("Deleting storage policy with name '" + name + "'...");
+		pbmProfileManager.pbmDelete([profileId]);
+	}
+}
+/**
+ * Change default storage policy for datastore/datastore cluster
+ * @param {VcSdkConnection} sdkConnection vCenter SDK connection
+ * @param {Any} hub Datastore or datastore cluster object
+ * @param {PbmProfileId} profileId Storage policy ID
+ */
+Storage.changeDefaultStoragePolicy = function (sdkConnection, hub, profileId) {
+	if (hub instanceof VcStoragePod || hub instanceof VcDatastore) {
+		var isDatastoreCluster = hub instanceof VcStoragePod;
+		logger.debug("Changing default storage policy for '" + hub.name + "'...");
+		var hubType = isDatastoreCluster ? Storage.HubType.cluster : Storage.HubType.datastore;
+		var placementHub = new PbmPlacementHub(hubType, hub.id);
+		var pbmProfileManager = sdkConnection.storageManagement.pbmProfileManager;
+		pbmProfileManager.pbmAssignDefaultRequirementProfile(profileId, [placementHub]);
+	} else {
+		throw new Error("Only datastore and datastore cluster objects are supported!");
+	}
+};
+
+/**
+ * @param {number} controllerKey - Optional. Will filter disks based on controller key.
+ * @returns {Array/VcVirtualDisk}
+ */
+Storage.prototype.getDisks = function (controllerKey) {
+	var disks = this.vm.config.hardware.device.filter(Storage.isDisk);
+	if (controllerKey !== undefined) {
+		disks = disks.filter(function (disk) {
+			return disk.controllerKey == controllerKey;
+		});
+	}
+	return disks;
+};
+
+Storage.prototype.getCdroms = function () {
+	return this.vm.config.hardware.device.filter(Storage.isCdrom);
+}
+
+/**
+ * Gets the underlying datastore of the virtual machine.
+ * @returns {VcDatastore}
+ */
+Storage.prototype.getDatastore = function () {
+	var vmxPath = this.vm.config.files.vmPathName;
+	var startOfDatastoreName = vmxPath.indexOf("[") + 1;
+	var endOfDatastoreName = vmxPath.indexOf("]");
+	var datastoreName = vmxPath.substring(startOfDatastoreName, endOfDatastoreName);
+
+	return this.getAvailableDatastoreByName(datastoreName);
+};
+/**
+ * Returns all controllers for the VM of the given type. SCSI by default.
+ */
+Storage.prototype.getControllers = function (type) {
+	type = type || Storage.ControllerTypes.SCSI;
+	return this.vm.config.hardware.device.filter(function (device) {
+		return Storage.isController(device, type);
+	});
+};
+
+/**
+ * @param {number} controllerKey
+ */
+Storage.prototype.getControllerByKey = function (controllerKey) {
+	var results = this.getControllers(Storage.ControllerTypes.ALL).filter(function (ctrl) {
+		return ctrl.key === controllerKey;
+	});
+	if (results.length > 1) {
+		throw new Error("More that one SCSI controller with controller key " + controllerKey);
+	} else {
+		return results[0];
+	}
+};
+
+/**
+ * @param {string} busNumber
+ */
+Storage.prototype.getControllerByBusNumber = function (busNumber, type) {
+	type = type || Storage.ControllerTypes.SCSI;
+	var results = this.getControllers(type).filter(function (ctrl) {
+		return ctrl.busNumber === busNumber;
+	});
+	if (results.length > 1) {
+		throw new Error("More that one SCSI controller with bus number " + busNumber);
+	} else {
+		return results[0];
+	}
+};
+
+/**
+ * @param {String} diskId
+ * @returns {VcVirtualDisk}
+ */
+Storage.prototype.getDiskById = function (diskId) {
+	var results = this.getDisks().filter(function (x) {
+		return x.diskObjectId == diskId;
+	});
+	return results[0];
+};
+
+/**
+ * @param {String} diskName
+ * @returns {VcVirtualDisk}
+ */
+Storage.prototype.getDiskByName = function (diskName) {
+	var results = this.getDisks().filter(function (x) {
+		return x.deviceInfo.label == diskName;
+	});
+	return results[0];
+};
+
+/**
+ * @param {String} diskBackingUUID
+ * @returns {VcVirtualDisk}
+ */
+Storage.prototype.getDiskByUUID = function (diskBackingUUID) {
+	var results = this.getDisks().filter(function (x) {
+		return x.backing.uuid == diskBackingUUID;
+	});
+	return results.pop();
+};
+
+/**
+ * @param {number} unitNumber
+ * @param {number} controllerKey - Required. For backward compatability, if null the last controller will be assumed.
+ * @returns {VcVirtualDisk}
+ */
+Storage.prototype.getDiskByUnitNumber = function (unitNumber, controllerKey) {
+	// For backward compatability
+	controllerKey = controllerKey || lastControllerKey(this);
+
+	var results = this.getDisks(controllerKey).filter(function (x) {
+		return x.unitNumber == unitNumber;
+	});
+	return results[0];
+};
+
+/**
+ * @param {number} unitNumber
+ * @param {number} controllerKey
+ * @returns {VcVirtualDisk}
+ */
+Storage.prototype.getCdromByUnitNumber = function (unitNumber, controllerKey) {
+	var results = this.getCdroms(controllerKey).filter(function (x) {
+		return x.unitNumber == unitNumber;
+	});
+	return results[0];
+};
+
+/**
+ * Returns all iSCSI disks available to the virtual machine, e.g. for RDM
+ * @returns {Array/VcVirtualMachineScsiDiskDeviceInfo}
+ */
+Storage.prototype.getAvailableScsiDisks = function () {
+	var computeResource = VCenterClusterComputeResource.getClusterFromVm(this.vm);
+	var configTarget = computeResource.environmentBrowser.queryConfigTarget(this.host);
+	return configTarget.scsiDisk;
+};
+
+/**
+ * Returns all datastores available to the virtual machine
+ * @returns {Array/VcDatastore}
+ */
+Storage.prototype.getAvailableDatastores = function () {
+	var host = this.vm.runtime.host;
+	var hostDatastoreSystem = VcPlugin.toManagedObject(host, host.configManager.datastoreSystem);
+	return hostDatastoreSystem.datastore;
+};
+/**
+ * Returns a single datastore available to the virtual machine by name
+ * @param {string} name
+ * @returns {VcDatastore}
+ */
+Storage.prototype.getAvailableDatastoreByName = function (name) {
+	var results = this.getAvailableDatastores().filter(function (x) {
+		return x.name === name;
+	});
+	return results[0];
+};
+
+/**
+ * Adds the specified device change to the system. It will either execute it immediatelly or add it to an open transaction.
+ * @param {VcVirtualDeviceConfigSpec} deviceConfigSpec
+ */
+Storage.prototype.add = function (deviceConfigSpec) {
+	if (this.transaction) {
+		this.transaction.add(deviceConfigSpec);
+	} else {
+		var tran = new ReconfigurationTransaction(this.vm);
+		tran.add(deviceConfigSpec);
+		tran.commit();
+	}
+};
+
+/**
+ * Sets (or clears if null) a transaction to be used by the system for changes.
+ * @param {Any} transaction - e.g. com.vmware.pscoe.library.vc.config.ReconfigurationTransaction
+ */
+Storage.prototype.setTransaction = function (transaction) {
+	this.transaction = transaction;
+};
+
+/**
+ * Returns the next unit number, e.g. for creating a new disk. Will take into account
+ * non-commited disks in the same transaction.
+ * @param {number} controllerKey - Required. For backward compatability:
+ * 					if not provided, the last controller will be assumed.
+ * @returns {number}
+ */
+Storage.prototype.nextUnitNumber = function (controllerKey) {
+
+	// For backward compatability
+	controllerKey = controllerKey || lastControllerKey(this);
+
+	var createdDisks = this.vm.config.hardware.device;
+	var pendingDisks = this.transaction ?
+		this.transaction.find(function (deviceSpec) {
+			return !!deviceSpec.device.controllerKey;
+		}).map(function (x) {
+			return x.device;
+		}) : [];
+
+	var controllerDisks = createdDisks.concat(pendingDisks).filter(function (disk) {
+		return disk.controllerKey == controllerKey;
+	});
+	var allocatedUnitNumbers = controllerDisks.map(function (disk) {
+		return disk.unitNumber
+	});
+
+	var nextUnitNumber = 0;
+	while (allocatedUnitNumbers.indexOf(nextUnitNumber) >= 0 || nextUnitNumber == 7) {
+		nextUnitNumber++;
+	}
+
+	if (nextUnitNumber > 15) {
+		throw new Error("The specified controller has reached the maximum number of units (15)");
+	}
+
+	return nextUnitNumber == 7 ? nextUnitNumber + 1 : nextUnitNumber; // https://communities.vmware.com/thread/345257
+};
+
+/**
+ * Returns the next available bus number, e.g. for creating SCSI controllers.
+ * Will take into account non-commited scsi controllers in the same transaction.
+ * @returns {number}
+ */
+Storage.prototype.nextBusNumber = function (type) {
+	type = type || Storage.ControllerTypes.SCSI;
+	var createdControllers = this.getControllers(type);
+	var pendingControllers = this.transaction ?
+		this.transaction.find(function (deviceSpec) {
+			return Storage.isController(deviceSpec.device, type);
+		}).map(function (x) {
+			return x.device;
+		}) : [];
+
+	var nextBusNumber = 0;
+	createdControllers.concat(pendingControllers).forEach(function (controller) {
+		nextBusNumber = Math.max(controller.busNumber, nextBusNumber);
+	});
+	return ++nextBusNumber;
+};
+
+return Storage;]]></script>
+</dunes-script-module>

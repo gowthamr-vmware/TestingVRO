@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="GetServicesAsList" result-type="Array/string" api-version="6.0.0" id="e6a66910-acdf-4a91-bd54-443f6ba389a2" version="1.0.0" allowed-operations="vef" category-name="corp.local.new-demo">
+  <description><![CDATA[Extract services list from raw data]]></description>
+  <param n="data" t="Any"><![CDATA[services data]]></param>
+  <script encoded="false"><![CDATA[var list = [];
+
+Object.keys(data).forEach(function(key) {
+	var tmp = data[key].map(function(value){
+		return (key + '-' + value).toUpperCase();
+	})
+	list = list.concat(tmp);
+})]]></script>
+</dunes-script-module>

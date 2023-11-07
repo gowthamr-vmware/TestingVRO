@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="waitForWorkflowToComplete" result-type="Any" api-version="6.0.0" id="c29b001c-6249-42da-a601-a1ab465875a2" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <param n="wfToken" t="Any"><![CDATA[]]></param>
+  <param n="sleepTime" t="Any"><![CDATA[]]></param>
+  <param n="timeout" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var WorkflowTokenWrapper = System.getModule("com.vmware.pscoe.library.util").WorkflowTokenWrapper();
+var end = new Date();
+end.setSeconds(end.getSeconds() + timeout);
+var wfTokenObj = new WorkflowTokenWrapper(wfToken.id);
+while (wfTokenObj.isAlive()) {
+	System.sleep(sleepTime*1000);
+	if (end.getTime() < (new Date()).getTime()) {
+		throw "Timeout waiting for workflow to compelte: " + wfToken.name;
+	}
+}
+if(wfToken && wfToken.state == "completed") {
+	return wfToken.getOutputParameters();
+} else {
+	if (wfToken) {
+		System.log("Workflow Token state: " + wfToken.state);
+		throw wfToken.exception;
+	} else {
+		throw "Missing WF Token!";
+	}
+}]]></script>
+</dunes-script-module>

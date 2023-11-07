@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="GetXaaSServices" result-type="Array/string" api-version="6.0.0" id="10ce5249-60b5-4331-8269-90ab91601136" version="1.0.0" allowed-operations="vef" category-name="corp.local.new-demo">
+  <param n="str" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var data = System.getModule("corp.local.new.demo").getServicesData();
+return System.getModule("corp.local.new.demo").getSericesAsList(data);]]></script>
+</dunes-script-module>

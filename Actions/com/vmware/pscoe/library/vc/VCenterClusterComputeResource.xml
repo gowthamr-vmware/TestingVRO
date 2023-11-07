@@ -1,0 +1,658 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VCenterClusterComputeResource" result-type="Any" api-version="6.0.0" id="72b5a1fe-da9b-4d11-abaa-59f2a3109055" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var VmOverrideDrsLevelManager = Class.load("com.vmware.pscoe.library.vc", "VmOverrideDrsLevelManager");
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.vc.VCenterClusterComputeResource");
+
+/**
+ * VCenterClusterComputeResource
+ * Class to provide helper functions to interact with vCenter cluster compute resources.
+ *
+ * @param clusterIdentifier - a value or object to identify the cluster.
+ * @param sdkConnection - optional parameter denoting a particular VcSdkConnection for a particular vCenter, where the cluster will be searched. If this parameter is ommitted, the cluster is searched in all available SDK connections.
+ * This can be either the ID or name of the cluster or a vCenter VM object that is part of the cluster.
+ */
+var VCenterClusterComputeResource = Class.define(function VCenterClusterComputeResource(clusterIdentifier, sdkConnection) {
+	if (clusterIdentifier instanceof Object) {
+		this.cluster = VCenterClusterComputeResource.getClusterFromVm(clusterIdentifier, sdkConnection);
+	} else {
+		this.cluster = VCenterClusterComputeResource.getClusterById(clusterIdentifier, sdkConnection);
+		if (!this.cluster) {
+			this.cluster = VCenterClusterComputeResource.getClusterByName(clusterIdentifier, sdkConnection);
+		}
+	}
+
+	// Making available the VmOverrideDrsLevelManager's function through VCenterClusterComputeResource
+	var vmOverrideDrsManager = new VmOverrideDrsLevelManager(this.cluster);
+	this.overrideVmsDrsLevel = vmOverrideDrsManager.overrideVmsDrsLevel;
+	this.removeVmOverrideDrsLevel = vmOverrideDrsManager.removeVmOverrideDrsLevel;
+	this.getAllVmsOverride = vmOverrideDrsManager.getAllVmsOverride;
+
+	/**
+	 * createDrsAffinityRule
+	 * Function to create a DRS VM affinity rule.
+	 *
+	 * @param ruleName - the name of the rule to create.
+	 * @param vms - list of VMs to add to the rule.
+	 */
+	this.createDrsAffinityRule = createDrsAffinityRule;
+
+
+	/**
+	 * createDrsAntiAffinityRule
+	 * Function to create a DRS VM anti-affinity rule.
+	 *
+	 * @param ruleName - the name of the rule to create.
+	 * @param vms - list of VMs to add to the rule.
+	 */
+	this.createDrsAntiAffinityRule = createDrsAntiAffinityRule;
+
+	/**
+	 * createVmsToHostsRule
+	 * Function to create a DRS VMs to Hosts rule.
+	 *
+	 * @param ruleName - the name of the rule to create.
+	 * @param ruleConfig - A JSON object with the following properties: "affineHostGroupName", "antiAffineHostGroupName", "vmGroupName"
+	 */
+	this.createVmsToHostsRule = createVmsToHostsRule;
+
+	/**
+	 * createDrsRule
+	 * A generic function to create a DRS rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to create.
+	 * @param ruleType - one of VCenterClusterComputeResource.ruleTypes
+	 * @param enabled - boolean denoting whether the rule is enabled
+	 * @param userCreated - boolean denoting whether the rule is created by the user or by the system
+	 * @param ruleTypeSpecificData - JSON object. For affinity and anti-affinity rules this object should have one property called "vm", which contains an array of VcVirtualMAchine instances. For vms to hosts rules this object should have the following three string properties: affineHostGroupName, antiAffineHostGroupName, vmGroupName, which will contain the names of the respective groups.
+	 */
+	this.createDrsRule = createDrsRule;
+
+	/**
+	 *
+	 * Function to replace the VMs in an existing DRS VM affinity rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to replace.
+	 * @param vms - list of VMs to add to the rule.
+	 */
+	this.replaceDrsAffinityRule = replaceDrsAffinityRule;
+
+	/**
+	 *
+	 * Function to replace the VMs in an existing DRS VM anti-affinity rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to replace.
+	 * @param vms - list of VMs to add to the rule.
+	 */
+	this.replaceDrsAntiAffinityRule = replaceDrsAntiAffinityRule;
+
+	/**
+	 *
+	 * Function to replace the groups in an existing DRS VMs to Hosts rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to replace.
+	 * ruleConfig - A JSON object with the following properties: "affineHostGroupName", "antiAffineHostGroupName", "vmGroupName"
+	 */
+	this.replaceVmsToHostsRule = replaceVmsToHostsRule;
+
+	/**
+	 *
+	 * A generic function to replace the VMs in an existing DRS rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to replace.
+	 * @param ruleType - one of VCenterClusterComputeResource.ruleTypes
+ 	 * @param ruleTypeSpecificData - JSON object. For affinity and anti-affinity rules this object should have one property called "vm", which contains an array of VcVirtualMAchine instances. For vms to hosts rules this object should have the following three string properties: affineHostGroupName, antiAffineHostGroupName, vmGroupName, which will contain the names of the respective groups.
+	 */
+	this.replaceDrsRule = replaceDrsRule;
+
+	/**
+	 *
+	 * Function to delete an existing DRS VM affinity rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to delete.
+	 */
+	this.deleteDrsAffinityRule = deleteDrsAffinityRule;
+
+	/**
+	 *
+	 * Function to delete an existing DRS VMs to Hosts rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to delete.
+	 */
+	this.deleteVmsToHostsRule = deleteVmsToHostsRule;
+
+
+	/**
+	 *
+	 * A generic function to delete an existing DRS rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to delete.
+	 */
+	this.deleteDrsRule = deleteDrsRule;
+
+	/**
+	 *
+	 * Function to delete an existing DRS VM anti-affinity rule.
+	 *
+	 * @param ruleOrName - the actual rule spec or the name of the rule to delete.
+	 */
+	this.deleteDrsAntiAffinityRule = deleteDrsAntiAffinityRule;
+
+	/**
+	 * getDrsRuleByName
+	 * Function to get a DRS rule by its name.
+	 *
+	 * @param ruleName - the name of the DRS rule.
+	 */
+	this.getDrsRuleByName = getDrsRuleByName;
+
+	/**
+	 * Get a VM group by its name.
+	 *
+	 * @param groupName - the name of the VM group.
+	 */
+	this.getVmGroupByName = getVmGroupByName;
+
+	/**
+	 * removeVmFromVmGroup
+	 * Function to remove VcVirtualMachine from VcClusterVmGroup
+	 *
+	 * @param vmGroupName - VcClusterVmGroup name
+	 * @param vm - VcVirtualMachine to remove
+	 */
+	this.removeVmFromVmGroup = removeVmFromVmGroup;
+
+	/**
+	 * addVmsToVmGroup
+	 * Function to add multiple instances of VcVirtualMachine to VcClusterVmGroup
+	 *
+	 * @param vmGroupName - VcClusterVmGroup name
+	 * @param vms - array of VcVirtualMachine to add
+	 */
+	this.addVmsToVmGroup = addVmsToVmGroup;
+
+	/**
+	 * addVmToVmGroup
+	 * Function to add VcVirtualMachine to VcClusterVmGroup
+	 *
+	 * @param vmGroupName - VcClusterVmGroup name
+	 * @param vm - VcVirtualMachine to add
+	 */
+	this.addVmToVmGroup = addVmToVmGroup;
+	/**
+	 * Depricated - use addVmToVmGroup
+	 */
+	this.addVmToVmGroupName = addVmToVmGroup;
+	/**
+	 * getGroupsForHost
+	 * Function that returns VcClusterHostGroups that contains hosts with hostName
+	 *
+	 * @param {string} hostName
+	 * @returns {Array/VcClusterHostGroup}
+	 */
+	this.getGroupsForHost = getGroupsForHost;
+
+	/**
+	 * addHostsToHostGroup
+	 * Function to add multiple instances of VcHostSystem to VcClusterHostGroup
+	 *
+	 * @param hostGroupName - VcClusterHostGroup name
+	 * @param hosts - array of VcHostSystem to add
+	 */
+	this.addHostsToHostGroup = addHostsToHostGroup;
+
+	/**
+	* getVms
+	* Function to get all VMs belonging to a VcClusterComputeResource
+	*/
+	this.getVms = getVms;
+
+	/**
+	* getHosts
+	* Function to get all Hosts belonging to a VcClusterComputeResource
+	*/
+	this.getHosts = getHosts;
+
+	/**
+	* getName
+	* Function to get all the name of the underlying VcClusterComputeResource
+	*/
+	this.getName = getName;
+
+	this.getCluster = getCluster;
+	this.getAllDrsRules = getAllDrsRules;
+
+	this.internalUpdateDrsRule = internalUpdateDrsRule;
+});
+
+/**
+* Cluster DRS rule types enum
+*/
+VCenterClusterComputeResource.ruleTypes = {
+	"affinity" : "VcClusterAffinityRuleSpec",
+	"antiAffinity" : "VcClusterAntiAffinityRuleSpec",
+	"vmsToHosts" : "VcClusterVmHostRuleInfo"
+}
+
+VCenterClusterComputeResource.DrsBehavior = VmOverrideDrsLevelManager.DrsBehavior;
+
+/**
+ * getClusterById
+ * Static function to get a cluster compute resource by its ID.
+ * @param clusterId - the cluster's ID.
+ */
+VCenterClusterComputeResource.getClusterById = function getClusterById(clusterId, sdkConnection) {
+	return getClusterByProperty("id", clusterId, sdkConnection);
+};
+
+/**
+ * getClusterByName
+ * Static function to get a cluster compute resource by its name.
+ * @param clusterName - the cluster's name.
+ */
+VCenterClusterComputeResource.getClusterByName = function getClusterByName(clusterName, sdkConnection) {
+	return getClusterByProperty("name", clusterName, sdkConnection);
+};
+
+/**
+ * getClusterFromVm
+ * Static function to get a cluster compute resource by a VM that is running within the cluster.
+ * @param vm - the VM to get the cluster from.
+ */
+VCenterClusterComputeResource.getClusterFromVm = function getClusterFromVm(vm) {
+	var cluster = null;
+	if (vm && vm instanceof VcVirtualMachine) {
+		var resourcePool = vm.resourcePool;
+
+		var parent = resourcePool.parent;
+		var count = 0;
+		while (parent != null && count < 10) {
+			if (parent instanceof VcClusterComputeResource) {
+				logger.debug("Determined cluster '" + parent.name + "' for VM '" + vm.name + "'.");
+				cluster = parent;
+				break;
+			}
+			parent = parent.parent;
+			count++;
+		}
+		if (!cluster) {
+			logger.warn("Could not find cluster compute resource from VM '" + vm.name + "'.");
+		}
+	} else {
+		logger.warn("No VM specified to get cluster from.");
+	}
+	return cluster;
+};
+
+return VCenterClusterComputeResource;
+
+// ----- internal functions
+
+function getClusterByProperty(propertyName, propertyValue, sdkConnection) {
+	var cluster = null;
+	var clusters = [];
+
+	var query = "xpath:matches(" + propertyName + ", '" + propertyValue + "')";
+	if (sdkConnection) {
+		clusters = sdkConnection.getAllClusterComputeResources(null, query);
+	} else {
+		clusters = VcPlugin.getAllClusterComputeResources(null, query);
+	}
+
+	if (clusters) {
+		for (var i in clusters) {
+			var cl = clusters[i];
+			if (cl && cl[propertyName] == propertyValue) {
+				logger.debug("Found cluster '" + cl.name + "' with " + propertyName + " '" + propertyValue + "'.");
+				return cl;
+			}
+		}
+	}
+	logger.warn("Could not find cluster compute resource with " + propertyName + " '" + propertyValue + "'.");
+	return cluster;
+}
+
+function internalUpdateDrsRule(ruleOrName, ruleType, enabled, userCreated, ruleTypeSpecificData, operation, cluster) {
+	if (!ruleOrName) {
+		throw new Error("Missing rule parameter");
+	}
+
+	if (!cluster) {
+		throw new Error("Missing cluster parameter");
+	}
+
+	if (typeof ruleOrName === "string" && operation != VcArrayUpdateOperation.add) {
+		ruleOrName = this.getDrsRuleByName(ruleOrName);
+	}
+	var task = null;
+	if (ruleOrName) {
+		var clusterConfigInfo = cluster.configurationEx;
+		if (clusterConfigInfo != null && clusterConfigInfo instanceof VcClusterConfigInfoEx) {
+			var clusterConfigSpec = prepareClusterConfigSpec(
+				ruleOrName, ruleType, operation, enabled, userCreated, ruleTypeSpecificData);
+
+			var ruleName = (typeof ruleOrName == 'string' ? ruleOrName : ruleOrName.name);
+			logger.debug("Replacing DRS " + ruleType + " rule '" + ruleName);
+
+			task = cluster.reconfigureCluster_Task(clusterConfigSpec, true);
+
+		} else {
+			throw "Could not determine cluster configuration.";
+		}
+	}
+	return task;
+}
+
+function createDrsAffinityRule(ruleName, vms) {
+	return this.createDrsRule(ruleName, VCenterClusterComputeResource.ruleTypes.affinity, true, null, {"vm" : vms});
+}
+
+function createDrsAntiAffinityRule(ruleName, vms) {
+	return this.createDrsRule(ruleName, VCenterClusterComputeResource.ruleTypes.antiAffinity, true, null, {"vm" : vms});
+}
+
+function createVmsToHostsRule(ruleName, ruleConfig) {
+	return this.createDrsRule(ruleName, VCenterClusterComputeResource.ruleTypes.vmsToHosts, true, null, ruleConfig);
+}
+
+function createDrsRule(ruleName, ruleType, enabled, userCreated, ruleTypeSpecificData) {
+	return this.internalUpdateDrsRule(ruleName, ruleType, enabled, userCreated, ruleTypeSpecificData, VcArrayUpdateOperation.add, this.cluster);
+}
+
+function replaceDrsAffinityRule(ruleOrName, vms) {
+	return this.replaceDrsRule(ruleOrName, VCenterClusterComputeResource.ruleTypes.affinity, {"vm" : vms});
+}
+
+function replaceDrsAntiAffinityRule(ruleOrName, vms) {
+	return this.replaceDrsRule(ruleOrName, VCenterClusterComputeResource.ruleTypes.antiAffinity, {"vm" : vms});
+}
+
+function replaceVmsToHostsRule(ruleOrName, ruleConfig) {
+	return this.replaceDrsRule(ruleOrName, VCenterClusterComputeResource.ruleTypes.vmsToHosts, ruleConfig);
+}
+
+function replaceDrsRule(ruleOrName, ruleType, ruleTypeSpecificData) {
+	return this.internalUpdateDrsRule(ruleOrName, ruleType, true, null, ruleTypeSpecificData, VcArrayUpdateOperation.edit, this.cluster);
+}
+
+function deleteDrsAffinityRule(ruleOrName) {
+	return this.deleteDrsRule(ruleOrName);
+}
+
+function deleteDrsAntiAffinityRule(ruleOrName) {
+	return this.deleteDrsRule(ruleOrName);
+}
+
+function deleteVmsToHostsRule(ruleOrName) {
+	return this.deleteDrsRule(ruleOrName);
+}
+
+function deleteDrsRule(ruleOrName) {
+	return this.internalUpdateDrsRule(ruleOrName, null, null, null, null, VcArrayUpdateOperation.remove, this.cluster);
+}
+
+function prepareClusterConfigSpec(ruleOrName, ruleType, operation, enabled, userCreated, ruleTypeSpecificData) {
+	var rule;
+
+	if (ruleOrName instanceof Object) {
+		rule = ruleOrName;
+	} else {
+		switch (ruleType) {
+			case VCenterClusterComputeResource.ruleTypes.affinity:
+			case VCenterClusterComputeResource.ruleTypes.antiAffinity:
+			case VCenterClusterComputeResource.ruleTypes.vmsToHosts: {
+					switch (ruleType) {
+						case VCenterClusterComputeResource.ruleTypes.affinity:
+						case VCenterClusterComputeResource.ruleTypes.antiAffinity:
+							rule = ruleType === VCenterClusterComputeResource.ruleTypes.antiAffinity ? new VcClusterAntiAffinityRuleSpec() : new VcClusterAffinityRuleSpec();
+							break;
+						case VCenterClusterComputeResource.ruleTypes.vmsToHosts:
+							rule = new VcClusterVmHostRuleInfo();
+							break;
+					}
+
+					if (rule) {
+						rule.enabled = enabled;
+						rule.name = ruleOrName;
+						rule.userCreated = userCreated;
+					}
+					break;
+				}
+			default:
+				logger.error("Unknown rule type: " + ruleType);
+				break;
+		}
+	}
+
+
+	if (rule) {
+		for (var ruleTypeSpecificDataKey in ruleTypeSpecificData) {
+			var ruleTypeCpecificDataValue = ruleTypeSpecificData[ruleTypeSpecificDataKey];
+			rule[ruleTypeSpecificDataKey] = ruleTypeCpecificDataValue;
+		}
+
+		var ruleSpec = new VcClusterRuleSpec();
+		ruleSpec.info = rule;
+		ruleSpec.operation = operation;
+		if (operation === VcArrayUpdateOperation.remove) {
+			ruleSpec.removeKey = ruleOrName.key;
+		}
+
+		var clusterConfigSpec = new VcClusterConfigSpec();
+		clusterConfigSpec.rulesSpec = [ruleSpec];
+		return clusterConfigSpec;
+	} else {
+		logger.error("Rule not defined.");
+		return null;
+	}
+}
+
+function getDrsRuleByName(ruleName) {
+	var rule = null;
+	if (this.cluster && ruleName) {
+		var clusterConfigInfo = this.cluster.configurationEx;
+		if (clusterConfigInfo != null && clusterConfigInfo.rule) {
+
+			for (var i in clusterConfigInfo.rule) {
+				var clusterRule = clusterConfigInfo.rule[i];
+				if (clusterRule.name == ruleName) {
+					rule = clusterRule;
+					logger.debug("Found DRS rule '" + rule.key + "' with name '" + rule.name + "'.");
+					break;
+				}
+			}
+		}
+	}
+	return rule;
+}
+
+function getVmGroupByName(groupName) {
+	var group = null;
+	var groupInfo = this.cluster.configurationEx.group;
+	if (groupInfo && groupInfo.length > 0) {
+		for (var i in groupInfo) {
+			var vmGroup = groupInfo[i];
+			if (vmGroup instanceof VcClusterVmGroup && vmGroup.name == groupName) {
+				return vmGroup;
+			}
+		}
+	}
+
+	return group;
+}
+
+function removeVmFromVmGroup(vmGroupName, vmToRemove) {
+	var configurationEx = this.cluster.configurationEx;
+	if (configurationEx != null && configurationEx instanceof VcClusterConfigInfoEx) {
+		var groupInfo = configurationEx.group;
+		for (var i in groupInfo) {
+			var vmGroup = groupInfo[i];
+			if (!(vmGroup instanceof VcClusterVmGroup)) {
+				continue;
+			}
+
+			if (vmGroup.name != vmGroupName) {
+				continue;
+			}
+
+			vmGroup.vm = vmGroup.vm.filter(function (vm) {
+				return vm.name != vmToRemove.name;
+			});
+
+			var clusterGroupSpec = [];
+			clusterGroupSpec[0] = new VcClusterGroupSpec();
+			clusterGroupSpec[0].operation = VcArrayUpdateOperation.edit;
+			clusterGroupSpec[0].info = vmGroup;
+			var configSpec = new VcClusterConfigSpecEx();
+			configSpec.groupSpec = clusterGroupSpec;
+			return this.cluster.reconfigureComputeResource_Task(configSpec, true);
+		}
+	} else {
+		throw "Can not determinte cluster configuration";
+	}
+	throw "Could not find VM group with name " + vmGroupName;
+}
+
+function addVmsToVmGroup(vmGroupName, vmsToAdd) {
+	var configurationEx = this.cluster.configurationEx;
+
+	if (!configurationEx || !(configurationEx instanceof VcClusterConfigInfoEx)) {
+		throw new Error("Can not determinte cluster configuration");
+	}
+
+	var existingGroup = this.getVmGroupByName(vmGroupName);
+	var groupSpec = new VcClusterGroupSpec();
+	if (existingGroup == null) {
+		var clusterVMGroup = new VcClusterVmGroup();
+		clusterVMGroup.name = vmGroupName;
+		clusterVMGroup.vm = vmsToAdd;
+		groupSpec.info = clusterVMGroup;
+		groupSpec.operation = VcArrayUpdateOperation.add;
+	} else {
+		var vms = vmsToAdd;
+		if (existingGroup.vm != null) {
+			existingGroup.vm.forEach(function (vm) {
+				vms.push(vm);
+			});
+		}
+
+		existingGroup.vm = vms;
+		groupSpec.info = existingGroup;
+		groupSpec.operation = VcArrayUpdateOperation.edit;
+	}
+
+	var configSpec = new VcClusterConfigSpecEx();
+	configSpec.groupSpec = [groupSpec];
+	return this.cluster.reconfigureComputeResource_Task(configSpec, true);
+}
+
+function addVmToVmGroup(vmGroupName, vmToAdd) {
+	return addVmsToVmGroup(vmGroupName, [vmToAdd]);
+}
+
+function getGroupsForHost(hostName) {
+	var configurationEx = this.cluster.configurationEx;
+
+	if (!configurationEx || !(configurationEx instanceof VcClusterConfigInfoEx)) {
+		throw new Error("Can not determinte cluster configuration");
+	}
+
+	var groupInfo = configurationEx.group;
+	if (!groupInfo || groupInfo.length == 0) {
+		throw new Error("No group info available in the cluster configuration");
+	}
+
+	var hostGroups = [];
+	for (var i in groupInfo) {
+		var hostGroup = groupInfo[i];
+		if (!(hostGroup instanceof VcClusterHostGroup) || !hostGroup.host) {
+			continue;
+		}
+		var containsHost = hostGroup.host.some(function (host) {
+			return host.name == hostName;
+		});
+
+		if (containsHost) {
+			hostGroups.push(hostGroup);
+		}
+	}
+	return hostGroups;
+}
+
+function addHostsToHostGroup(hostGroupName, hostsToAdd) {
+	var configurationEx = this.cluster.configurationEx;
+
+	if (!configurationEx || !(configurationEx instanceof VcClusterConfigInfoEx)) {
+		throw new Error("Can not determinte cluster configuration");
+	}
+
+	var groupInfo = configurationEx.group;
+	var existingGroup;
+
+	if (groupInfo && groupInfo.length > 0) {
+		for (var i in groupInfo) {
+			var hostGroup = groupInfo[i];
+			if (hostGroup instanceof VcClusterHostGroup && hostGroup.name == hostGroupName) {
+				existingGroup = hostGroup;
+				break;
+			}
+		}
+	}
+
+	var groupSpec = new VcClusterGroupSpec();
+	if (existingGroup == null) {
+		var clusterHostGroup = new VcClusterHostGroup();
+		clusterHostGroup.name = hostGroupName;
+		clusterHostGroup.host = hostsToAdd;
+		groupSpec.info = clusterHostGroup;
+		groupSpec.operation = VcArrayUpdateOperation.add;
+	} else {
+		var hosts = hostsToAdd;
+		if (existingGroup.host != null) {
+			existingGroup.host.forEach(function (host) {
+				hosts.push(host);
+			});
+		}
+
+		existingGroup.host = hosts;
+		groupSpec.info = existingGroup;
+		groupSpec.operation = VcArrayUpdateOperation.edit;
+	}
+
+	var configSpec = new VcClusterConfigSpecEx();
+	configSpec.groupSpec = [groupSpec];
+	return this.cluster.reconfigureComputeResource_Task(configSpec, true);
+}
+
+function getVms() {
+	var clusterVms = [];
+	this.cluster.host.forEach(function (host) {
+		host.vm.forEach(function (vm) {
+			clusterVms.push(vm);
+		});
+	});
+
+	return clusterVms;
+}
+
+function getHosts() {
+	return this.cluster.host;
+}
+
+function getName() {
+	return this.cluster.name;
+}
+
+function getCluster() {
+	return this.cluster;
+}
+
+function getAllDrsRules() {
+	if (this.cluster && this.cluster.configurationEx) {
+		return this.cluster.configurationEx.rule || [];
+	}
+
+	return [];
+}]]></script>
+</dunes-script-module>

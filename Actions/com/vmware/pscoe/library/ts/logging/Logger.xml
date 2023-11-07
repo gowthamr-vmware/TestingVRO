@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Logger" result-type="Any" api-version="6.0.0" id="29b99035-92fa-353e-a64e-4307f3909300" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.logging">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var LoggerConfiguration_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging.configuration/LoggerConfiguration");
+var Logger = /** @class */ (function () {
+    function Logger(name, level, appenders) {
+        this.name = name;
+        this.level = level ? level.toUpperCase() : "INFO";
+        this.appenders = appenders;
+    }
+    Logger.prototype.getName = function () {
+        return this.name;
+    };
+    Logger.prototype.info = function (message) {
+        this.log("INFO", message);
+    };
+    Logger.prototype.warn = function (message) {
+        this.log("WARN", message);
+    };
+    Logger.prototype.error = function (message) {
+        this.log("ERROR", message);
+    };
+    Logger.prototype.debug = function (message) {
+        this.log("DEBUG", message);
+    };
+    Logger.prototype.shouldShowLogLevel = function (severity) {
+        var order = ["ERROR", "WARN", "INFO", "DEBUG"];
+        return order.indexOf(this.level) - order.indexOf(severity) >= 0;
+    };
+    Logger.prototype.log = function (severity, message) {
+        severity = severity.toUpperCase();
+        if (this.shouldShowLogLevel(severity)) {
+            var msg_1 = typeof message === "function" ? message() : message;
+            this.appenders.forEach(function (appender) {
+                appender.append(severity, msg_1);
+            });
+        }
+    };
+    Logger.getLogger = function (name, options) {
+        var configuration = new LoggerConfiguration_1._.LoggerConfiguration();
+        configuration.loadWithDefaults();
+        var loggerName = configuration.getLoggerName(name);
+        var loggerLevel = (loggerName && configuration.loggers[loggerName]) ? configuration.loggers[loggerName].level : configuration.root.level;
+        var appendersNames = configuration.getAppendersNames(loggerName);
+        var appenders = appendersNames.map(function (appenderName) {
+            var appenderConfiguration = configuration.appenders[appenderName];
+            appenderConfiguration.name = appenderName;
+            appenderConfiguration.loggerName = name;
+            appenderConfiguration.context = options;
+            var AppenderClass = VROES.import(appenderConfiguration.moduleName).from(appenderConfiguration.modulePath + "." + appenderConfiguration.moduleName);
+            ;
+            return new AppenderClass(appenderConfiguration);
+        });
+        return new Logger(name, loggerLevel, appenders);
+    };
+    return Logger;
+}());
+exports.Logger = Logger;
+return exports;
+]]></script>
+</dunes-script-module>

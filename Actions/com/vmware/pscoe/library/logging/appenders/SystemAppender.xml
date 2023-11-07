@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="SystemAppender" result-type="Any" api-version="6.0.0" id="334f7f4d-221f-4c3d-98ba-d56220938159" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging.appenders">
+  <description><![CDATA[Appender that prints the logs to the system stream]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var BaseAppender = Class.load("com.vmware.pscoe.library.logging.appenders", "BaseAppender");
+
+return Class.define(function SystemAppender(properties) {
+	BaseAppender.call(this, properties);
+	this.append = function(severity, msg) {
+		msg = this.format(severity, msg);
+		switch(severity) {
+			case "DEBUG" :
+				System.debug(msg);
+				break;
+			case "INFO"  :
+				System.log(msg);
+				break;
+			case "WARN"  :
+				System.warn(msg);
+				break;
+			case "ERROR" :
+				System.error(msg);
+				break;
+			default:
+				System.error("Logging Level[" + severity + "] is not defined!");
+		}
+	}
+}, null, BaseAppender);]]></script>
+</dunes-script-module>

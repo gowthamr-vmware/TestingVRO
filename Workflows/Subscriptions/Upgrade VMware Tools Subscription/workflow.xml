@@ -1,0 +1,85 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="a027a0fb-123e-40c9-81ad-f0c2a5a64e25" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Upgrade VMware Tools Subscription]]></display-name><description><![CDATA[0.0.2 - Added error handling for missing vCenter
+0.0.3 - Added custom properties to return
+0.0.4 - Code Cleanup to promote]]></description><position y="50.0" x="20.0"/><input><param name="inputProperties" type="Properties"/></input><output><param name="customProperties" type="Properties"/></output><attrib name="vmName" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="vm" type="VC:VirtualMachine" read-only="false"><value encoded="n"/></attrib><attrib name="instanceUUID" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="installerOptions" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="pollingRate" type="number" read-only="false"><value encoded="n"><![CDATA[2.0]]></value></attrib><attrib name="timeout" type="number" read-only="false"><value encoded="n"><![CDATA[600.0]]></value></attrib><attrib name="vmHardware" type="string" read-only="false"><value encoded="n"><![CDATA[vmx-19]]></value></attrib><attrib name="host" type="VC:HostSystem" read-only="false"><value encoded="n"/></attrib><attrib name="errorCode" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="waitResult" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="saltInstallName" type="string" read-only="false"><value encoded="n"><![CDATA[Salt-Minion-3003-Py3-AMD64-Setup.exe]]></value></attrib><attrib name="minionResult" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="buildPassword" type="SecureString" read-only="false"><value encoded="n"><![CDATA[8BS50L61J73Y73N77K30I72V64XDAD8B19G2B8FD5AP972D12G62A989AR3487D42U4CDED79H1ED9893VC240C77Y59D2753W4BC9CDFP992F8B3TE6AA6DAHB93EE0EM708BCF5U59EE31JA58973EG431DCE3O11164CQ23116FDYABEC869L857B735MD1A6F20W39CEC00N48AA772Y]]></value></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="120.0" x="1160.0"/></workflow-item><workflow-item name="item1" out-name="item2" type="task"><display-name><![CDATA[Scriptable task]]></display-name><script encoded="false"><![CDATA[//System.log(JSON.stringify(inputProperties));
+var vmName = inputProperties['resourceNames'][0];
+var instanceUUID = inputProperties['customProperties']['instanceUUID']]]></script><in-binding><bind name="inputProperties" type="Properties" export-name="inputProperties"/></in-binding><out-binding><bind name="vmName" type="string" export-name="vmName"/><bind name="instanceUUID" type="string" export-name="instanceUUID"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="80.0"/></workflow-item><workflow-item name="item2" out-name="item14" catch-name="item19" throw-bind-name="errorCode" type="link" linked-workflow-id="4d154442-1118-4111-934b-8e314315344a"><display-name><![CDATA[Get VM by Name and Uuid]]></display-name><in-binding><bind name="name" type="string" export-name="vmName"><description><![CDATA[A name of virtual machine]]></description></bind><bind name="uuid" type="string" export-name="instanceUUID"><description><![CDATA[A universally unique identifier (UUID) of virtual machine]]></description></bind></in-binding><out-binding><bind name="outVm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[A virtual machine that matches the name and uuid given as input]]></description></bind></out-binding><description><![CDATA[]]></description><position y="60.0" x="180.0"/></workflow-item><workflow-item name="item3" out-name="item4" catch-name="item17" throw-bind-name="errorCode" type="link" linked-workflow-id="BD808080808080808080808080808080F1C180800122528313869552e41805bb1"><display-name><![CDATA[Upgrade tools]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[Virtual machine to upgrade]]></description></bind><bind name="installerOptions" type="string" export-name="installerOptions"><description><![CDATA[Command line options to pass to the installer to modify the installation procedure for VMware Tools]]></description></bind></in-binding><out-binding/><description><![CDATA[]]></description><position y="200.0" x="900.0"/></workflow-item><workflow-item name="item4" out-name="item15" type="task" script-module="com.vmware.library.vc.vm.tools/vim3WaitToolsStarted"><display-name><![CDATA[vim3WaitToolsStarted]]></display-name><script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+System.getModule("com.vmware.library.vc.vm.tools").vim3WaitToolsStarted(vm,pollingRate,timeout);]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[VM in which the action look to get the new DNS Name]]></description></bind><bind name="pollingRate" type="number" export-name="pollingRate"><description><![CDATA[Time between all request information on the tools [seconds]]]></description></bind><bind name="timeout" type="number" export-name="timeout"><description><![CDATA[Timeout before throwing a timeout exception [minutes]]]></description></bind></in-binding><out-binding/><description><![CDATA[Add a note to the workflow schema.]]></description><position y="130.0" x="965.0"/></workflow-item><workflow-item name="item5" out-name="item20" throw-bind-name="errorCode" type="task" script-module="com.vmware.library.vc.vm.tools/vim3WaitToolsStarted"><display-name><![CDATA[vim3WaitToolsStarted]]></display-name><script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+System.getModule("com.vmware.library.vc.vm.tools").vim3WaitToolsStarted(vm,pollingRate,timeout);]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[VM in which the action look to get the new DNS Name]]></description></bind><bind name="pollingRate" type="number" export-name="pollingRate"><description><![CDATA[Time between all request information on the tools [seconds]]]></description></bind><bind name="timeout" type="number" export-name="timeout"><description><![CDATA[Timeout before throwing a timeout exception [minutes]]]></description></bind></in-binding><out-binding/><description><![CDATA[Add a note to the workflow schema.]]></description><position y="60.0" x="380.0"/></workflow-item><workflow-item name="item6" out-name="item13" type="link" linked-workflow-id="9D808080808080808080808080808080808080800124522604009086868f99767"><display-name><![CDATA[Upgrade VM Hardware (force if required)]]></display-name><in-binding><bind name="VM" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[VM to upgrade]]></description></bind></in-binding><out-binding/><description><![CDATA[]]></description><position y="130.0" x="580.0"/></workflow-item><workflow-item name="item7" out-name="item9" type="task" script-module="com.vmware.library.vc.vm.tools/vim3WaitToolsStarted"><display-name><![CDATA[vim3WaitToolsStarted]]></display-name><script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+System.getModule("com.vmware.library.vc.vm.tools").vim3WaitToolsStarted(vm,pollingRate,timeout);]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[VM in which the action look to get the new DNS Name]]></description></bind><bind name="pollingRate" type="number" export-name="pollingRate"><description><![CDATA[Time between all request information on the tools [seconds]]]></description></bind><bind name="timeout" type="number" export-name="timeout"><description><![CDATA[Timeout before throwing a timeout exception [minutes]]]></description></bind></in-binding><out-binding/><description><![CDATA[Add a note to the workflow schema.]]></description><position y="60.0" x="700.0"/></workflow-item><workflow-item name="item8" type="end" end-mode="0"><in-binding/><position y="50.0" x="1160.0"/></workflow-item><workflow-item name="item9" out-name="item16" type="custom-condition" alt-out-name="item15"><display-name><![CDATA[Decision]]></display-name><script encoded="false"><![CDATA[var versionStatus = vm.guest.toolsVersionStatus2;
+var upgradeNeeded = false;
+
+if (versionStatus == "guestToolsBlacklisted") {
+	System.log("Current VMTools version blacklisted.  Upgrading.");
+	return true;
+} else if (versionStatus == "guestToolsCurrent") {
+	System.log("VMTools version is already current.  Not upgrading");
+	return false;
+} else if (versionStatus == "guestToolsNeedUpgrade") {
+	System.log("VMTools upgrade needed.  Upgrading");
+	return true;
+} else if (versionStatus == "guestToolsNotInstalled") {
+	//throw("VMTools are not installed.  Cannot upgrade");
+    return false
+} else if (versionStatus == "guestToolsSupportedNew") {
+	System.warn("VMtools are newer than available.  Not upgrading");
+	return false;
+} else if (versionStatus == "guestToolsSupportedOld") {
+	System.warn("VMTools are old, trying to upgrade");
+	return true;
+} else if (versionStatus == "guestToolsUnmanaged") {
+	System.log("3rd party managed VMtools (open-vm-tools).  Not upgrading");
+	return false;
+} else {
+	//throw("Unknown VMtools Version Status: "+versionStatus);
+    return false
+}
+
+return false;]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="50.0" x="840.0"/></workflow-item><workflow-item name="item11" out-name="item12" type="custom-condition" alt-out-name="item7"><display-name><![CDATA[Decision]]></display-name><script encoded="false"><![CDATA[//System.warn(vm.vmVersion)
+System.log(vm.vmVersion.split('vmx-')[1] * 1)
+if ((vm.vmVersion.split('vmx-')[1] * 1) < (vmHardware.split('vmx-')[1] * 1) ){
+    return true;
+} else {
+    return false;
+};]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"/><bind name="vmHardware" type="string" export-name="vmHardware"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="50.0" x="580.0"/></workflow-item><workflow-item name="item12" out-name="item6" type="link" linked-workflow-id="BD80808080808080808080808080808075C280800122528313869552e41805bb1"><display-name><![CDATA[Shut down guest OS and wait]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[Virtual machine to shut down]]></description></bind></in-binding><out-binding/><description><![CDATA[]]></description><position y="130.0" x="480.0"/></workflow-item><workflow-item name="item13" out-name="item7" type="link" linked-workflow-id="BD808080808080808080808080808080CCC280800122528313869552e41805bb1"><display-name><![CDATA[Start virtual machine and wait]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[Virtual machine to start]]></description></bind><bind name="host" type="VC:HostSystem" export-name="host"><description><![CDATA[[Optional] The host on which to power on the virtual machine. The host must be part of the same compute resource with which the virtual machine is currently associated. Uses the currently associated host if you do not specify a new host or if you specify an incompatible host.]]></description></bind></in-binding><out-binding/><description><![CDATA[]]></description><position y="130.0" x="700.0"/></workflow-item><workflow-item name="item14" out-name="item5" type="task"><display-name><![CDATA[Scriptable task]]></display-name><script encoded="false"><![CDATA[host = VcPlugin.convertToVimManagedObject(vm, vm.runtime.host); //[VC:HostSystem]
+var version = host.config.product.version;
+var vc = host.sdkConnection.id;
+var vCenter = host.sdkConnection.id;
+var vmId = vm.id;
+var customProperties = {"vcfqdn":vc, "vmId":vmId, "vCenter":vc};
+//System.warn(version)
+var vmHardware
+switch (version){
+    case '7.0.3':
+        vmHardware = "vmx-19"
+        break;
+    case '7.0.2':
+        vmHardware = "vmx-19"
+        break;
+    case '7.0.1':
+        vmHardware = "vmx-18"
+        break;
+    case '7.0.0':
+        vmHardware = "vmx-17"
+        break;
+    case '6.7.2':
+        vmHardware = "vmx-15"
+        break;
+    case '6.7.0':
+        vmHardware = "vmx-14"
+        break;
+    case '6.5.0':
+        vmHardware = "vmx-13"
+        break;
+    case '6.0.0':
+        vmHardware = "vmx-11"
+        break;
+    case '5.5.0':
+        vmHardware = "vmx-10"
+        break;
+    case 'default':
+        vmHardware = "vmx-10"
+        break;
+}]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"/><bind name="inputProperties" type="Properties" export-name="inputProperties"/></in-binding><out-binding><bind name="host" type="VC:HostSystem" export-name="host"/><bind name="vmHardware" type="string" export-name="vmHardware"/><bind name="customProperties" type="Properties" export-name="customProperties"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="280.0"/></workflow-item><workflow-item name="item15" out-name="item8" catch-name="item0" throw-bind-name="errorCode" type="link" linked-workflow-id="c9e2bda1-ae37-4683-a764-ade50f5cba7c"><display-name><![CDATA[Set vmTools Upgrade on Reboot]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"/></in-binding><out-binding/><description><![CDATA[]]></description><position y="60.0" x="960.0"/></workflow-item><workflow-item name="item16" out-name="item3" type="task" script-module="com.vmware.library.vc.vm.tools/vim3WaitForPrincipalIP"><display-name><![CDATA[vim3WaitForPrincipalIP]]></display-name><script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.library.vc.vm.tools").vim3WaitForPrincipalIP(vm,timeout,interval);]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[VM to wait for IP]]></description></bind><bind name="timeout" type="number" export-name="timeout"><description><![CDATA[Timeout for the operation [min]]]></description></bind><bind name="interval" type="number" export-name="pollingRate"><description><![CDATA[Interval for polling rate [s]]]></description></bind></in-binding><out-binding><bind name="actionResult" type="string" export-name="waitResult"/></out-binding><description><![CDATA[Add a note to the workflow schema.]]></description><position y="130.0" x="840.0"/></workflow-item><workflow-item name="item17" out-name="item18" throw-bind-name="errorCode" type="link" linked-workflow-id="c9e2bda1-ae37-4683-a764-ade50f5cba7c"><display-name><![CDATA[Set vmTools Upgrade on Reboot]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"/></in-binding><out-binding/><description><![CDATA[]]></description><position y="200.0" x="1020.0"/></workflow-item><workflow-item name="item18" type="end" end-mode="0"><in-binding/><position y="190.0" x="1180.0"/></workflow-item><workflow-item name="item19" out-name="item14" throw-bind-name="errorCode" type="task" script-module="com.vmware.library.vc.vm/_findVMByName"><display-name><![CDATA[_findVMByName]]></display-name><script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.library.vc.vm")._findVMByName(vmName);]]></script><in-binding><bind name="vmName" type="string" export-name="vmName"/></in-binding><out-binding><bind name="actionResult" type="VC:VirtualMachine" export-name="vm"/></out-binding><description><![CDATA[Add a note to the workflow schema.]]></description><position y="120.0" x="180.0"/></workflow-item><workflow-item name="item20" out-name="item11" throw-bind-name="minionResult" type="task" script-module="com.vmware.library.salt/sendMinionToGuest"><display-name><![CDATA[sendMinionToGuest]]></display-name><script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.library.salt").sendMinionToGuest(vm,saltInstallName,password);]]></script><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"/><bind name="saltInstallName" type="string" export-name="saltInstallName"/><bind name="password" type="SecureString" export-name="buildPassword"/></in-binding><out-binding><bind name="actionResult" type="string" export-name="minionResult"/></out-binding><description><![CDATA[Add a note to the workflow schema.]]></description><position y="60.0" x="480.0"/></workflow-item><presentation/></workflow>

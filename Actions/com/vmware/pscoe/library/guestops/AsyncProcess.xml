@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AsyncProcess" result-type="Any" api-version="6.0.0" id="76db9b47-8a33-47ab-8a30-c8d99d13f1a9" version="1.2.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.guestops">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.guestops.AsyncProcess");
+
+return Class.define("AsyncProcess", function (guest, guestOps, pid, endDate, vars, fileName) {
+	this.pid = pid;
+	this.endDate = endDate;
+	this.vars = vars;
+	this.fileName = fileName;
+	this.guest = guest;
+	this.guestOps = guestOps;
+
+	var getSrcPath = function (fileName) {
+		var vroTempFolder = System.getTempDirectory();
+		return (vroTempFolder + "/" + fileName);
+	};
+
+	var readOut = function (srcPath, destPath) {
+		try {
+			guest.downloadFileFromGuest(srcPath, destPath);
+			return System.getModule("com.vmware.pscoe.library.filesystem").readFile(destPath);
+		} catch (e) {
+			System.warn("Error getting output: " + e);
+		}
+		return null;
+	};
+
+	this.wait = function () {
+		var execAttributes = {};
+		while (true) {
+			var process = this.guest.findGuestProcess(this.pid);
+			if (process != null && process.endTime != null) {
+				execAttributes.exitCode = process.exitCode;
+				break;
+			}
+			if (this.endDate.getTime() < (new Date()).getTime()) {
+				throw "Timeout waiting for process to complete";
+			}
+			System.sleep(1000);
+		}
+		execAttributes.stdOut = readOut(this.vars.stdOutPath, getSrcPath(this.fileName) + ".out");
+		execAttributes.stdErr = readOut(this.vars.stdErrPath, getSrcPath(this.fileName) + ".err");
+		return execAttributes;
+	};
+
+	this.cleanUpGuest = function () {
+		logger.debug("Clean up guest: " + this.guestOps.cleanUpGuest);
+		if (this.guestOps.cleanUpGuest) {
+			logger.info("Clean up temporary files in the Guest");
+			var filesPathList = [this.vars.scriptPath, this.vars.stdOutPath, this.vars.stdErrPath];
+			for (var iter in filesPathList) {
+				var filePath = filesPathList[iter];
+				try {
+					this.guest.deleteFileInGuest(filePath);
+				} catch (e) {
+					logger.error("Unable to cleanup Guest:" + e);
+				}
+			}
+		}
+	};
+});]]></script>
+</dunes-script-module>

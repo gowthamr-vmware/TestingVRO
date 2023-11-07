@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="BaseAppender" result-type="Any" api-version="6.0.0" id="4b88acd8-d6d7-3faf-a06b-c56e02d2ebb2" version="2.0.3" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.logging.appenders">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Formatter_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging.format/Formatter");
+/**
+ * An appender is an object that takes logger messages and appends them to logging endpoints(server, file, output stream, etc.....)
+ *
+ * Base appender, cannot be instantiated explicitly and must be inherited by the implementing appenders
+ * Each implementing appender receives a properties object, with parameters as defined in the logger configuration
+ * Implementing appenders must override the append function
+ */
+var BaseAppender = /** @class */ (function () {
+    function BaseAppender(properties) {
+        this.formatter = new Formatter_1._.Formatter(properties);
+    }
+    BaseAppender.prototype.format = function (severity, message) {
+        return this.formatter.format(severity, message);
+    };
+    return BaseAppender;
+}());
+exports.BaseAppender = BaseAppender;
+return exports;
+]]></script>
+</dunes-script-module>

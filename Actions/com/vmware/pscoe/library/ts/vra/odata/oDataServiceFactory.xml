@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="oDataServiceFactory" result-type="Any" api-version="6.0.0" id="22d7081a-63ee-4230-b893-ce7dc2d40901" version="8.8.223597" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.vra.odata">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var oDataService_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.odata.oDataService");
+var ODataServiceFactory = /** @class */ (function () {
+    function ODataServiceFactory(http) {
+        this.http = http;
+    }
+    ODataServiceFactory.prototype.createService = function (service) {
+        return new oDataService_1._.ODataService(new service(this.http));
+    };
+    return ODataServiceFactory;
+}());
+exports.ODataServiceFactory = ODataServiceFactory;
+return exports;]]></script>
+</dunes-script-module>

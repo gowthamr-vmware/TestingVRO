@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Func" result-type="Any" api-version="6.0.0" id="5adbac6a-39db-471e-a35d-b861b9a032e6" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging")
+    .getLogger("com.vmware.pscoe.library.util/Func");
+
+var Func = function () {
+    throw new Error("private constructor");
+};
+
+function isObject(obj) {
+    var type = typeof obj;
+    return type === 'function' || type === 'object' && !!obj;
+}
+
+/**
+ * Creates a function that invokes `fn` with `headArgs` prepended
+ * to the arguments it receives, without changing its dynamic `this` value.
+ * In math terms, if we have a function `f(x, y)` then the function
+ * `g(y) = f(2, y)` is called a partially applied function.
+ *
+ * @example
+ * function multiply(x, y) {
+ *     return x * y;
+ * }
+ *
+ * var double = Func.partial(multiply, 2);
+ * double(4); // => 8
+ *
+ * @param {Function} fn - The function to partially apply arguments to.
+ * @param {...object} [headArgs] - The arguments to be partially applied.
+ *
+ * @return {Function} Returns the new partially applied function.
+ */
+Func.partial = function (fn /*, ...headArgs */ ) {
+    var slice = Array.prototype.slice;
+    var headArgs = slice.call(arguments, 1);
+
+    return function wrapper( /* ...tailArgs */ ) {
+        var constructorInvocation = this instanceof wrapper;
+        var tailArgs = slice.call(arguments);
+
+        if (!constructorInvocation) {
+            return fn.apply(this, headArgs.concat(tailArgs));
+        }
+
+        var self = Object.create(fn.prototype);
+        var result = fn.apply(self, headArgs.concat(tailArgs));
+
+        return isObject(result) ? result : self;
+    }
+};
+
+/**
+ * Returns the composition of a list of functions, where each function
+ * consumes the return value of the function that follows.
+ * In math terms, composing the functions f() and g() produces f(g()).
+ *
+ * @example
+ * function f(a) {
+ *     return a * 2;
+ * }
+ *
+ * function g(b) {
+ *     return b + 5;
+ * }
+ *
+ * var h = Func.compose(f, g);
+ * h(4); // => 18
+ *
+ * @param {...Function} fn - The functions to compose.
+ *
+ * @return {Function} Returns the new composed function.
+ */
+Func.compose = function () {
+    var funcs = Array.prototype.slice.call(arguments);
+
+    return funcs.reduce(function (f, g) {
+        return function () {
+            return f(g.apply(this, arguments));
+        };
+    });
+};
+
+/**
+ * Executes the function `fn` and retries it every `waitBeteween` seconds until either of the following:
+ * 1. The result of `fn` is passed to the `successCriteriaCb` function to see if result is acceptable.
+ * 2. The timeout has expired in which case the function will throw an exception.
+ *
+ * @param fn - is the function which to execute periodically
+ * @param successCriteriaCb - is the function to check if `fn` result is successful. Will be called with second arg for exception if one was produced.
+ * @param timeout - (in seconds) how long before throwing the towel
+ * @param waitBeteween - (in seconds) how much time to wait between retries
+ *
+ * @returns the result of `fn` call
+ * @throws if the timeout has expired. Any other exceptions are logged and ignored.
+ */
+Func.retryWithTimeout = function (fn, successCriteriaCb, timeout, waitBetween) {
+    if (typeof timeout !== "number") {
+        throw new Error("timeout parameter is required.");
+    }
+    var now = new Date().getTime();
+    var timeoutFutureTime = now + (timeout * 1000);
+    var fnResult;
+    var fnException;
+    waitBetween = waitBetween || 5;
+    var waitBetweenMill = waitBetween * 1000;
+
+    if (isNaN(waitBetweenMill)) {
+        throw new Error("waitBetween parameter specified is not a number");
+    }
+
+    do {
+        try {
+            fnResult = undefined;
+            fnResult = fn();
+            fnException = undefined;
+        } catch (e) {
+            logger.debug("WARN: " + e + " " + e.stack);
+            fnException = e;
+        }
+
+        now = new Date().getTime();
+        if (successCriteriaCb(fnResult, fnException)) {
+            break;
+        } else if (now > timeoutFutureTime) {
+            throw new Error("Timeout executing function: " + (fn.constructor && fn.constructor.name));
+        } else {
+            logger.debug("Waiting " + waitBetween + " seconds before retrying function call...");
+            System.waitUntil(new Date(now + waitBetweenMill), waitBetweenMill / 3);
+        }
+    } while (true);
+
+    logger.debug("Retrying function completed successfully.");
+    return fnResult;
+}
+
+return Func;]]></script>
+</dunes-script-module>

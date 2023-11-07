@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Collections" result-type="Any" api-version="6.0.0" id="d07f9588-bd7a-4bc7-85cb-943bf35d7d3e" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+/**
+ * Returns the element in a collection that is expected to contain a single element.
+ * Will throw an error if there are more then 1 elements in the array.
+ * @param {Array} array
+ * @returns {*} - the element, null if the collection is empty
+ */
+function single(array) {
+    if (!Array.isArray(array)) {
+        throw new Error("Invalid argument (array): expected an array.");
+    }
+
+    if (array.length === 1) {
+        return array[0];
+    } else if (array.length == 0) {
+        return null;
+    } else {
+        throw new Error("Expected 1 or 0 items, but found " + array.length + " instead.");
+    }
+}
+
+/**
+ * Transforms each element of the source array into another element (in one-to-many fashion)
+ * and then flattens the result.
+ *
+ * @example
+ *
+ * var list = [1, 2, 3, 4];
+ *
+ * list.map(function (x) {
+ *      return [x * 2];
+ * });
+ * // [[2], [4], [6], [8]]
+ *
+ * list.flatMap(function (x) {
+ *      return [x * 2];
+ * });
+ * // [2, 4, 6, 8]
+ *
+ * @param {Array} array
+ * @param {Function} mapFunc = function (element, index, array)
+ *
+ * @return {Array}
+ */
+function flatMap(array, mapFunc) {
+    // implementation based on http://2ality.com/2017/04/flatmap.html
+    if (!Array.isArray(array)) {
+        throw new Error("Invalid argument (array): expected an array.");
+    }
+
+    var result = [];
+    for (var idx in array) {
+        var mapResult = mapFunc(array[idx], idx, array);
+        if (Array.isArray(mapResult)) {
+            Array.prototype.push.apply(result, mapResult);
+        } else {
+            result.push(mapResult);
+        }
+    }
+    return result;
+}
+
+/**
+ * Returns an array containing only the repeated elements from the source array.
+ * @example
+ *
+ * Given the source array:
+ * var source = ["Bronze", "Gold", "Bronze", "Platinum"];
+ * The output array will be:
+ * ["Bronze"]
+ * @param {Array} array
+ * @return {Array}
+ */
+function getRepeatedElementsFromArray(array) {
+    var commonArray = [];
+    array.forEach(function (item, index) {
+        if (array.indexOf(item, index + 1) > -1) {
+            if (commonArray.indexOf(item) == -1) {
+                commonArray.push(item);
+            }
+        }
+    });
+
+    return commonArray;
+}
+
+function Collections() {
+    // empty
+}
+Collections.single = single;
+Collections.flatMap = flatMap;
+Collections.getRepeatedElementsFromArray = getRepeatedElementsFromArray;
+
+return Class.define(Collections);]]></script>
+</dunes-script-module>

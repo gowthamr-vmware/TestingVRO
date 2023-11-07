@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getVmAddresses" result-type="Array/string" api-version="6.0.0" id="fd95b45d-6ecb-49fa-b59b-a3bc7c579edc" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi">
+  <param n="vmAddresses" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var ipAddresses = [];
+if (vmAddresses) {
+    ipAddresses = vmAddresses.split(',');
+}
+return ipAddresses;]]></script>
+</dunes-script-module>

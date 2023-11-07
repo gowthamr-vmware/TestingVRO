@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[This package is licensed under https://flings.vmware.com/vrealize-build-tools/license]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Workflow?id='13cadbc5-faad-4730-a74d-6e0dfdea744c'&dunesName='Workflow']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Workflow?id='96a1c234-2d63-4775-bd46-8342cdde21cb'&dunesName='Workflow']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Workflow?id='993d2407-3ff6-49ec-a4f1-bdad0d05c435'&dunesName='Workflow']]></elm>
+</package>

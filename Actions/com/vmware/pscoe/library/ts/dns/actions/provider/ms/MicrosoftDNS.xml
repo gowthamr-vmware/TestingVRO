@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="MicrosoftDNS" result-type="Any" api-version="6.0.0" id="dd432ba9-32fa-4ce5-97aa-ba5db1b852f9" version="1.0.5" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.dns.actions.provider.ms">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), tslib_1 = VROES.tslib, exports = {};
+var GuestRunner_1 = VROES.importLazy("com.vmware.pscoe.library.ts.dns.actions/GuestRunner");
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var ConfigElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ConfigElementAccessor");
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor");
+var logger = Logger_1._.Logger.getLogger("com.vmware.pscoe.library.ts.actions.provider.ms/MicrosoftDNS");
+var PATH = {
+    BASE_PATH: "PSCoE/Library/DNS",
+    CE: "Microsoft",
+    RE: {
+        ADD_RECORD: "Microsoft/addDnsRecord.ps1",
+        DELETE_RECORD: "Microsoft/deleteDnsRecord.ps1"
+    }
+};
+var REGEX = {
+    EXIT_CODE: /^Exit Code\: (.*).$/gm,
+    DNS: /[a-zA-Z0-9.-]$/
+};
+var cea = new ConfigElementAccessor_1._.ConfigElementAccessor([PATH.BASE_PATH, PATH.CE].join("/"));
+var MicrosoftDNS = /** @class */ (function (_super) {
+    tslib_1.__extends(MicrosoftDNS, _super);
+    function MicrosoftDNS(zone) {
+        var _this = this;
+        var psHostConfig = MicrosoftDNS.getPowerShellHostConfig(zone);
+        _this = _super.call(this, psHostConfig.vCenterVm, psHostConfig.username, psHostConfig.password) || this;
+        _this.dnsZone = zone;
+        _this.powerShellHostConfig = psHostConfig;
+        _this.ptr = true;
+        _this.guestOpsProfile = "powerShell64";
+        return _this;
+    }
+    MicrosoftDNS.getPowerShellHostConfig = function (zone) {
+        var found = cea.get("powerShellHosts").filter(function (entry) {
+            return entry.dnsZone === zone;
+        });
+        if (found.length > 0) {
+            return found[0];
+        }
+        else {
+            throw new Error("PowerShell jump host configuration for zone '" + zone.toUpperCase() + "' was not found.");
+        }
+    };
+    MicrosoftDNS.prototype.isPTR = function () {
+        return this.ptr;
+    };
+    MicrosoftDNS.prototype.setPTR = function (isPTR) {
+        this.ptr = isPTR;
+    };
+    MicrosoftDNS.prototype.setGuestOpsProfile = function (profileName) {
+        if (profileName.indexOf("powerShell") < 0) {
+            throw new Error("Unsupported guest operations profile for Microsoft DNS provider.");
+        }
+        this.guestOpsProfile = profileName;
+    };
+    MicrosoftDNS.prototype.addRecord = function (name, ipAddress, type, zone, dnsServer) {
+        if (!zone) {
+            logger.debug("Zone is not provided, reverting to default zone.");
+            zone = this.dnsZone;
+        }
+        if (!dnsServer) {
+            logger.debug("DNS server not provided, reverting to first DNS server configured.");
+            dnsServer = this.powerShellHostConfig.dnsServers[0];
+        }
+        var cmd = this.markUpScript([PATH.BASE_PATH, PATH.RE.ADD_RECORD].join("/"), name, ipAddress, type, zone, dnsServer, "");
+        this.handleResult(this.guestOps.runCommand(cmd, "", this.guestOpsProfile));
+    };
+    MicrosoftDNS.prototype.deleteRecord = function (name, type, zone, dnsServer, ipAddress) {
+        /**
+         * To delete a specific DNS A record in case of multiple DNS A records
+         * with same host name, provide optional @param ipAddress
+         * @param ipAddress - IP address to be deleted
+         */
+        if (!zone) {
+            logger.debug("Zone is not provided, reverting to default zone.");
+            zone = this.dnsZone;
+        }
+        if (!dnsServer) {
+            logger.debug("DNS server not provided, reverting to first DNS server configured.");
+            dnsServer = this.powerShellHostConfig.dnsServers[0];
+        }
+        if (!ipAddress) {
+            logger.debug("Record data not provided, deleting first (IP) record from the address list.");
+            ipAddress = "";
+        }
+        var cmd = this.markUpScript([PATH.BASE_PATH, PATH.RE.DELETE_RECORD].join("/"), name, "", type, zone, dnsServer, ipAddress);
+        this.handleResult(this.guestOps.runCommand(cmd, "", this.guestOpsProfile));
+    };
+    MicrosoftDNS.prototype.handleResult = function (result) {
+        var exitCode = MicrosoftDNS.getErrorCode(result);
+        logger.info("Exit Code: " + exitCode);
+        // All the following exit codes along with their signatures are Microsoft compatible.
+        switch (exitCode) {
+            // ERROR_SUCCESS
+            // The operation completed successfully.
+            case 0:
+                logger.info("DNS operation completed successfully.");
+                break;
+            // ERROR_INVALID_PARAMETER
+            // Error: The parameter is incorrect.
+            // Note: Invalid input parameters are supplied to the dnscmd command.
+            case 87:
+                throw new Error("DNS record creation not performed. Invalid input parameters provided.");
+            // RPC_S_SERVER_UNAVAILABLE
+            // Error: The RPC server is unavailable.
+            // Note:     Unable to communicate with the target DNS server.
+            //     		Check DNS server configuration and ensure it is accessible by the PowerShell VM
+            case 1722:
+                throw new Error("DNS record creation not performed. Unable to communicate with the DNS server.");
+            // DNS_ERROR_ZONE_DOES_NOT_EXIST
+            // Error: DNS zone does not exist.
+            case 9601:
+                throw new Error("DNS record creation failed. DNS zone does not exist.");
+            // DNS_ERROR_RECORD_DOES_NOT_EXIST
+            // DNS record does not exist.
+            case 9701:
+                throw new Error("DNS record deletion failed. DNS record does not exist.");
+            // DNS_ERROR_RECORD_ALREADY_EXISTS
+            // Error: DNS record already exists.
+            case 9711:
+                throw new Error("DNS record creation failed. DNS record already exists.");
+            // DNS_WARNING_PTR_CREATE_FAILED
+            // Error: Could not create pointer (PTR) record.
+            // Note:     Commonly returned when record is already created.
+            //     		PTR record creation is performed before type A record and this error is not 100% conclusive.
+            case 9715:
+                throw new Error("DNS record creation failed. Unable to create PTR record. " +
+                    "This error is most commonly returned when the record already exists.");
+            default:
+                var msg = "DNS record creation failed. Error code: " + exitCode + ". " +
+                    "Consult Microsoft documentation on " +
+                    "https://msdn.microsoft.com/en-us/library/windows/desktop/ms681391.aspx for more information.";
+                logger.warn(msg);
+                throw new Error("DNS record creation failed. " + msg);
+        }
+    };
+    MicrosoftDNS.getErrorCode = function (result) {
+        var regexResult = REGEX.EXIT_CODE.exec(result.stdOut);
+        // Reset the RegEx index so it can be reused
+        REGEX.EXIT_CODE.lastIndex = 0;
+        if (!regexResult || !regexResult[1]) {
+            logger.info("Output: " + result.stdOut);
+            logger.error("Error: " + result.stdErr);
+            throw new Error("Unable to determine the execution status of the DNS command.");
+        }
+        return parseInt(regexResult[1]);
+    };
+    MicrosoftDNS.prototype.markUpScript = function (reScriptPath, name, ipAddress, type, zone, dnsServer, deleteIpAddress) {
+        var content = new ResourceElementAccessor_1._.ResourceElementAccessor(reScriptPath).getContent();
+        return System.getModule("com.vmware.pscoe.library.templates.engines").mark(content, {
+            zone: zone,
+            name: name,
+            type: type,
+            ipAddress: ipAddress,
+            server: dnsServer,
+            deleteIpAddress: deleteIpAddress,
+            ptr: this.isPTR()
+        });
+    };
+    return MicrosoftDNS;
+}(GuestRunner_1._.GuestRunner));
+exports.MicrosoftDNS = MicrosoftDNS;
+return exports;]]></script>
+</dunes-script-module>

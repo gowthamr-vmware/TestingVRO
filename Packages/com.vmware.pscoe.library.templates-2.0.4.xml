@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package>
+<description><![CDATA[Built by Build Tools for VMware Aria]]></description>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='117b7381-8641-43f8-bfe1-b3e64f3666bd'&dunesName='Action'&name='Markup'&category='com.vmware.pscoe.library.templates.engines']]></elm>
+<elm src-category='null'><![CDATA[dunes://service.dunes.ch/Action?id='dc9d3b0a-9c3c-48a3-8d30-f35caea9585f'&dunesName='Action'&name='mark'&category='com.vmware.pscoe.library.templates.engines']]></elm>
+</package>

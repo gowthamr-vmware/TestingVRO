@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="utils" result-type="Any" api-version="6.0.0" id="4ee1c311-ea14-315f-ad5f-6fe0ca328c9b" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.utils">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.rockwell.vro.actions.utils/utils');
+var ConfigElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ConfigElementAccessor");
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor");
+var Utils = /** @class */ (function () {
+    function Utils() {
+    }
+    Utils.executeWithRetry = function (retryCount, sleepTimeInSec, callback) {
+        for (var i = 0; i < retryCount; i++) {
+            try {
+                logger.info("retrying [" + (i + 1) + "]/[" + retryCount + "]");
+                return callback();
+            }
+            catch (error) {
+                if (i == retryCount - 1) {
+                    throw new Error(error);
+                }
+                else {
+                    logger.error(error);
+                }
+            }
+            System.sleep(sleepTimeInSec * 1000);
+        }
+    };
+    Utils.getLogger = function (logPath, options, workflow) {
+        if (workflow && !logPath) {
+            logPath = workflow.currentWorkflow.workflowCategory.path + "/" + workflow.currentWorkflow.name;
+        }
+        return Logger_1._.Logger.getLogger(logPath, options);
+    };
+    Utils.getConfig = function (path) {
+        return new ConfigElementAccessor_1._.ConfigElementAccessor(path, true);
+    };
+    Utils.getResource = function (path) {
+        return new ResourceElementAccessor_1._.ResourceElementAccessor(path, true);
+    };
+    Utils.Class = function () {
+        return System.getModule("com.vmware.pscoe.library.class").Class();
+    };
+    Utils.isSet = function (s) {
+        return s !== null && s !== undefined && s !== "";
+    };
+    Utils.sortStrings = function (string1, string2) {
+        if (string1 > string2) {
+            return 1;
+        }
+        if (string1 < string2) {
+            return -1;
+        }
+        return 0;
+    };
+    Utils.createNetmaskAddr = function (Cidr) {
+        var bitCount = parseInt(Cidr, 10);
+        var mask = [], i, n;
+        for (i = 0; i < 4; i++) {
+            n = Math.min(bitCount, 8);
+            mask.push(256 - Math.pow(2, 8 - n));
+            bitCount -= n;
+        }
+        return mask.join('.');
+    };
+    return Utils;
+}());
+exports.Utils = Utils;
+return exports;]]></script>
+</dunes-script-module>

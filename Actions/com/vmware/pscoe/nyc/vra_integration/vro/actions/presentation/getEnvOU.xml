@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getEnvOU" result-type="string" api-version="6.0.0" id="aee1adbb-03f7-49dd-a48b-6c8ba28ddfa9" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.presentation">
+  <param n="envKey" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var utils_1 = VROES.importLazy("com.vmware.pscoe.nyc.vra_integration.vro.actions/utils/utils");
+var config = utils_1._.Utils.getConfig('NYC/CustomHostname');
+var domainsProperties = config.get('envous');
+return domainsProperties.get(envKey);]]></script>
+</dunes-script-module>

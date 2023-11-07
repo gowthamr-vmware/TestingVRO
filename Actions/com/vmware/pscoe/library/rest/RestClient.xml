@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RestClient" result-type="Any" api-version="6.0.0" id="93d62f81-d295-43b6-a516-7faf25b99bf2" version="2.5.8" allowed-operations="vef" category-name="com.vmware.pscoe.library.rest">
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger("com.vmware.pscoe.library.rest.RestClient");
+
+/**
+ * @param {REST:RESTHost} restHost REST host
+ * @param {Array/Object} operations List of REST operations, e.g. [{
+ * 		"urlTemplate": "api/create",
+ * 		"method": "POST",
+ * }]
+ */
+return function RestClient(restHost, operations) {
+	var DefaultHostManagedAuth = System.getModule("com.vmware.pscoe.library.rest.auth").DefaultHostManagedAuth();
+
+	var self = this;
+	var authenticator = new DefaultHostManagedAuth();
+	var authAttached = false;
+
+	for (var idx in operations) {
+		var op = operations[idx];
+		var foundedOperation = getRestOperation(op.method, op.urlTemplate);
+		if (!foundedOperation) {
+			logger.debug("Add new operation:");
+			logger.debug("\tURL Template: " + op.urlTemplate);
+			logger.debug("\tMethod: " + op.method);
+			createRestOperation(op.method, op.urlTemplate);
+		}
+	}
+
+	function createRestOperation(method, urlTemplate) {
+		var op = new RESTOperation(urlTemplate);
+		op.name = urlTemplate;
+		op.method = method;
+		op.urlTemplate = urlTemplate;
+		op.defaultContentType = "application/json";
+		restHost.addOperation(op);
+		if (!this.skipRestHostUpdate) {
+			RESTHostManager.updateHost(restHost);
+			restHost = RESTHostManager.getHost(restHost.id);
+		}
+	}
+
+	function getRestOperation(method, urlTemplate) {
+		var operations = restHost.getOperations();
+		for (var i in operations) {
+			var id = operations[i];
+			var o = restHost.getOperation(id);
+			if (o.method == method && o.urlTemplate == urlTemplate) {
+				return o;
+			}
+		}
+		return null;
+	}
+
+	function getResponseValue(options, response) {
+		var responseValue = {};
+
+		if (options && options.returnResponseObject == true) {
+			responseValue = {
+				contentAsString: response.contentAsString,
+				contentLength: response.contentLength,
+				statusCode: response.statusCode,
+				responseHeaders: response.getAllHeaders()
+			};
+		} else if (options && options.returnResponseObjectForReal == true) {
+			responseValue = response;
+		} else {
+			if (response.contentAsString && response.contentAsString != "") {
+				responseValue = JSON.parse(response.contentAsString);
+			}
+		}
+
+		return responseValue;
+	}
+
+	function serializeContent(content, options) {
+
+		var finalContent = {
+			content: content || null,
+			contentType: options && options.headers && options.headers["Content-Type"]
+		};
+
+		if (finalContent.contentType === "application/x-www-form-urlencoded" && typeof content === "object") {
+			var params = Object.keys(content).map(function (k) {
+				return encodeURIComponent(k) + "=" + encodeURIComponent(content[k]);
+			});
+			finalContent.content = params.join("&");
+
+		} else if ((!options || !options.hasOwnProperty("stringifyJsonContent") || options.stringifyJsonContent) && finalContent.content) {
+			finalContent = {
+				contentType: "application/json",
+				content: JSON.stringify(finalContent.content)
+			};
+		}
+		return finalContent;
+	}
+
+	function runRestOp(method, urlTemplate, params, content, options) {
+
+		var numberOfRetries = 1;
+		var retryWaitInterval = 200;
+		var errorsToRetry = [];
+
+		if (options && options.errorHandler) {
+			numberOfRetries = options.errorHandler.numberOfRetries;
+			if (options.errorHandler.hasOwnProperty("retryWaitInterval")) {
+				retryWaitInterval = options.errorHandler.retryWaitInterval;
+			}
+			if (options.errorHandler.errorsToRetry) {
+				errorsToRetry = options.errorHandler.errorsToRetry;
+			} else {
+				errorsToRetry.push("Connection pool shut down");
+			}
+		}
+
+		do {
+			try {
+				return runRestOpThrowable(method, urlTemplate, params, content, options);
+			} catch (e) {
+				var exceptionMessage = e.hasOwnProperty("message") ? e.message : e;
+				var isInErrorsToRetry = errorsToRetry.filter(function (errorTmpl) {
+					return exceptionMessage.indexOf(errorTmpl) > -1;
+				}).length > 0;
+
+				if (!isInErrorsToRetry || numberOfRetries <= 0) {
+					throw e;
+				}
+
+				logger.warn("Error in execution operation: " + e);
+				logger.warn("Will retry again in " + (retryWaitInterval / 1000) + " seconds.");
+				System.sleep(retryWaitInterval);
+			}
+		} while ((numberOfRetries--) > 0);
+	}
+
+	function runRestOpThrowable(method, urlTemplate, params, content, options) {
+		if (!authAttached) {
+			authAttached = true;
+			authenticator.onAttach(self);
+		}
+
+		params = (params || []).slice();
+
+		if (!options || !options.skipEncodeParams) {
+			for (var i = 0; i < params.length; i++) {
+				params[i] = encodeURIComponent(params[i]);
+			}
+		}
+
+		logger.debug("================================================");
+		logger.debug("Invoking REST Request:");
+		logger.debug("\tMethod: " + method);
+		logger.debug("\tURL Template: " + urlTemplate);
+		logger.debug("\tParams: " + params);
+
+		var finalContent = serializeContent(content, options);
+		logger.debug("\tContent: " + finalContent.content);
+
+		var url = urlTemplate;
+		params.forEach(function (param) {
+			url = url.replace(/{.+?}/, param);
+		});
+		var request = restHost.createRequest(method, url, finalContent.content);
+
+		request.setHeader("Accept", "application/json");
+		if (finalContent.contentType) {
+			// set content-type before pottential manual override through options
+			request.setHeader("Content-Type", finalContent.contentType);
+		}
+
+		if (options && options.headers) {
+			for (var key in options.headers) {
+				var value = options.headers[key];
+				logger.debug("Added header: " + key + ", Value: " + value);
+				request.setHeader(key, value);
+			}
+		}
+
+		authenticator.beforeRequest(request, urlTemplate, params, finalContent, options);
+		var response = executeRequest(request, options);
+
+		logger.debug("REST Response: ");
+		logger.debug("\tStatus Code: " + response.statusCode);
+		logger.debug("\tContent: " + response.contentAsString);
+		logger.debug("================================================");
+
+		var responseValue = getResponseValue(options, response);
+		authenticator.afterRequest(request, urlTemplate, params, content, options);
+
+		if ((!options || !options.hasOwnProperty("interpretResponseCode") || options.interpretResponseCode) &&
+			("" + response.statusCode).indexOf("20") != 0) {
+			throw response.statusCode + " Content: " + JSON.stringify(responseValue);
+		}
+
+		return responseValue;
+	}
+
+	function executeRequest(request, options) {
+		logger.debug("Executing REST request with full URL: " + request.fullUrl);
+		var response;
+
+		try {
+			response = request.execute();
+			if (authenticator.isRespAuthChallenge(response)) {
+				logger.debug("Handling authentication challenge through provided authenticator (response-based).");
+				authenticator.onAuthChallenge(request, options);
+				response = request.execute();
+			}
+		} catch (e) {
+			logger.warn("Exception during execution of request: " + e)
+			if ((typeof authenticator.isAuthCallenge === "function" && authenticator.isAuthCallenge(e))
+				|| (typeof authenticator.isAuthChallenge === "function" && authenticator.isAuthChallenge(e))) {
+				logger.debug("Handling authentication challenge through provided authenticator.");
+				authenticator.onAuthChallenge(request, options);
+				response = request.execute();
+			} else {
+				throw e;
+			}
+		}
+
+		return response;
+	}
+
+	/**
+	 * Optional function to configure custom method for authentication against remote server
+	 */
+	this.auth = function (_authenticator) {
+		authenticator = _authenticator;
+	};
+
+	this.get = function (urlTemplate, params, options) {
+		return runRestOp("GET", urlTemplate, params, null, options);
+	};
+
+	this.post = function (urlTemplate, params, content, options) {
+		return runRestOp("POST", urlTemplate, params, content, options);
+	};
+
+	this.put = function (urlTemplate, params, content, options) {
+		return runRestOp("PUT", urlTemplate, params, content, options);
+	};
+
+	this.delete = function (urlTemplate, params, options) {
+		return runRestOp("DELETE", urlTemplate, params, null, options);
+	};
+
+	this.deleteWithContent = function (urlTemplate, params, content, options) {
+		return runRestOp("DELETE", urlTemplate, params, content, options);
+	};
+
+	this.patch = function (urlTemplate, params, content, options) {
+		return runRestOp("PATCH", urlTemplate, params, content, options);
+	};
+
+	this.head = function (urlTemplate, params, options) {
+		return runRestOp("HEAD", urlTemplate, params, null, options);
+	};
+
+	this.url = function () {
+		return restHost.url;
+	};
+}]]></script>
+</dunes-script-module>

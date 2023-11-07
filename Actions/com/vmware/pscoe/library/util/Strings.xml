@@ -1,0 +1,416 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Strings" result-type="Any" api-version="6.0.0" id="8854c3b9-3b7b-4354-87ac-c4c5d3e8cfbc" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Provides utility functions for manipulating strings.]]></description>
+  <script encoded="false"><![CDATA[// Modified versions of https://github.com/mout/mout/tree/master/src/string
+
+var Strings = function () {
+    throw new Error("private constructor");
+};
+
+function toString(val) {
+    return val == null ? "" : val.toString();
+}
+
+var WHITE_SPACES = [
+    " ", "\n", "\r", "\t", "\f", "\v", "\u00A0", "\u1680", "\u180E",
+    "\u2000", "\u2001", "\u2002", "\u2003", "\u2004", "\u2005", "\u2006",
+    "\u2007", "\u2008", "\u2009", "\u200A", "\u2028", "\u2029", "\u202F",
+    "\u205F", "\u3000"
+];
+
+/**
+ * "Safer" String.toLowerCase()
+ */
+Strings.lowerCase = function (str) {
+    str = toString(str);
+    return str.toLowerCase();
+};
+
+/**
+ * "Safer" String.toUpperCase()
+ */
+Strings.upperCase = function (str) {
+    str = toString(str);
+    return str.toUpperCase();
+};
+
+Strings.startsWith = function (str, value) {
+    str = toString(str);
+    value = toString(value);
+    return str.indexOf(value) === 0;
+};
+
+Strings.endsWith = function (str, value) {
+    str = toString(str);
+    value = toString(value);
+
+    if (value === "") {
+        return true;
+    }
+
+    return str.slice(-value.length) === value;
+};
+
+/**
+ * Convert string to camelCase text.
+ */
+Strings.camelCase = function (str) {
+    str = toString(str);
+    str = Strings.replaceAccents(str);
+    str = Strings.removeNonWord(str)
+        .replace(/\-/g, " ") //convert all hyphens to spaces
+        .replace(/\s[a-z]/g, Strings.upperCase) //convert first char of each word to UPPERCASE
+        .replace(/\s+/g, "") //remove spaces
+        .replace(/^[A-Z]/g, Strings.lowerCase); //convert first char to lowercase
+    return str;
+};
+
+/**
+ * UPPERCASE first char of each word.
+ */
+Strings.properCase = function (str) {
+    str = toString(str);
+    return Strings.lowerCase(str).replace(/^\w|\s\w/g, Strings.upperCase);
+};
+
+/**
+ * camelCase + UPPERCASE first char
+ */
+Strings.pascalCase = function (str) {
+    str = toString(str);
+    return Strings.camelCase(str).replace(/^[a-z]/, Strings.upperCase);
+};
+
+/**
+ * UPPERCASE first char of each sentence and lowercase other chars.
+ */
+Strings.sentenceCase = function (str) {
+    str = toString(str);
+
+    // Replace first char of each sentence (new line or after ".\s+") to UPPERCASE
+    return Strings.lowerCase(str).replace(/(^\w)|\.\s+(\w)/gm, Strings.upperCase);
+};
+
+/**
+ * Replaces spaces with hyphens, splits camelCase text, removes
+ * non-word chars and converts to lower case.
+ */
+Strings.kebabCase = function (str) {
+    str = toString(str);
+    str = Strings.unCase(str);
+    str = Strings.removeNonWord(str)
+        .trim(str) //should come after removeNonWord
+        .replace(/ +/g, "-") //replace spaces with delimeter
+        .toLowerCase();
+    return str;
+};
+
+/**
+ * Replaces spaces with underscores, splits camelCase text, removes
+ * non-word chars and converts to lower case.
+ */
+Strings.snakeCase = function (str) {
+    str = toString(str);
+    str = Strings.unCase(str);
+    str = Strings.removeNonWord(str)
+        .trim(str) //should come after removeNonWord
+        .replace(/ +/g, "_") //replace spaces with delimeter
+        .toLowerCase();
+    return str;;
+};
+
+/**
+ * Add spaces between words of PascalCase, camelCase, kebab-case and snake_case text.
+ */
+Strings.unCase = function (str, delimiter) {
+    var CAMEL_CASE_BORDER =
+        // c1           // c2                   // c3          // c4           // c5
+        /([a-z\xE0-\xFF])([A-Z\xC0-\xDF])|([a-zA-Z\xE0-\xFF\xC0-\xDF])([-_])([a-zA-Z\xE0-\xFF\xC0-\xDF])/g;
+
+    if (delimiter == null) {
+        delimiter = " ";
+    }
+
+    function join(str, c1, c2, c3, c4, c5) {
+        if (!c1 && !c2) {
+            return c3 + delimiter + c5;
+        }
+
+        return c1 + delimiter + c2;
+    }
+
+    str = toString(str);
+    str = str.replace(CAMEL_CASE_BORDER, join);
+    str = str.toLowerCase(); //add space between camelCase text
+    return str;
+};
+
+/**
+ * Convert line-breaks from DOS/MAC to a single standard (UNIX by default)
+ */
+Strings.normalizeLineBreaks = function (str, lineEnd) {
+    str = toString(str);
+    lineEnd = lineEnd || "\n";
+
+    return str
+        .replace(/\r\n/g, lineEnd) // DOS
+        .replace(/\r/g, lineEnd) // Mac
+        .replace(/\n/g, lineEnd); // Unix
+};
+
+/**
+ * Remove non-word chars.
+ */
+Strings.removeNonWord = function (str) {
+    str = toString(str);
+    return str.replace(/[^0-9a-zA-Z\xC0-\xFF \-]/g, "");
+};
+
+/**
+ * Replaces all accented chars with regular ones
+ */
+Strings.replaceAccents = function (str) {
+    str = toString(str);
+    // verifies if the String has accents and replace them
+    if (str.search(/[\xC0-\xFF]/g) > -1) {
+        str = str
+            .replace(/[\xC0-\xC5]/g, "A")
+            .replace(/[\xC6]/g, "AE")
+            .replace(/[\xC7]/g, "C")
+            .replace(/[\xC8-\xCB]/g, "E")
+            .replace(/[\xCC-\xCF]/g, "I")
+            .replace(/[\xD0]/g, "D")
+            .replace(/[\xD1]/g, "N")
+            .replace(/[\xD2-\xD6\xD8]/g, "O")
+            .replace(/[\xD9-\xDC]/g, "U")
+            .replace(/[\xDD]/g, "Y")
+            .replace(/[\xDE]/g, "P")
+            .replace(/[\xE0-\xE5]/g, "a")
+            .replace(/[\xE6]/g, "ae")
+            .replace(/[\xE7]/g, "c")
+            .replace(/[\xE8-\xEB]/g, "e")
+            .replace(/[\xEC-\xEF]/g, "i")
+            .replace(/[\xF1]/g, "n")
+            .replace(/[\xF2-\xF6\xF8]/g, "o")
+            .replace(/[\xF9-\xFC]/g, "u")
+            .replace(/[\xFE]/g, "p")
+            .replace(/[\xFD\xFF]/g, "y");
+    }
+
+    return str;
+};
+
+/**
+ * Searches for a given substring
+ */
+Strings.contains = function (str, substring, fromIndex) {
+    str = toString(str);
+    return str.indexOf(substring, fromIndex) !== -1;
+};
+
+/**
+ * Truncate string at full words.
+ */
+Strings.crop = function (str, maxChars, append) {
+    str = toString(str);
+    return Strings.truncate(str, maxChars, append, true);
+};
+
+/**
+ * Escapes a string for insertion into HTML.
+ */
+Strings.escapeHtml = function (str) {
+    str = toString(str)
+        .replace(/&/g, "&amp;")
+        .replace(/\</g, "&lt;")
+        .replace(/\>/g, "&gt;")
+        .replace(/'/g, "&#39;")
+        .replace(/"/g, "&quot;");
+
+    return str;
+};
+
+/**
+ * Unescapes HTML special chars
+ */
+Strings.unescapeHtml = function (str) {
+    str = toString(str)
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&#39;/g, "'")
+        .replace(/&quot;/g, '"');
+    return str;
+};
+
+/**
+ * Escape string into unicode sequences
+ */
+Strings.escapeUnicode = function (str, shouldEscapePrintable) {
+    str = toString(str);
+
+    return str.replace(/[\s\S]/g, function (ch) {
+        // skip printable ASCII chars if we should not escape them
+        if (!shouldEscapePrintable && (/[\x20-\x7E]/).test(ch)) {
+            return ch;
+        }
+        // we use "000" and slice(-4) for brevity, need to pad zeros,
+        // unicode escape always have 4 chars after "\u"
+        return "\\u" + ("000" + ch.charCodeAt(0).toString(16)).slice(-4);
+    });
+};
+
+/**
+ * Remove HTML tags from string.
+ */
+Strings.stripHtmlTags = function (str) {
+    return toString(str).replace(/<[^>]*>/g, "");
+};
+
+/**
+ * Remove non-printable ASCII chars
+ */
+Strings.removeNonASCII = function (str) {
+    // Matches non-printable ASCII chars -
+    // http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters
+    return toString(str).replace(/[^\x20-\x7E]/g, "");
+};
+
+/**
+ * String interpolation
+ */
+Strings.interpolate = function (template, replacements, syntax) {
+    var stache = /\{\{([^\}]+)\}\}/g; //mustache-like
+    var replaceFn = function (match, prop) {
+        return (prop in replacements) ? toString(replacements[prop]) : "";
+    };
+
+    return toString(template).replace(syntax || stache, replaceFn);
+};
+
+/**
+ * Pad string with `char` if its' length is smaller than `minLen`
+ */
+Strings.padRight = function (str, minLen, ch) {
+    str = toString(str);
+    ch = ch || " ";
+
+    return (str.length < minLen) ?
+        str + Strings.repeat(ch, minLen - str.length) : str;
+};
+
+/**
+ * Pad string with `char` if its' length is smaller than `minLen`
+ */
+Strings.padLeft = function (str, minLen, ch) {
+    str = toString(str);
+    ch = ch || " ";
+
+    return (str.length < minLen) ?
+        Strings.repeat(ch, minLen - str.length) + str : str;
+};
+
+/**
+ * Repeat string n times
+ */
+Strings.repeat = function (str, n) {
+    str = toString(str);
+
+    return (new Array(n + 1)).join(str);
+};
+
+/**
+ * Limit number of chars.
+ */
+Strings.truncate = function (str, maxChars, append, onlyFullWords) {
+    str = toString(str);
+    append = append || "...";
+    maxChars = onlyFullWords ? maxChars + 1 : maxChars;
+
+    str = Strings.trim(str);
+    if (str.length <= maxChars) {
+        return str;
+    }
+    str = str.substr(0, maxChars - append.length);
+    //crop at last space or remove trailing whitespace
+    str = onlyFullWords ? str.substr(0, str.lastIndexOf(" ")) : Strings.trim(str);
+    return str + append;
+};
+
+/**
+ * Remove chars from beginning of string.
+ */
+Strings.trimLeft = function (str, chars) {
+    str = toString(str);
+    chars = chars || WHITE_SPACES;
+
+    var start = 0;
+    var len = str.length;
+    var charLen = chars.length;
+    var found = true;
+
+    while (found && start < len) {
+        found = false;
+        var i = -1;
+        var c = str.charAt(start);
+
+        while (++i < charLen) {
+            if (c === chars[i]) {
+                found = true;
+                start++;
+                break;
+            }
+        }
+    }
+
+    return (start >= len) ? "" : str.substr(start, len);
+};
+
+/**
+ * Remove chars from end of string.
+ */
+Strings.trimRight = function (str, chars) {
+    str = toString(str);
+    chars = chars || WHITE_SPACES;
+
+    var end = str.length - 1;
+    var charLen = chars.length;
+    var found = true;
+
+    while (found && end >= 0) {
+        found = false;
+        var i = -1;
+        var c = str.charAt(end);
+
+        while (++i < charLen) {
+            if (c === chars[i]) {
+                found = true;
+                end--;
+                break;
+            }
+        }
+    }
+
+    return (end >= 0) ? str.substring(0, end + 1) : "";
+};
+
+/**
+ * Remove white-spaces from beginning and end of string.
+ */
+Strings.trim = function (str, chars) {
+    str = toString(str);
+    chars = chars || WHITE_SPACES;
+    return Strings.trimLeft(Strings.trimRight(str, chars), chars);
+};
+
+/**
+ * Capture all capital letters following a word boundary (in case the
+ * input is in all caps)
+ */
+Strings.abbreviate = function (str) {
+    str = toString(str);
+    return str.match(/\b([A-Z])/g).join("");
+};
+
+return Strings;]]></script>
+</dunes-script-module>

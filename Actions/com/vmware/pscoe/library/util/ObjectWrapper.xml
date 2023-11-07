@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ObjectWrapper" result-type="Any" api-version="6.0.0" id="61925483-678b-4563-a787-44bb0130de49" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var ObjectWrapper = function(obj) {
+	this.obj = obj;
+	
+	this.getValueForPath = function(path) {
+		var value = this.obj;
+		for (var i in path) {
+			var token = path[i];
+			if (value[token] == null) {
+				return null;
+			}
+			value = value[token];
+		}
+		return value;
+	};
+	
+	this.addValueWithPath = function(keys, value) {
+		var key = keys.shift();
+		if (!key) {
+			this.obj = value;
+			return this;
+		}
+		var index = parseInt(key);
+
+		if (!this.obj) {
+			this.obj = isNaN(index) ? {} : [];
+		}
+		var newKey = isNaN(index) ? key : index;
+		this.obj[newKey] = new ObjectWrapper(this.obj[newKey]).addValueWithPath(keys, value).obj;
+		return this;
+	};
+
+	this.clone = function() {
+		var output = this.obj;
+		if (this.obj instanceof Array || 
+			this.obj instanceof Object) {
+			output = {};
+			if (this.obj instanceof Array) {
+				output = [];
+			}
+			for (var index in this.obj) {
+				output[index] = new ObjectWrapper(this.obj[index]).clone().obj;
+			}
+		}
+		return new ObjectWrapper(output);
+	};
+
+	function mergeRecursive(base, extend) {
+		if (!(base instanceof Object)) {
+			return extend;
+		}
+		for (var key in extend) {
+			if (base[key] instanceof Object && 
+				extend[key] instanceof Object) {
+				base[key] = mergeRecursive(base[key], extend[key]);
+			} else {
+				base[key] = extend[key];
+			}
+		}
+		return base;
+	}
+
+	function mergeInternal(clone, argv, self) {
+		var result = self.obj;
+		if (clone) {
+			result = {};
+		}
+		for (var index in argv) {
+			var item = argv[index];
+			if (!(item instanceof Object)) {
+				continue;
+			}
+			for (var key in item) {
+				var sitem = clone ? new ObjectWrapper(item[key]).clone().obj : item[key];
+				result[key] = mergeRecursive(result[key], sitem);
+			}
+		}
+		if (clone) {
+			return new ObjectWrapper(result);
+		}
+		return self;
+	}
+
+	this.merge = function(clone) {
+		return mergeInternal(clone === true, arguments, this);
+	};
+	
+};
+
+return ObjectWrapper;]]></script>
+</dunes-script-module>

@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VraConfigurationAccessor" result-type="Any" api-version="6.0.0" id="93d7f731-3bc7-35cd-9c88-d673ec5b1204" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.vra.authentication.elements.config">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var __extends = VROES.tslib.__extends;
+var ConfigElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ConfigElementAccessor");
+var CONFIGURATION_PATH = "PS CoE/Library/vRA/VraConfiguration";
+var VraConfigurationAccessor = /** @class */ (function (_super) {
+    __extends(VraConfigurationAccessor, _super);
+    function VraConfigurationAccessor() {
+        return _super.call(this, CONFIGURATION_PATH) || this;
+    }
+    VraConfigurationAccessor.prototype.getHostname = function () {
+        return this.get("hostname");
+    };
+    VraConfigurationAccessor.prototype.getPort = function () {
+        return this.get("port");
+    };
+    VraConfigurationAccessor.prototype.getDomain = function () {
+        return this.get("domain");
+    };
+    VraConfigurationAccessor.prototype.getUsername = function () {
+        return this.get("username");
+    };
+    VraConfigurationAccessor.prototype.getPassword = function () {
+        return this.get("password");
+    };
+    VraConfigurationAccessor.prototype.getRefreshToken = function () {
+        return this.get("refreshToken");
+    };
+    VraConfigurationAccessor.prototype.getProjectID = function () {
+        return this.get("projectID");
+    };
+    VraConfigurationAccessor.prototype.getOrgID = function () {
+        return this.get("orgID");
+    };
+    VraConfigurationAccessor.prototype.getAuthHostname = function () {
+        return this.get("authHostname");
+    };
+    VraConfigurationAccessor.prototype.getAuthPort = function () {
+        return this.get("authPort");
+    };
+    VraConfigurationAccessor.prototype.getToken = function () {
+        return this.get("token");
+    };
+    VraConfigurationAccessor.prototype.getExpiryDate = function () {
+        return this.get("expires_in");
+    };
+    VraConfigurationAccessor.prototype.getProxyHost = function () {
+        return this.get("proxyHost");
+    };
+    VraConfigurationAccessor.prototype.getProxyPort = function () {
+        return this.get("proxyPort");
+    };
+    VraConfigurationAccessor.prototype.getIsPersistent = function () {
+        return this.get("isPersistent");
+    };
+    return VraConfigurationAccessor;
+}(ConfigElementAccessor_1._.ConfigElementAccessor));
+exports.VraConfigurationAccessor = VraConfigurationAccessor;
+return exports;
+]]></script>
+</dunes-script-module>

@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="XmlBuilder" result-type="Any" api-version="6.0.0" id="75c41e89-edba-47ea-a917-41ad6a446c98" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+var NEW_LINE = "\n";
+
+var XmlBuilder = Class.define(function XmlBuilder(name, parent, indexInParent) {
+    this.name = name;
+    this.parent = parent;
+    this.indexInParent = indexInParent;
+    this.nodeAttributes = {};
+    this.nodeChildren = [];
+    var encodeValue = function (value) {
+        if (value != null) {
+            if (typeof value == "string") {
+                value = value.replace(/&/g, "&amp;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&apos;");
+            }
+            return value;
+        }
+        return "";
+    };
+    var printNode = function (node, pretty, indentStr, indentText, encode) {
+        var str = "";
+        if (pretty) {
+            str += indentStr;
+        }
+        str += "<" + node.name;
+        for (var attName in node.nodeAttributes) {
+            var attValue = encode ? encodeValue(node.nodeAttributes[attName]) : node.nodeAttributes[attName];
+            str += " " + attName + "=\"" + attValue + "\"";
+        }
+        if (node.nodeText || node.nodeChildren.length) {
+            str += ">";
+            if (node.nodeText) {
+                if (pretty) {
+                    str += NEW_LINE + indentStr + indentText;
+                }
+                var nodeText = encode ? encodeValue(node.nodeText) : node.nodeText;
+                str += nodeText;
+            }
+            for (var i = 0; i < node.nodeChildren.length; i++) {
+                if (pretty) {
+                    str += NEW_LINE + indentStr + indentText;
+                }
+                str += printNode(node.nodeChildren[i], pretty, indentStr + indentText, indentText)
+            }
+            if (pretty) {
+                str += NEW_LINE + indentStr;
+            }
+            str += "</" + node.name + ">";
+        }
+        else {
+            str += " />";
+        }
+        return str;
+    };
+    this.attribute = function (name, value) {
+        this.nodeAttributes[name] = value;
+        return this;
+    };
+    this.attributes = function (values) {
+        for (var name in values) {
+            this.nodeAttributes[name] = values[name];
+        }
+        return this;
+    };
+    this.att = function (name, value) {
+        return this.attribute(name, value);
+    };
+    this.element = function (nameOrNode, attributes, text) {
+        var childNode;
+        
+        if (typeof nameOrNode == "string") {
+            childNode = new XmlBuilder(nameOrNode, this, this.nodeChildren.length);
+        }
+        else {
+            if (nameOrNode.parent) {
+                throw new Error("Xml node is already attached: " + nameOrNode.print());
+            }
+            childNode = nameOrNode;
+            childNode.parent = this;
+            childNode.indexInParent = this.nodeChildren.length;
+        }
+        if (attributes) {
+            childNode.attributes(attributes);
+        }
+        childNode.text(text);
+        this.nodeChildren.push(childNode);
+        return childNode;
+    };
+    this.ele = function (nameOrNode, attributes, text) {
+        return this.element(nameOrNode, attributes, text);
+    };
+    this.text = function (text) {
+        this.nodeText = text;
+        return this;
+    };
+    this.up = function () {
+        return this.parent || this;
+    };
+    this.root = function () {
+        return this.parent ? this.parent.root() : this;
+    };
+    this.prev = function () {
+        if (this.parent && this.indexInParent > 0) {
+            return this.parent.nodeChildren[this.indexInParent - 1];
+        }
+        return null;
+    };
+    this.next = function () {
+        if (this.parent && this.indexInParent < this.parent.nodeChildren.length - 1) {
+            return this.parent.nodeChildren[this.indexInParent + 1];
+        }
+        return null;
+    };
+    this.child = function (index) {
+        if (this.indexInParent < this.nodeChildren.length) {
+            return this.nodeChildren[index];
+        }
+        return null;
+    };
+    this.print = function (options) {
+        options = options || {};
+        var indentStr = "";
+        var indentText = options.indentText || "\t";
+        return printNode(this, options.pretty, indentStr, indentText, options.encode)
+    };
+}, {});
+XmlBuilder.create = function (name) {
+    return new XmlBuilder(name);
+};
+return XmlBuilder;]]></script>
+</dunes-script-module>

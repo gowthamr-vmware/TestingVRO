@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="PropertiesWrapper" result-type="Any" api-version="6.0.0" id="8e1b2209-458a-49e6-82c9-b840630a3bc9" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger(
+    "com.vmware.pscoe.library.util.PropertiesWrapper");
+
+var ObjectWrapper = System.getModule("com.vmware.pscoe.library.util").ObjectWrapper();
+/**
+ * @param {Properties} properties - the object to be wrapped
+ * @param {Boolean} isFlat - flag to indicated whether the properties object contains flat structure
+ */
+var PropertiesWrapper = function(properties, isFlat) {
+
+	/**
+	 * @returns {Properties} the properties object
+	 */
+	this.getProperties = function() {
+		return properties;
+	};
+
+	function fromFlatToJson(defaults) {
+		logger.debug("toJson(isFlat=true) with defaults: " + (defaults ? JSON.stringify(defaults) : "{}"));
+		var propertiesWrapper = new ObjectWrapper(defaults ? defaults : {});
+
+		for ( var i in properties.keys) {
+			var k = properties.keys[i];
+			var propVal = null;
+			logger.debug("Converting key: " + k);
+			if (properties.get(k) != null) {
+				var propValStr = System.getModule("com.vmware.pscoe.library.util").processTemplate(
+				        properties.get(k), properties);
+				try {
+					var parsedValue = JSON.parse(propValStr);
+					// stringified json should not be parsed back to objects
+					if (typeof parsedValue !== 'object') {
+						propVal = parsedValue;
+					} else {
+						propVal = propValStr;
+					}
+				} catch (e) {
+					// Failed to parse it might contain special chars so
+					// treat as a string
+					propVal = propValStr;
+				}
+				logger.debug("Converting value: " + propVal);
+
+				var objNames = ("" + k).split(".");
+				propertiesWrapper.addValueWithPath(objNames, propVal);
+			}
+		}
+		return propertiesWrapper.obj;
+	}
+
+	function typeHack(obj) {
+		return obj;
+	}
+	
+	function fromNestedToJson(o) {
+		var newObj = typeHack(o);
+		if (o instanceof Array) {
+			newObj = typeHack([]);
+			for ( var i in o) {
+				logger.debug("Converting key: " + i);
+				newObj.push(fromNestedToJson(o[i]));
+			}
+		} else if (o instanceof Properties) {
+			newObj = typeHack({});
+			for ( var ii in o.keys) {
+				var key = "" + o.keys[ii];
+				logger.debug("Converting key: " + key);
+				newObj[key] = fromNestedToJson(o.get(key));
+			}
+		}
+		logger.debug("Converting value: " + newObj);
+		return newObj;
+	}
+
+	/**
+	 * Converts the properties object into JSON object. It supports flat or nested objects.
+	 * 
+	 * @param {Object} defaults - default object to be used as a base of the returned JSON object
+	 */
+	this.toJson = function(defaults) {
+		if (isFlat) {
+			return fromFlatToJson(defaults);
+		}
+		var newObj = defaults || {};
+		logger.debug("toJson(isFlat=false) with defaults: " + JSON.stringify(newObj));
+		for ( var i in properties.keys) {
+			var key = "" + properties.keys[i];
+			logger.debug("Converting key: " + key);
+			newObj[key] = fromNestedToJson(properties.get(key));
+		}
+		return newObj;
+	};
+};
+function fromJsonObj(o) {
+	var newObj = o;
+	if (o instanceof Array) {
+		newObj = [];
+		for ( var i in o) {
+			logger.debug("Converting key: " + i);
+			newObj.push(fromJsonObj(o[i]));
+		}
+	} else if (o instanceof Object) {
+		newObj = new Properties();
+		for ( var key in o) {
+			logger.debug("Converting key: " + key);
+			newObj.put(key, fromJsonObj(o[key]));
+		}
+	}
+	logger.debug("Converting value: " + newObj);
+	return newObj;
+}
+
+function fromJsonFlat(o, currentKeys, props) {
+	if (o instanceof Array || o instanceof Object) {
+		for ( var i in o) {
+			currentKeys.push(i);
+			fromJsonFlat(o[i], currentKeys, props);
+			currentKeys.pop();
+		}
+	} else {
+		props.put(currentKeys.join("."), o);
+	}
+
+}
+
+/**
+ * Converts the provided object into properties and returns in a new instance of the PropertiesWrapper
+ * @param {Object} obj - object to be converted to Properties
+ * @param {Boolean} isFlat - flag to indicated whether the properties object contains flat structure
+ */
+PropertiesWrapper.fromJson = function(obj, isFlat) {
+	var props = new Properties();
+	if (isFlat) {
+		fromJsonFlat(obj, [], props);
+	} else {
+		props = fromJsonObj(obj);
+	}
+	return new PropertiesWrapper(props, isFlat);
+};
+return PropertiesWrapper;]]></script>
+</dunes-script-module>

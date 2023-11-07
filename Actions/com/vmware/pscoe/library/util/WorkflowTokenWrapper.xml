@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="WorkflowTokenWrapper" result-type="Any" api-version="6.0.0" id="4958dfe7-802e-495d-9f6f-983cd35e3e14" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Wraps the workflow token and provides easier to use functionality]]></description>
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging").getLogger(
+"com.vmware.pscoe.library.util.WorkflowToken");	
+return function(tokenId) {
+	this.isAlive = function() {
+		var state = Server.getWorkflowTokenState(tokenId);
+		logger.debug("Token state: " + state);
+		return ['failed','completed', 'canceled', 'undefined', null].indexOf(state) < 0;
+	};
+};]]></script>
+</dunes-script-module>

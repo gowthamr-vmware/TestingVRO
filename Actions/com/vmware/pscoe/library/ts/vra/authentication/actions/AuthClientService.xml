@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AuthClientService" result-type="Any" api-version="6.0.0" id="8d59f370-56b3-3753-beee-5c571311acd5" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.vra.authentication.actions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var __extends = VROES.tslib.__extends;
+var HttpClient_1 = VROES.importLazy("com.vmware.pscoe.library.ts.http/HttpClient");
+var HttpClientBuilder_1 = VROES.importLazy("com.vmware.pscoe.library.ts.http/HttpClientBuilder");
+var AuthService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.identity/services/AuthService");
+var BearerTokenClient_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.authentication.actions/BearerTokenClient");
+var VraConfigurationAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.authentication.elements/config/VraConfigurationAccessor");
+var LoginService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.iaas/services/LoginService");
+/**
+ * vRealize Automation Authentication Service
+ */
+var AuthClientService = /** @class */ (function (_super) {
+    __extends(AuthClientService, _super);
+    /**
+     * In case of non-default configuration is used a user can pass
+     * VraConfigurationAccessor compatible interface object
+     */
+    function AuthClientService(restHost, options) {
+        var _this = _super.call(this, restHost, options) || this;
+        if (options.authUrl) {
+            var builder = new HttpClientBuilder_1._.HttpClientVroBuilder(options.authUrl).trustCert();
+            if (options.proxyHost && options.proxyPort) {
+                builder.proxy(options.proxyHost, options.proxyPort);
+            }
+            if (options.isPersistent) {
+                builder.oauth2().name(AuthClientService.generateRestHostName(options.authUrl));
+            }
+            else {
+                builder.transient();
+            }
+            _this.authHttpClient = builder.build(HttpClient_1._.HttpClientVro, options);
+        }
+        else {
+            _this.authHttpClient = _this;
+        }
+        return _this;
+    }
+    AuthClientService.prototype.isAuthPath = function (path) {
+        return path.indexOf("/iaas/api/login") != -1 || path.indexOf("/csp/gateway/am/idp/auth/login") != -1 || path.indexOf("/csp/gateway/am/api/auth/api-tokens/authorize") != -1;
+    };
+    AuthClientService.prototype.authenticate = function () {
+        var _this = this;
+        var auth = new AuthService_1._.AuthService(this.authHttpClient);
+        var iaasAuth = new LoginService_1._.LoginService(this.authHttpClient);
+        var setToken = function (resp) {
+            if (resp.status === 200 && resp.body.token) {
+                // This token expires after 25 minutes 1500 seconds
+                _this.setBearerToken(resp.body.token, 1500);
+            }
+            else {
+                throw new Error("Unable to get vRA Access Token " + JSON.stringify(resp));
+            }
+        };
+        this.synchronize(function () {
+            var token = null;
+            if (typeof _this.credentials == "string") {
+                token = auth.getAccessTokenWithRefreshToken({
+                    body_body: {
+                        refresh_token: _this.credentials,
+                    },
+                });
+            }
+            else {
+                token = auth.loginExtended({
+                    query_access_token: true,
+                    body_body: {
+                        username: _this.credentials.username,
+                        password: _this.credentials.password,
+                        domain: _this.credentials.domain,
+                    },
+                });
+            }
+            setToken(iaasAuth.retrieveAuthToken({
+                body_body: { refreshToken: token.body.refresh_token },
+            }));
+        }, this, "com.vmware.pscoe.library.ts.vra.authentication");
+    };
+    AuthClientService.prototype.withCredentials = function (credentials) {
+        this.credentials = credentials;
+        return this;
+    };
+    /**
+     * Initialize the client with the default configuration
+     */
+    AuthClientService.withDefaultAuthentication = function (options) {
+        var conf = new VraConfigurationAccessor_1._.VraConfigurationAccessor();
+        var httpOptions = VROES.Shims.objectAssign({}, AuthClientService.getOptions(conf), options);
+        var url = "https://" + conf.getHostname() + ":" + conf.getPort();
+        var builder = new HttpClientBuilder_1._.HttpClientVroBuilder(url).trustCert();
+        if (httpOptions.proxyHost && httpOptions.proxyPort) {
+            builder.proxy(httpOptions.proxyHost, httpOptions.proxyPort);
+        }
+        if (httpOptions.isPersistent) {
+            builder.oauth2().name(AuthClientService.generateRestHostName(url));
+        }
+        else {
+            builder.transient();
+        }
+        var client = builder.build(AuthClientService, httpOptions);
+        if (conf.getRefreshToken()) {
+            client.withCredentials(conf.getRefreshToken());
+        }
+        else {
+            client.withCredentials({
+                username: conf.getUsername(),
+                password: conf.getPassword(),
+                domain: conf.getDomain(),
+            });
+        }
+        return client;
+    };
+    AuthClientService.prototype.synchronize = function (fn, scope, lockid) {
+        var owner = "vRAAuthenticator";
+        LockingSystem.lockAndWait(lockid, owner);
+        try {
+            fn.apply(scope);
+        }
+        finally {
+            LockingSystem.unlock(lockid, owner);
+        }
+    };
+    AuthClientService.getOptions = function (conf) {
+        var options = {};
+        if (conf.getAuthHostname()) {
+            options.authUrl = "https://" + conf.getAuthHostname() + ":" + conf.getAuthPort();
+        }
+        if (conf.getProxyHost()) {
+            options.proxyHost = conf.getProxyHost();
+        }
+        if (conf.getProxyPort()) {
+            options.proxyPort = conf.getProxyPort();
+        }
+        if (conf.getIsPersistent()) {
+            options.isPersistent = conf.getIsPersistent();
+        }
+        return options;
+    };
+    AuthClientService.generateRestHostName = function (url) {
+        var name = url
+            .replace(/https:\/\//i, "")
+            .replace(/http:\/\//i, "")
+            .replace(/\W/g, "_");
+        return name;
+    };
+    return AuthClientService;
+}(BearerTokenClient_1._.default));
+exports.default = AuthClientService;
+return exports;
+]]></script>
+</dunes-script-module>

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="createDirectory" result-type="void" api-version="6.0.0" id="88808080808080808080808080808080DC80808001297259131125b940b51f82d" version="1.0.0" allowed-operations="vef" category-name="com.vmware.basic">
+  <param n="directory" t="Path"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var file = new File(directory) ;
+if (!file.exists) {
+	System.log("Creating directory : '" + directory + "'");
+	file.createDirectory() ;
+	System.log("Directory '" + directory + "' created.") ;
+}]]></script>
+</dunes-script-module>

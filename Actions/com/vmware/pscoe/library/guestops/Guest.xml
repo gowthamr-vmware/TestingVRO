@@ -1,0 +1,360 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Guest" result-type="Any" api-version="6.0.0" id="e76fedf6-1eb2-448b-bd7f-f67c5c6fed7e" version="1.2.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.guestops">
+  <param n="vcVm" t="VC:VirtualMachine"><![CDATA[]]></param>
+  <param n="vmUsername" t="string"><![CDATA[]]></param>
+  <param n="vmPassword" t="SecureString"><![CDATA[]]></param>
+  <param n="options" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.guestops.Guest");
+var Func = System.getModule("com.vmware.pscoe.library.util").Func();
+
+
+var Guest = function (inVm, inUsername, inPassword, options) {
+	System.getModule("com.vmware.pscoe.library.util").validateInput(inVm, "Virtual Machine input parameter missing or null");
+	var vm = inVm;
+	System.getModule("com.vmware.pscoe.library.util").validateInput(inUsername, "Username input parameter missing or null");
+	var username = inUsername;
+	System.getModule("com.vmware.pscoe.library.util").validateInput(inPassword, "Password input parameter missing or null");
+	var password = inPassword;
+
+	var self = this;
+	var host = vm.sdkConnection;
+	var guestOperationsManager = host.guestOperationsManager;
+	var processManager = guestOperationsManager.processManager;
+	var fileManager = guestOperationsManager.fileManager;
+
+	var guestAuth = new VcNamePasswordAuthentication();
+	guestAuth.username = username;
+	guestAuth.password = password;
+	guestAuth.interactiveSession = false;
+
+	var vmwareImcLogDirectory = {
+		linux: "/var/log/vmware-imc",
+		windows: "c:\\Windows\\Temp\\vmware-imc"
+	};
+
+	var guestTools = {
+		timeout: 5,
+		retryCount: 1,
+		retrySleep: 10
+	};
+
+	/**
+	 * Sets the maximum time (in minutes) to wait for VMware Tools to start before
+	 * performing any operation on the guest. Defaults to 5 minutes.
+	 *
+	 * If the timeout is set to a negative number or 0, each guest operation will
+	 * instantly throw an exception if VMware Tools are not running on the VM.
+	 *
+	 * @param timeout
+	 */
+	this.setGuestToolsTimeout = function (timeout) {
+		guestTools.timeout = timeout;
+	};
+
+	/**
+	 * Sets default retry count and sleep interval for VMware tools operations
+	 *
+	 * @param count
+	 * @param sleep - in seconds
+	 */
+	this.setGuestToolsRetry = function (count, sleep) {
+		guestTools.retryCount = count;
+		guestTools.retrySleep = sleep;
+	};
+
+	var retry = function (callback) {
+		if (!callback.name) {
+			throw "Anonymous function are note supported!"
+		}
+
+		var report = {
+			GuestOperationName: callback.name,
+			errors: {}
+		};
+
+		for (var i = 1; i <= guestTools.retryCount; i++) {
+			try {
+				self.waitGuestTools();
+				return callback();
+			} catch (e) {
+				report.errors[i] = e;
+				logger.error("Guest operation failed with error:" + e);
+				logger.info("Guest operation Retry[" + i + "/" + guestTools.retryCount + "] after Seconds[" + guestTools.retrySleep + "]");
+				System.sleep(guestTools.retrySleep * 1000);
+			}
+		}
+		throw JSON.stringify(report, null, 2);
+	};
+
+	/**
+	 * Wait for VMware tools to become ready
+	 */
+	this.waitGuestTools = function () {
+		if (guestTools.timeout < 1 || this.isGuestToolsRunning()) {
+			return;
+		}
+
+		var endDate = new Date();
+		endDate.setMinutes(endDate.getMinutes() + guestTools.timeout);
+		logger.info("Waiting up to " + guestTools.timeout + " minutes for VMware Tools to become available on the guest...");
+		while (true) {
+			var guestToolsStatus = vm.guest.toolsRunningStatus;
+			logger.debug("\tCurrent status of VMware Tools: " + guestToolsStatus);
+			logger.debug("Is running: " + this.isGuestToolsRunning());
+			if (this.isGuestToolsRunning()) {
+				break;
+			} else if (endDate.getTime() < (new Date()).getTime()) {
+				throw "VMware Tools on VM " + vm.name + " did not start in timely manner.";
+			}
+			System.sleep(10000);
+		}
+	};
+
+	/**
+	 * Wait for DNS name to become available
+	 *
+	 * @param dnsNameToWait DNS name to wait (optional)
+	 */
+	this.waitDnsName = function (dnsNameToWait) {
+		this.waitGuestTools();
+		dnsNameToWait = dnsNameToWait ? dnsNameToWait : vm.name;
+		logger.info("Waiting up to " + guestTools.timeout + " minutes for DNS name '" + dnsNameToWait + "' to become available on the guest...");
+		Func.retryWithTimeout(function () {
+			var hostname = vm.guest.hostName;
+			logger.debug("\tCurrent hostname is: " + hostname);
+			return hostname;
+		}, function (hostname, error) {
+			if (error) {
+				throw "Unable to get hostname: " + error;
+			}
+
+			var matchingFqdn = hostname && hostname.toLowerCase() === dnsNameToWait.toLowerCase();
+			var matchingHostname = hostname && hostname.split('.')[0].toLowerCase() === dnsNameToWait.split('.')[0].toLowerCase();
+			return matchingFqdn || matchingHostname;
+		}, guestTools.timeout * 60, 10);
+	};
+
+	/**
+	 * Checks if VMware Tools are running in the guest.
+	 *
+	 * This check is automatically performed before each guest operation. If the guest tools
+	 * are not running, the operation is blocked until they become available or until a
+	 * timeout is reached. The timeout is configurable via `setGuestToolsTimeout()`.
+	 *
+	 * @returns `true` if VMware Tools are running in the guest; `false` otherwise
+	 */
+	this.isGuestToolsRunning = function () {
+		var status = VcVirtualMachineToolsRunningStatus.fromString(vm.guest.toolsRunningStatus);
+		if (options && options.skipHeartbeatCheck) {
+			return status == VcVirtualMachineToolsRunningStatus.guestToolsRunning;
+		}
+		return status == VcVirtualMachineToolsRunningStatus.guestToolsRunning &&
+			vm.guestHeartbeatStatus == VcManagedEntityStatus.green;
+	};
+
+	/**
+	 * Transfers a file from the local vRO file system at the specified location srcPath in the guest at the destPath location
+	 *
+	 * @param srcPath vRO file location
+	 * @param destPath guest os file location
+	 * @param filePermissions guest os file permissions
+	 */
+	this.transferFileToGuest = function (srcPath, destPath, filePermissions) {
+		System.getModule("com.vmware.pscoe.library.util").validateInput(srcPath, "Source path input parameter missing or null");
+		System.getModule("com.vmware.pscoe.library.util").validateInput(destPath, "Dest path input parameter missing or null");
+		var guestFileAttributes = new VcGuestFileAttributes();
+
+		if (!filePermissions) {
+			logger.debug("No permissions were set.");
+		} else if (System.getModule("com.vmware.library.vc.vm.os").isWindowsOsInVm(vm)) {
+			logger.warn("Permission: " + filePermissions + " cannot be set on windows machine.");
+		} else {
+			logger.info("Setting file permissions: " + filePermissions);
+			guestFileAttributes = new VcGuestPosixFileAttributes();
+			guestFileAttributes.permissions = filePermissions;
+		}
+
+		var result = retry(function transferFileToGuest() {
+			var srcFile = new File(srcPath);
+			var uri = fileManager.initiateFileTransferToGuest(vm, guestAuth, destPath, guestFileAttributes, srcFile.length, true);
+			return fileManager.putFile(srcPath, uri);
+		});
+
+		if (!result) {
+			throw "Could not transfer vRO file '" + srcPath + "' to guest at '" + destPath + "'";
+		}
+	};
+
+	/**
+	 * Creates folder under specified directory
+	 *
+	 * @param destPath guest os file location
+	 */
+	this.createFolderInGuest = function (destPath) {
+		System.getModule("com.vmware.pscoe.library.util").validateInput(destPath, "Dest path input parameter missing or null");
+
+		retry(function createFolderInGuest() {
+			try {
+				fileManager.makeDirectoryInGuest(vm, guestAuth, destPath, true);
+			} catch (e) {
+				if ((e + "").indexOf("already exists") < 0) {
+					throw "Could not create folder under guest at '" + destPath + "' : " + e + e.stack;
+				}
+			}
+		});
+	};
+
+	/**
+	 * Runs a command programPath with the specified arguments in the specified workingDirectory with the specified environment variables
+	 *
+	 * @param programPath
+	 * @param arguments
+	 * @param workingDirectory
+	 * @param environment
+	 */
+	this.executeCommand = function (programPath, args, workingDirectory, environment) {
+		System.getModule("com.vmware.pscoe.library.util").validateInput(programPath, "Program path input parameter missing or null");
+		System.getModule("com.vmware.pscoe.library.util").validateInput(args, "Arguments path input parameter missing or null");
+
+		var guestProgramSpec = new VcGuestProgramSpec();
+		guestProgramSpec.programPath = programPath;
+		guestProgramSpec.arguments = args;
+		guestProgramSpec.workingDirectory = workingDirectory || "";
+		guestProgramSpec.envVariables = environment || [];
+
+		return retry(function executeCommand() {
+			return processManager.startProgramInGuest(vm, guestAuth, guestProgramSpec);
+		});
+	};
+
+	/**
+	 * Transfers a file from the guest os to the local vRO file system
+	 *
+	 * @param srcPath guest OS file location
+	 * @param destPath vRO file location
+	 */
+	this.downloadFileFromGuest = function (srcPath, destPath) {
+		System.getModule("com.vmware.pscoe.library.util").validateInput(srcPath, "Source path input parameter missing or null");
+		System.getModule("com.vmware.pscoe.library.util").validateInput(destPath, "Dest path input parameter missing or null");
+
+		var result = retry(function downloadFileFromGuest() {
+			var ftInfo = fileManager.initiateFileTransferFromGuest(vm, guestAuth, srcPath);
+			return fileManager.downloadFile(destPath, ftInfo);
+		});
+
+		if (!result) {
+			throw "Could not transfer Guest file '" + srcPath + "' to vRO at '" + destPath + "'";
+		}
+	};
+
+	/**
+	 * Deletes a file in the specified filePath locaiton
+	 *
+	 * @param filePath
+	 */
+	this.deleteFileInGuest = function (filePath) {
+		System.getModule("com.vmware.pscoe.library.util").validateInput(filePath, "Path input parameter missing or null");
+
+		retry(function deleteFileInGuest() {
+			fileManager.deleteFileInGuest(vm, guestAuth, filePath);
+		});
+	};
+
+	/**
+	 *
+	 * @param pid
+	 * @return a Process object by the specified pid
+	 */
+	this.findGuestProcess = function (pid) {
+
+		var guestProcessInfo = retry(function findGuestProcess() {
+			return processManager.listProcessesInGuest(vm, guestAuth, null);
+		});
+
+		for (var iter in guestProcessInfo) {
+			var process = guestProcessInfo[iter];
+			if (process.pid === pid) {
+				return process;
+			}
+		}
+		return null;
+	};
+
+	/**
+	 *
+	 * @return returns the current guest environment variables
+	 */
+	this.getGuestEnvironment = function () {
+		return retry(function getGuestEnvironment() {
+			return processManager.readEnvironmentVariableInGuest(vm, guestAuth, null);
+		});
+	};
+
+	/**
+	 * Wait for Guest Customization to complete by monitoring vmware-imc logs
+	 * Success criteria - logs last modified time attribute has to be older than retrySleep value
+	 * The check will be performed up to retryCount value
+	 * Retry properties are configured by setGuestToolsRetry()
+	 *
+	 */
+	this.waitGuestCustomization = function () {
+		logger.info("Waiting for Guest Customization to complete. VMware-IMC logs has to be idle for Seconds[" + guestTools.retrySleep + "]");
+
+		var imc = {
+			guestCustomization: {
+				message: "Customization completed when logs stay idle since Time.",
+				time: new Date(System.getCurrentTime() - guestTools.retrySleep * 1000),
+				completed: true
+			},
+			logs: {}
+		};
+
+		var vmwareImcState = "";
+
+		return retry(function waitGuestCustomization() {
+			var vmwareImc = vm.guest.guestFamily.toLowerCase().indexOf('win') != -1 ?
+				vmwareImcLogDirectory.windows :
+				vmwareImcLogDirectory.linux;
+			var vmwareImcFiles = null;
+			try {
+				vmwareImcFiles = fileManager.listFilesInGuest(vm, guestAuth, vmwareImc, 0, 100, ".*").files;
+			} catch (e) {
+				if (e.message.indexOf("was not found")) {
+					logger.info("It does not seam that Guest Customization is running. The logging directory is does not exist. Error:" + e);
+					return;
+				}
+				throw e;
+			}
+
+			// Get current state of VMware IMC Logs
+			// Criteria - number of files, their names, last modified date
+			for (var index in vmwareImcFiles) {
+				var file = vmwareImcFiles[index];
+				// Skip parrent directory
+				if (file.path == "..") {
+					continue;
+				}
+
+				var lastModified = new Date(file.attributes.modificationTime);
+				imc.logs[file.path] = {
+					lastModified: lastModified
+				};
+
+				imc.guestCustomization.completed = imc.guestCustomization.completed && (imc.guestCustomization.time > lastModified);
+			}
+
+			var vmwareImcStateNext = JSON.stringify(imc.logs, null, 2);
+
+			if (vmwareImcState != vmwareImcStateNext) {
+				vmwareImcState = vmwareImcStateNext;
+				logger.debug("VMware IMC Logs:" + vmwareImcState);
+				throw "Guest Customization is still logging..."
+			}
+			logger.info("Assume Guest Customization completed. Did not log anyting for Seconds[" + guestTools.retrySleep + "]");
+		});
+	}
+};
+
+return new Guest(vcVm, vmUsername, vmPassword, options);]]></script>
+</dunes-script-module>

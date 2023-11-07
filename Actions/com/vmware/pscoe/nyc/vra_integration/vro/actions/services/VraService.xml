@@ -1,0 +1,318 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VraService" result-type="Any" api-version="6.0.0" id="29007d00-d25e-3c62-bdbe-09378b6b1200" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc.vra_integration.vro.actions.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var AuthClientService_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.authentication/actions/AuthClientService");
+var VraConfigurationAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.authentication/elements/config/VraConfigurationAccessor");
+var HttpClientBuilder_1 = VROES.importLazy("com.vmware.pscoe.library.ts.http/HttpClientBuilder");
+var ZonesService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.iaas/services/ZonesService");
+var ProjectsService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.iaas/services/ProjectsService");
+var NetworksService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.iaas/services/NetworksService");
+var CloudAccountsVsphereService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.iaas/services/CloudAccountsVsphereService");
+var DeploymentsService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.deployment/services/DeploymentsService");
+var UsersService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.identity/services/UsersService");
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var VraService = /** @class */ (function () {
+    function VraService(client) {
+        this.getUserInfo = function (username, orgId, throwIfMissing) {
+            var usersService = new UsersService_1._.UsersService(this.client);
+            var response = usersService.getUserInfoInOrganizationUsing({ path_userId: username, path_orgId: orgId });
+            if (!this.validateResponse(response, "Error while retrieving user search " + username, !throwIfMissing)) {
+                return null;
+            }
+            if (!response.body) {
+                if (throwIfMissing) {
+                    throw new Error("Error while retrieving user search " + username + ". Error " + JSON.stringify(response.body));
+                }
+                return null;
+            }
+            return response;
+        };
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.rockwell.rw-integration.vro.actions.services/VraService');
+        this.client = client || this.createClient();
+    }
+    VraService.prototype.getCloudZones = function (projectId, throwIfMissing) {
+        var _this = this;
+        if (throwIfMissing === void 0) {
+            throwIfMissing = true;
+        }
+        var zonesService = new ZonesService_1._.ZonesService(this.client);
+        var response = zonesService.getZones();
+        if (!this.validateResponse(response, "Error while retrieving vRa Zones ", !throwIfMissing)) {
+            return null;
+        }
+        if (!response.body.content || !response.body.content[0]) {
+            if (throwIfMissing) {
+                throw new Error("Error while retrieving vRA Zones. Error " + JSON.stringify(response.body));
+            }
+            return null;
+        }
+        var cloudZones = response.body.content;
+        var zones = [];
+        cloudZones.filter(function (zone) {
+            _this.logger.debug("Links: " + JSON.stringify(zone._links));
+            return (zone._links["projects"] && zone._links["projects"].hrefs.indexOf("/iaas/api/projects/" + projectId) != -1);
+        }).forEach(function (zone) {
+            zones.push(zone.name);
+            System.log(zone.id);
+        });
+        return zones;
+    };
+    VraService.prototype.getProjects = function (throwIfMissing) {
+        if (throwIfMissing === void 0) {
+            throwIfMissing = true;
+        }
+        var projectService = new ProjectsService_1._.ProjectsService(this.client);
+        var response = projectService.getProjects();
+        if (!this.validateResponse(response, "Error while retrieving vRa Projects ", !throwIfMissing)) {
+            return null;
+        }
+        if (!response.body.content || !response.body.content[0]) {
+            if (throwIfMissing) {
+                throw new Error("Error while retrieving vRA Projects. Error " + JSON.stringify(response.body));
+            }
+            return null;
+        }
+        var projects = response.body.content;
+        this.logger.debug("Projects: " + JSON.stringify(projects));
+        return projects;
+    };
+    VraService.prototype.getNetworksTags = function (cloudZoneName, filterString, throwIfMissing) {
+        if (filterString === void 0) {
+            filterString = '';
+        }
+        if (throwIfMissing === void 0) {
+            throwIfMissing = true;
+        }
+        var networksService = new NetworksService_1._.NetworksService(this.client);
+        var response = networksService.getNetworks();
+        var tags = new Properties();
+        if (!this.validateResponse(response, "Error while retrieving vRa Networks ", !throwIfMissing)) {
+            return null;
+        }
+        if (!response.body.content || !response.body.content[0]) {
+            if (throwIfMissing) {
+                throw new Error("Error while retrieving vRA Networks. Error " + JSON.stringify(response.body));
+            }
+            return null;
+        }
+        var nameTokens = cloudZoneName.split('/');
+        var accountName = nameTokens.length > 0 ? nameTokens[0] : cloudZoneName;
+        var accountId = this.getCloudAccountByName(accountName.trim());
+        var networks = response.body.content;
+        networks.forEach(function (network) {
+            network.cloudAccountIds.forEach(function (baseAccountId) {
+                if (baseAccountId == accountId) {
+                    if (network.tags && network.tags.length > 0) {
+                        var networkTags = network.tags.filter(function (tag) {
+                            return tag.key == "network";
+                        })
+                            .map(function (item) {
+                            return item.value;
+                        });
+                        networkTags.forEach(function (tag) {
+                            tags.put(tag, network.name);
+                        });
+                    }
+                }
+            });
+        });
+        var filters = filterString.split('|');
+        if (filters.length > 0) {
+            var filteredTags_1 = new Properties();
+            var tagKeys = tags.keys;
+            tagKeys.forEach(function (key) {
+                var passedFilters = 0;
+                var networkName = tags.get(key);
+                filters.forEach(function (filter) {
+                    if (networkName.toLowerCase().indexOf(filter.toLowerCase()) > -1) {
+                        passedFilters += 1;
+                    }
+                });
+                if (passedFilters == filters.length) {
+                    filteredTags_1.put(key, networkName);
+                }
+            });
+            tags = filteredTags_1;
+        }
+        return tags;
+    };
+    VraService.prototype.getNetworks = function (cloudZoneName, throwIfMissing) {
+        if (throwIfMissing === void 0) {
+            throwIfMissing = true;
+        }
+        var networksService = new NetworksService_1._.NetworksService(this.client);
+        var response = networksService.getNetworks();
+        var tags = new Properties();
+        if (!this.validateResponse(response, "Error while retrieving vRa Networks ", !throwIfMissing)) {
+            return null;
+        }
+        if (!response.body.content || !response.body.content[0]) {
+            if (throwIfMissing) {
+                throw new Error("Error while retrieving vRA Networks. Error " + JSON.stringify(response.body));
+            }
+            return null;
+        }
+        var allNetworks = response.body.content;
+        var networks = [];
+        if (cloudZoneName && cloudZoneName != '') {
+            var nameTokens = cloudZoneName.split('/');
+            var accountName = nameTokens.length > 0 ? nameTokens[0] : cloudZoneName;
+            var accountId_1 = this.getCloudAccountByName(accountName.trim());
+            allNetworks.forEach(function (network) {
+                network.cloudAccountIds.forEach(function (baseAccountId) {
+                    if (baseAccountId == accountId_1) {
+                        networks.push(network);
+                    }
+                });
+            });
+        }
+        else {
+            networks = allNetworks;
+        }
+        var output = new Properties();
+        networks.forEach(function (network) {
+            output.put(network.name, network);
+        });
+        return output;
+    };
+    VraService.prototype.getFabricNetworkWithDetailsById = function (fabricNetworkId) {
+        var path = "/provisioning/uerp/provisioning/mgmt/subnet?"
+            + "expand&"
+            + "$filter=(documentSelfLink" + "%20"
+            + "eq" + "%20"
+            + "%27" + "%2F" + "resources" + "%2F" + "sub-networks" + "%2F" + fabricNetworkId + "%27"
+            + ")&"
+            + "$orderby=name%20asc";
+        var fabricNet = this.genericGet(path);
+        fabricNet.id = fabricNetworkId;
+        return fabricNet;
+    };
+    VraService.prototype.genericGet = function (path) {
+        var response = this.get(path);
+        this.validateResponse(response, "Error while getting vRA resources for REST path " + path + ".", false);
+        return response.body;
+    };
+    VraService.prototype.get = function (path) {
+        var response = this.client.request({
+            path: path,
+            pathEncoded: true,
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        var resObject = {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && response.content[0] === "{" ? JSON.parse(response.content) : response.content
+        };
+        this.logger.debug("Response for path (" + path + "):\n" + JSON.stringify(resObject));
+        return resObject;
+    };
+    VraService.prototype.getCloudAccountByName = function (name, throwIfMissing) {
+        if (throwIfMissing === void 0) {
+            throwIfMissing = true;
+        }
+        var cloudAccountsService = new CloudAccountsVsphereService_1._.CloudAccountsVsphereService(this.client);
+        var response = cloudAccountsService.getVSphereCloudAccounts();
+        if (!this.validateResponse(response, "Error while retrieving vRa cloud accounts ", !throwIfMissing)) {
+            return null;
+        }
+        if (!response.body.content || !response.body.content[0]) {
+            if (throwIfMissing) {
+                throw new Error("Error while retrieving vRA cloud accounts. Error " + JSON.stringify(response.body));
+            }
+            return null;
+        }
+        var accountId = '';
+        var result = response.body;
+        result.content.forEach(function (account) {
+            if (account.name.toLowerCase() == name.toLowerCase()) {
+                accountId = account.id;
+            }
+        });
+        return accountId;
+    };
+    VraService.prototype.getCloudAccounts = function (throwIfMissing) {
+        if (throwIfMissing === void 0) {
+            throwIfMissing = true;
+        }
+        var cloudAccountsService = new CloudAccountsVsphereService_1._.CloudAccountsVsphereService(this.client);
+        var response = cloudAccountsService.getVSphereCloudAccounts();
+        if (!this.validateResponse(response, "Error while retrieving vRa cloud accounts ", !throwIfMissing)) {
+            return null;
+        }
+        if (!response.body.content || !response.body.content[0]) {
+            if (throwIfMissing) {
+                throw new Error("Error while retrieving vRA cloud accounts. Error " + JSON.stringify(response.body));
+            }
+            return null;
+        }
+        System.log('getCloudsAcconts: ' + JSON.stringify(response.body));
+        return response.body;
+    };
+    VraService.prototype.getDeployment = function (deploymentId, throwIfMissing) {
+        var deploymentService = new DeploymentsService_1._.DeploymentsService(this.client);
+        var response = deploymentService.getDeploymentByIdV3Using({ path_depId: deploymentId });
+        if (!this.validateResponse(response, "Error while retrieving vRA deployment " + deploymentId, !throwIfMissing)) {
+            return null;
+        }
+        return response.body;
+    };
+    VraService.prototype.getDeploymentByName = function (deploymentName, throwIfMissing) {
+        var deploymentService = new DeploymentsService_1._.DeploymentsService(this.client);
+        var response = deploymentService.getDeploymentsV3Using({ query_name: deploymentName });
+        if (!this.validateResponse(response, "Error while retrieving vRA deployment " + deploymentName, !throwIfMissing)) {
+            return null;
+        }
+        if (!response.body.content || !response.body.content[0]) {
+            if (throwIfMissing) {
+                throw new Error("Error while retrieving vRA deployment " + deploymentName + ". Error " + JSON.stringify(response.body));
+            }
+            return null;
+        }
+        return response.body.content[0];
+    };
+    VraService.prototype.validateResponse = function (response, errorMessage, doNotThrowOnError) {
+        if (response.status < 200 || response.status > 299) {
+            if (!doNotThrowOnError) {
+                throw new Error(errorMessage + ". Error " + JSON.stringify(response.body));
+            }
+            return false;
+        }
+        return true;
+    };
+    VraService.prototype.createClient = function () {
+        var conf = new VraConfigurationAccessor_1._.VraConfigurationAccessor();
+        var options = {
+            retryCount: 3,
+            retryWaitInSeconds: 5,
+        };
+        if (conf.getAuthHostname()) {
+            options.authUrl = "https://" + conf.getAuthHostname() + ":" + conf.getAuthPort();
+        }
+        var url = "https://" + conf.getHostname() + ":" + conf.getPort();
+        var client = new HttpClientBuilder_1._.HttpClientVroBuilder(url)
+            .transient()
+            .trustCert()
+            .build(AuthClientService_1._.default, options);
+        if (conf.getRefreshToken()) {
+            client.withCredentials(conf.getRefreshToken());
+        }
+        else {
+            client.withCredentials({
+                username: conf.getUsername(),
+                password: conf.getPassword(),
+                domain: conf.getDomain(),
+            });
+        }
+        return client;
+    };
+    return VraService;
+}());
+exports.VraService = VraService;
+return exports;]]></script>
+</dunes-script-module>

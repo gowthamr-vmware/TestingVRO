@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ExistingDiskBuilder" result-type="Any" api-version="6.0.0" id="32910987-0ebf-4349-a05e-7034048729b8" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building device spec for adding an existing virtual disk to VM]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+var AbstractDiskBuilder = Class.load("com.vmware.pscoe.library.vc.config", "AbstractDiskBuilder");
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+    .getLogger("com.vmware.pscoe.library.vc.config.ExistingDiskBuilder");
+
+/**
+ * @param {Any} storage - storage system, e.g. com.vmware.pscoe.library.vc.Storage
+ */
+return Class.define(function ExistingDiskBuilder(storage) {
+    AbstractDiskBuilder.call(this, storage);
+
+    var disk = null;
+
+    /**
+     * @param {VcVirtualDisk} value - the disk to be added as existing disk
+     */
+    this.setDisk = function (value) {
+        disk = value;
+        return this;
+    }
+    /**
+     * Capacity in bytes. Override in derived clases.
+     */
+    this.getCapacity = function () {
+        return disk.capacityInKB;
+    }
+
+    this.buildBackingInfo = function () {
+        var backing = null;
+        var sharedDiskBacking = disk.backing;
+        if (sharedDiskBacking instanceof VcVirtualDiskFlatVer2BackingInfo) {
+            backing = new VcVirtualDiskFlatVer2BackingInfo();
+            backing.thinProvisioned = sharedDiskBacking.thinProvisioned;
+            backing.eagerlyScrub = sharedDiskBacking.eagerlyScrub;
+            backing.writeThrough = sharedDiskBacking.writeThrough;
+            backing.split = sharedDiskBacking.split;
+        } else if (sharedDiskBacking instanceof VcVirtualDiskRawDiskMappingVer1BackingInfo) {
+            backing = new VcVirtualDiskRawDiskMappingVer1BackingInfo();
+            backing.compatibilityMode = sharedDiskBacking.compatibilityMode;
+            backing.deviceName = sharedDiskBacking.deviceName;
+            backing.lunUuid = sharedDiskBacking.lunUuid;
+        } else {
+            logger.error("Unsupported disk backing: " + sharedDiskBacking);
+            throw new Error("Unsupported disk backing.");
+        }
+        backing.fileName = sharedDiskBacking.fileName;
+        backing.diskMode = sharedDiskBacking.diskMode;
+        backing.sharing = sharedDiskBacking.sharing;
+        return backing;
+    }
+    /**
+     * @returns {VcVirtualDeviceConfigSpec} - the device spec to be used for reconfiguration
+     */
+    this.build = function () {
+        var deviceConfigSpec = AbstractDiskBuilder.prototype.build.call(this);
+        deviceConfigSpec.fileOperation = null;
+        return deviceConfigSpec;
+    }
+
+}, null, AbstractDiskBuilder);]]></script>
+</dunes-script-module>

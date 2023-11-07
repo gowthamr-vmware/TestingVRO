@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Networking" result-type="Any" api-version="6.0.0" id="797bb794-4134-41cc-92fd-a4dd2531d669" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc">
+  <description><![CDATA[Class for working with vCenter VM's networking]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var ReconfigurationTransaction = Class.load("com.vmware.pscoe.library.vc.config", "ReconfigurationTransaction");
+
+/**
+ * @param {VC:VirtualMachine} vm
+ */
+var Networking = Class.define(function Networking(vm) {
+    this.vm = vm;
+    this.changes = [];
+    this.transaction = null;
+}, {
+    destroyNic: function (nic) {
+        var deviceConfigSpec = new VcVirtualDeviceConfigSpec();
+        deviceConfigSpec.device = nic;
+        deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.remove;
+        this.add(deviceConfigSpec);
+    },
+    /**
+     * Checks wheter the VM has a network addapter connected to the specified portgroup
+     * @param {VC:DistributedVirtualPortgroup} dvPortgroup
+     */
+    isConnectedTo: function (dvPortgroup) {
+        return this.getNicsFor(dvPortgroup).length > 0;
+    },
+
+    /**
+     * Returns a single nic connected to a given portgroup or throws an error if there is more that one
+     * @param {VC:DistributedVirtualPortgroup} dvPortgroup
+     */
+    getNicFor: function (dvPortgroup) {
+        var nics = this.getNicsFor(dvPortgroup);
+        if (nics.length == 0) {
+            return null;
+        } else if (nics.length > 1) {
+            throw new Error("More that 1 nic is connected to the specified Distributed Virtual Portgroup '" + dvPortgroup.name);
+        } else {
+            return nics[0];
+        }
+    },
+    /**
+     * Get all nics connected to a given portgroup
+     * @param {VC:DistributedVirtualPortgroup} dvPortgroup
+     */
+    getNicsFor: function (dvPortgroup) {
+        return this.getNics().filter(function (nic) {
+            return nic.backing.port.portgroupKey == dvPortgroup.key;
+        });
+    },
+
+    /**
+     * Get all nics connected to a portgroup with the specified key
+     * @param {string} key
+     */
+    getNicsByPortgroupKey: function (key) {
+        return this.getNics().filter(function (nic) {
+            if (nic.backing.port) {
+                return nic.backing.port.portgroupKey == key;
+            }
+
+            return false;
+        });
+    },
+
+    getNicByMac: function (mac) {
+        var results = this.getNics().filter(function (nic) {
+            return nic.macAddress == mac;
+        });
+        return results.length ? results[0] : null;
+    },
+
+    getNics: function () {
+        return this.vm.config.hardware.device.filter(function (device) {
+            return Networking.isNic(device);
+        });
+    },
+
+    /**
+     * Adds the specified device change to the system. It will either execute it immediatelly or add it to an open transaction.
+     * @param {VcVirtualDeviceConfigSpec} deviceConfigSpec
+     */
+    add: function (deviceConfigSpec) {
+        if (this.transaction) {
+            this.transaction.add(deviceConfigSpec);
+        } else {
+            var tran = new ReconfigurationTransaction(this.vm);
+            tran.add(deviceConfigSpec);
+            tran.commit();
+        }
+    },
+
+    /**
+     * Sets (or clears if null) a transaction to be used by the system for changes.
+     * @param {Any} transaction - e.g. com.vmware.pscoe.library.vc.config.ReconfigurationTransaction
+     */
+    setTransaction: function (transaction) {
+        this.transaction = transaction;
+    }
+});
+
+Networking.MacAddressTypes = {
+    Generated: "Generated", // Automatically generated MAC address
+    Manual: "Manual", // Statically assign MAC address,
+    Assigned: "Assigned" // MAC address assigned by vCenter.
+}
+
+Networking.isNic = function (device) {
+    return device instanceof VcVirtualEthernetCard ||
+        device instanceof VcVirtualE1000 ||
+        device instanceof VcVirtualE1000e ||
+        device instanceof VcVirtualPCNet32 ||
+        device instanceof VcVirtualVmxnet ||
+        device instanceof VcVirtualVmxnet2 ||
+        device instanceof VcVirtualVmxnet3 ||
+        device instanceof VcVirtualSriovEthernetCard;
+};
+return Networking;]]></script>
+</dunes-script-module>

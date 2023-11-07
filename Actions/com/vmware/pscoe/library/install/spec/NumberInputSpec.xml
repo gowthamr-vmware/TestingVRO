@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="NumberInputSpec" result-type="Any" api-version="6.0.0" id="d7b68f21-edac-4adb-9b11-1c1e40a46a43" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[Number input specificator. Allows the operator to specify a number value as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var InputSpecBase = System.getModule("com.vmware.pscoe.library.install.spec").InputSpecBase();
+
+function isDefined(value) {
+	return value !== undefined && value !== null;
+}
+
+return Class.define(function NumberInputSpec(path) {
+	InputSpecBase.apply(this, arguments);
+	this.validators = [function (value) {
+		return value && typeof (value) !== "number" ? "numeric value expected, but got " + typeof (value) : null;
+	}];
+}, {
+	min: function (m) {
+		this.validators.push(function (value) {
+			return isDefined(value) && value < m ? "expected a number bigger than or equal to  " + m + "." : null;
+		});
+		return this;
+	},
+
+	max: function (m) {
+		this.validators.push(function (value) {
+			return isDefined(value) && value > m ? "expected a number less than or equal to  " + m + "." : null;
+		});
+		return this;
+	},
+
+	in: function (arr) {
+		var range = Array.isArray(arr) ? arr : [].slice.call(arguments);
+		this.validators.push(function (value) {
+			return isDefined(value) && range.indexOf(value) === -1 ? "provided number not within expected range: " + JSON.stringify(range) + "." : null;
+		});
+		return this;
+	}
+}, InputSpecBase);]]></script>
+</dunes-script-module>

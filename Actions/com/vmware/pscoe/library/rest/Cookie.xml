@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Cookie" result-type="Any" api-version="6.0.0" id="ee52aea5-fd09-44a9-b7f0-139c5a00fef9" version="2.5.8" allowed-operations="vef" category-name="com.vmware.pscoe.library.rest">
+  <script encoded="false"><![CDATA[function Cookie(name, value, path, expires) {
+	
+	this.name = name;
+	this.value = value;
+	this.path = path;
+	this.expires = expires;
+}
+
+Cookie.prototype = {
+	
+	toString: function() {
+		var strRep = encodeURIComponent(this.name) + '="' + encodeURIComponent(this.value) + '"'
+		
+		Object.keys(this).forEach(function(k) {
+			if (k != "name" && k != "value" && this[k]) {
+				strRep = strRep + '; ' + k + '="' + encodeURIComponent(this[k]) + '"';
+			}
+		});
+		
+		return strRep;
+	}
+};
+
+// e.g: APSCOOKIE_9539865665020351311="0%260"; path=/; expires=Fri, 29-Sep-1967 20:46:58 GMT
+Cookie.parse = function(strRep) {
+
+	if (!strRep) {
+		throw new Error("Missing Cookie string representation")
+	}
+	
+	var c = new Cookie();
+
+	strRep.split(";").forEach(function(v) {
+		var keyVals = v.split("=");
+		if (c.name == null) {
+			c.name = keyVals[0].trim();
+			c.value = decodeURIComponent(keyVals[1].split(/['"]/g)
+			.filter(function(value) {
+				return value.trim().length > 0;
+			})[0]);
+		} else {
+			c[keyVals[0].trim()] = keyVals[1]
+		}
+	});
+
+	return c;
+};
+
+return Cookie;]]></script>
+</dunes-script-module>

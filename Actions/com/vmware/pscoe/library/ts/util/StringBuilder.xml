@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="StringBuilder" result-type="Any" api-version="6.0.0" id="b506f965-221b-48a2-8c53-9802c3155897" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var StringBuilder = /** @class */ (function () {
+    function StringBuilder(newLine, indent) {
+        this.newLine = newLine != null ? newLine : "\r\n";
+        this.indentText = indent != null ? indent : "\t";
+        this.content = "";
+        this.indentLevel = 0;
+    }
+    StringBuilder.prototype.indent = function () {
+        this.indentLevel++;
+        this.needIndentation = true;
+        return this;
+    };
+    StringBuilder.prototype.unindent = function () {
+        this.indentLevel--;
+        this.needIndentation = true;
+        return this;
+    };
+    StringBuilder.prototype.append = function (str, multiline) {
+        if (str) {
+            if (multiline) {
+                var lines = str.split(/\r?\n/);
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    if (i) {
+                        this.appendLine();
+                    }
+                    if (line.trim().length) {
+                        this.applyIndent();
+                    }
+                    this.content = this.content.concat(line);
+                }
+            }
+            else {
+                this.applyIndent();
+                this.content = this.content.concat(str);
+            }
+        }
+        return this;
+    };
+    StringBuilder.prototype.appendLine = function (str) {
+        this.append(str);
+        this.content = this.content.concat(this.newLine);
+        this.needIndentation = true;
+        return this;
+    };
+    StringBuilder.prototype.toString = function () {
+        return this.content;
+    };
+    StringBuilder.prototype.applyIndent = function () {
+        if (this.needIndentation) {
+            for (var i = 0; i < this.indentLevel; i++) {
+                this.content = this.content.concat(this.indentText);
+            }
+            this.needIndentation = false;
+        }
+    };
+    return StringBuilder;
+}());
+exports.StringBuilder = StringBuilder;
+return exports;]]></script>
+</dunes-script-module>

@@ -1,0 +1,973 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="MachinesService" result-type="Any" api-version="6.0.0" id="1aa0043c-cd44-4d0c-aaa3-f7dfa9acb359" version="8.8.223597" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.iaas.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * IAAS API is a RESTful service, which allows users to execute provisioning related UI actions via an API. <br><br>This page describes the RESTful APIs for IAAS API. The APIs facilitate CRUD operations on the various resources and entities used throughout Cloud Assembly(Cloud Accounts, Cloud zones, Computes, Mappings, etc.) and allows operations on them (creating a cloud account, patching a machine, creating image progile, etc.).<br><br>The APIs that list collections of resources  also support OData like implementation. Below query params can be used across different IAAS API endpoints<br><br><ol><li>`$orderby` -  returns a result with the rows being sorted by the values of provided attribute.<br>`/iaas/api/cloud-accounts?$orderby=name%20desc`</li><br><li>`$top` - number of records you want to get.<br>`/iaas/api/cloud-accounts?$top=20`</li><br><li>`$skip` - number of records you want to skip.<br>`/iaas/api/cloud-accounts?$skip=10`</li><br><li>`$select` - select a subset of properties to include in the response.<br>`/iaas/api/cloud-accounts?$select=id`</li><br><li>`$filter` - filter the results by a specified predicate expression. Operators: eq, ne, and, or.<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'ABC*'` - name starts with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC*'` - name contains 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC'` - name ends with 'ABC'<br><b>/iaas/api/projects</b> and <b>/iaas/api/deployments</b> support different format for partial match: <br>`/iaas/api/projects?$filter=startswith(name, 'ABC')` - name starts with 'ABC'<br>`/iaas/api/projects?$filter=substringof('ABC', name)` - name contains 'ABC'<br>`/iaas/api/projects?$filter=endswith(name, 'ABC')` - name ends with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20ne%20'example-cloud-account'%20or%20customProperties.isExternal%20eq%20'false'`</li><br><li>`$count` - flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.<br>`/iaas/api/cloud-accounts?$count=true`<br></li></ol>
+ */
+var MachinesService = /** @class */ (function () {
+    function MachinesService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Get disk with a given id for specific machine
+     * Endpoint URL: '/iaas/api/machines/{id}/disks/{diskId}'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the machine.
+     * @param {string} diskId - The ID of the disk.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetMachineDiskHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.getMachineDisk = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/disks/" + parameters["path_diskId"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Remove a disk from a given machine.
+     * Endpoint URL: '/iaas/api/machines/{id}/disks/{diskId}'
+     * Endpoint Method: 'delete'
+     * @param {string} id - The ID of the machine.
+     * @param {string} diskId - The ID of the disk.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {DeleteMachineDiskHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.deleteMachineDisk = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/disks/" + parameters["path_diskId"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "DELETE",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Create machine
+     * Endpoint URL: '/iaas/api/machines'
+     * Endpoint Method: 'post'
+     * @param {MachineSpecification} body - Machine Specification instance
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {CreateMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.createMachine = function (parameters) {
+        var path = "/iaas/api/machines";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get all machines
+     * Endpoint URL: '/iaas/api/machines'
+     * Endpoint Method: 'get'
+     * @param {boolean} skipOperationLinks - If set to true will not return operation links.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @param {number} $top - Number of records you want to get.
+     * @param {number} $skip - Number of records you want to skip.
+     * @param {boolean} $count - Flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.
+     * @param {string} $select - Select a subset of properties to include in the response.
+     * @param {string} $filter - Filter the results by a specified predicate expression. Operators: eq, ne, and, or.
+     * @return {GetMachinesHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.getMachines = function (parameters) {
+        var path = "/iaas/api/machines";
+        var queryParameters = {};
+        parameters = parameters || {};
+        if (parameters["query_skipOperationLinks"] !== undefined) {
+            queryParameters["skipOperationLinks"] = parameters["query_skipOperationLinks"];
+        }
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        if (parameters["query_$top"] !== undefined) {
+            queryParameters["$top"] = parameters["query_$top"];
+        }
+        if (parameters["query_$skip"] !== undefined) {
+            queryParameters["$skip"] = parameters["query_$skip"];
+        }
+        if (parameters["query_$count"] !== undefined) {
+            queryParameters["$count"] = parameters["query_$count"];
+        }
+        if (parameters["query_$select"] !== undefined) {
+            queryParameters["$select"] = parameters["query_$select"];
+        }
+        if (parameters["query_$filter"] !== undefined) {
+            queryParameters["$filter"] = parameters["query_$filter"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day power-off operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/power-off'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {PowerOffMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.powerOffMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/power-off";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Update machine. Only description, tag, custom property and bootConfig updates are supported. Please note that all existing tags, assigned to this machine, that are not implicitly added in the Patch body, will be unassigned from this machine!All other properties in the MachineSpecification body are ignored.
+     * Endpoint URL: '/iaas/api/machines/{id}'
+     * Endpoint Method: 'patch'
+     * @param {string} id - The ID of the Machine.
+     * @param {UpdateMachineSpecification} body - Machine Specification
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {UpdateMachineHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.updateMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PATCH",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get machine with a given id
+     * Endpoint URL: '/iaas/api/machines/{id}'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @param {string} $select - Select a subset of properties to include in the response.
+     * @return {GetMachineHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.getMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        if (parameters["query_$select"] !== undefined) {
+            queryParameters["$select"] = parameters["query_$select"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Delete Machine with a given id
+     * Endpoint URL: '/iaas/api/machines/{id}'
+     * Endpoint Method: 'delete'
+     * @param {string} id - The ID of the machine.
+     * @param {boolean} forceDelete - Controls whether this is a force delete operation. If true, best effort is made for deleting this machine. Use with caution as force deleting may cause inconsistencies between the cloud provider and vRA.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {DeleteMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.deleteMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"];
+        var queryParameters = {};
+        if (parameters["query_forceDelete"] !== undefined) {
+            queryParameters["forceDelete"] = parameters["query_forceDelete"];
+        }
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "DELETE",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get snapshot with a given id for specific machine
+     * Endpoint URL: '/iaas/api/machines/{id}/snapshots/{snapshotId}'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the machine.
+     * @param {string} snapshotId - The ID of the snapshot.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetMachineSnapshotHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.getMachineSnapshot = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/snapshots/" + parameters["path_snapshotId"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day delete snapshot operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/snapshots/{snapshotId}'
+     * Endpoint Method: 'delete'
+     * @param {string} id - The id of the Machine.
+     * @param {string} snapshotId - Snapshot id to delete.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {DeleteMachineSnapshotHttpResponse} Http response (202, 204)
+     */
+    MachinesService.prototype.deleteMachineSnapshot = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/snapshots/" + parameters["path_snapshotId"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "DELETE",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Patch network interface with a given id for specific machine. Only name, description, IPv4 address and custom property updates are supported. The change to name and IPv4 address will not propagate to cloud endpoint for provisioned machines.
+     * Endpoint URL: '/iaas/api/machines/{id}/network-interfaces/{networkId}'
+     * Endpoint Method: 'patch'
+     * @param {string} id - The ID of the machine.
+     * @param {string} networkId - The ID of the network interface.
+     * @param {UpdateNetworkInterfaceSpecification} body - NetworkInterface Specification
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {PatchMachineNetworkInterfaceHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.patchMachineNetworkInterface = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/network-interfaces/" + parameters["path_networkId"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PATCH",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get network interface with a given id for specific machine
+     * Endpoint URL: '/iaas/api/machines/{id}/network-interfaces/{networkId}'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the machine.
+     * @param {string} networkId - The ID of the network interface.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetMachineNetworkInterfaceHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.getMachineNetworkInterface = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/network-interfaces/" + parameters["path_networkId"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Attach a disk to a machine.
+     * Endpoint URL: '/iaas/api/machines/{id}/disks'
+     * Endpoint Method: 'post'
+     * @param {DiskAttachmentSpecification} body - Disk Specification instance
+     * @param {string} id - The ID of the machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {AttachMachineDiskHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.attachMachineDisk = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/disks";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get all machine disks
+     * Endpoint URL: '/iaas/api/machines/{id}/disks'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetMachineDisksHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.getMachineDisks = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/disks";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day power-on operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/power-on'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {PowerOnMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.powerOnMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/power-on";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     *  Change security groups for a vSphere machine network interfaces. Securing group that is part of the same deployment can be added or removed for a machine network interface.
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/change-security-groups'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the vSphere machine.
+     * @param {ChangeSecurityGroupSpecification} body - Change security groups details
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {ChangeSecurityGroupsHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.changeSecurityGroups = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/change-security-groups";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day restart operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/restart'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {RestartMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.restartMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/restart";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day resize operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/resize'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} name - The desired flavor to resize the Machine.
+     * @param {string} cpuCount - The desired number of CPUs to resize the Machine
+     * @param {string} memoryInMB - The desired memory in MBs to resize the Machine
+     * @param {string} coreCount - The desired number of cores per socket to resize the Machine
+     * @param {boolean} rebootMachine - Only applicable for vSphere VMs with the CPU Hot Add or Memory Hot Plug options enabled. If set to false, VM is resized without reboot.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {ResizeMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.resizeMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/resize";
+        var queryParameters = {};
+        if (parameters["query_name"] !== undefined) {
+            queryParameters["name"] = parameters["query_name"];
+        }
+        if (parameters["query_cpuCount"] !== undefined) {
+            queryParameters["cpuCount"] = parameters["query_cpuCount"];
+        }
+        if (parameters["query_memoryInMB"] !== undefined) {
+            queryParameters["memoryInMB"] = parameters["query_memoryInMB"];
+        }
+        if (parameters["query_coreCount"] !== undefined) {
+            queryParameters["coreCount"] = parameters["query_coreCount"];
+        }
+        if (parameters["query_rebootMachine"] !== undefined) {
+            queryParameters["rebootMachine"] = parameters["query_rebootMachine"];
+        }
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get machine snapshots information
+     * Endpoint URL: '/iaas/api/machines/{id}/snapshots'
+     * Endpoint Method: 'get'
+     * @param {string} id - The ID of the machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {GetMachineSnapshotsHttpResponse} Http response (200)
+     */
+    MachinesService.prototype.getMachineSnapshots = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/snapshots";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day reboot operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/reboot'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {RebootMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.rebootMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/reboot";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day revert snapshot operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/revert/{snapshotId}'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} snapshotId - Snapshot id to revert.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {RevertMachineSnapshotHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.revertMachineSnapshot = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/revert/" + parameters["path_snapshotId"];
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day create snapshot operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/snapshots'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {SnapshotSpecification} body - Snapshot Specification details
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {CreateMachineSnapshotHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.createMachineSnapshot = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/snapshots";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day suspend operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/suspend'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {SuspendMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.suspendMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/suspend";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day shut down operation machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/shutdown'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {ShutdownMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.shutdownMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/shutdown";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Second day reset operation for machine
+     * Endpoint URL: '/iaas/api/machines/{id}/operations/reset'
+     * Endpoint Method: 'post'
+     * @param {string} id - The id of the Machine.
+     * @param {string} apiVersion - The version of the API in yyyy-MM-dd format (UTC). For versioning information refer to /iaas/api/about
+     * @return {ResetMachineHttpResponse} Http response (202)
+     */
+    MachinesService.prototype.resetMachine = function (parameters) {
+        var path = "/iaas/api/machines/" + parameters["path_id"] + "/operations/reset";
+        var queryParameters = {};
+        if (parameters["query_apiVersion"] !== undefined) {
+            queryParameters["apiVersion"] = parameters["query_apiVersion"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "POST",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    MachinesService.METADATA = {
+        "license": {
+            "name": "Apache License",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0"
+        },
+        "description": "IAAS API is a RESTful service, which allows users to execute provisioning related UI actions via an API. <br><br>This page describes the RESTful APIs for IAAS API. The APIs facilitate CRUD operations on the various resources and entities used throughout Cloud Assembly(Cloud Accounts, Cloud zones, Computes, Mappings, etc.) and allows operations on them (creating a cloud account, patching a machine, creating image progile, etc.).<br><br>The APIs that list collections of resources  also support OData like implementation. Below query params can be used across different IAAS API endpoints<br><br><ol><li>`$orderby` -  returns a result with the rows being sorted by the values of provided attribute.<br>`/iaas/api/cloud-accounts?$orderby=name%20desc`</li><br><li>`$top` - number of records you want to get.<br>`/iaas/api/cloud-accounts?$top=20`</li><br><li>`$skip` - number of records you want to skip.<br>`/iaas/api/cloud-accounts?$skip=10`</li><br><li>`$select` - select a subset of properties to include in the response.<br>`/iaas/api/cloud-accounts?$select=id`</li><br><li>`$filter` - filter the results by a specified predicate expression. Operators: eq, ne, and, or.<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'ABC*'` - name starts with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC*'` - name contains 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20eq%20'*ABC'` - name ends with 'ABC'<br><b>/iaas/api/projects</b> and <b>/iaas/api/deployments</b> support different format for partial match: <br>`/iaas/api/projects?$filter=startswith(name, 'ABC')` - name starts with 'ABC'<br>`/iaas/api/projects?$filter=substringof('ABC', name)` - name contains 'ABC'<br>`/iaas/api/projects?$filter=endswith(name, 'ABC')` - name ends with 'ABC'<br>`/iaas/api/cloud-accounts?$filter=name%20ne%20'example-cloud-account'%20or%20customProperties.isExternal%20eq%20'false'`</li><br><li>`$count` - flag which when specified, regardless of the assigned value, shows the total number of records. If the collection has a filter it shows the number of records matching the filter.<br>`/iaas/api/cloud-accounts?$count=true`<br></li></ol>",
+        "title": "VMware Cloud Assembly IaaS API",
+        "version": "2021-07-15"
+    };
+    return MachinesService;
+}());
+exports.MachinesService = MachinesService;
+return exports;]]></script>
+</dunes-script-module>

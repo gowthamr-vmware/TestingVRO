@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ObfuscatorAppender" result-type="Any" api-version="6.0.0" id="54c9d1ba-16a4-4401-8fae-a033f20aa88e" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging.appenders">
+  <description><![CDATA[Appender that obfuscate sensitive data such as passwords, token, etc.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var BaseAppender = Class.load("com.vmware.pscoe.library.logging.appenders", "BaseAppender");
+
+return Class.define(function ObfuscatorAppender(properties) {
+    BaseAppender.call(this, properties);
+    var defaultSearchPatterns = [{
+        // Looking to match any sensitive data e.g. "password": "MyPassword"
+        searchPattern: "((\\\\)?\"(password|access_token|refresh_token|authorization|authentication|pass)(\\\\)?\"\\s*:\\s*)((\\\\)?\".+?(\\\\)?\")",
+        mask: "$1\"*****\""
+    }, {
+        // Looking to match any sensitive data e.g. password 'MyPassword'
+        searchPattern: "((password|access_token|refresh_token|authorization|authentication|pass)\\s*)('.+?')",
+        mask: "$1'*****'"
+    }, {
+        // Looking to match any sensitive data e.g. password=MyPassword
+        searchPattern: "((password|access_token|refresh_token|authorization|authentication|pass)=)(\\S*)",
+        mask: "$1*****"
+    }];
+
+    var searchPatterns = (properties && properties.patterns) || defaultSearchPatterns;
+
+    this.append = function (severity, msg) {
+        if (msg && typeof msg === "string") {
+            searchPatterns.forEach(function (pattern) {
+                try {
+                    const re = new RegExp(pattern.searchPattern, "gim");
+
+                    msg = msg.replace(re, pattern.mask);
+                } catch (error) {
+                    throw new Error("An error occurred while obfuscating sensitive data in the logs! Regex error - pattern: " + pattern.searchPattern + "; mask: " + pattern.mask + "; Error: " + error);
+                }
+            }, this);
+        }
+
+        msg = this.format(severity, msg);
+
+        switch (severity) {
+            case "DEBUG":
+                System.debug(msg);
+                break;
+            case "INFO":
+                System.log(msg);
+                break;
+            case "WARN":
+                System.warn(msg);
+                break;
+            case "ERROR":
+                System.error(msg);
+                break;
+            default:
+                System.error("Logging Level[" + severity + "] is not defined!");
+        }
+    }
+}, null, BaseAppender);]]></script>
+</dunes-script-module>

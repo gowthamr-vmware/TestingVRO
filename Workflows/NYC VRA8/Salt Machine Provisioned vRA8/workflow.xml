@@ -1,0 +1,78 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="dd3394b7-2dcf-430c-b04f-9e54d3b996d2" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="2.0" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Salt Machine Provisioned vRA8]]></display-name><description><![CDATA[This work flow acts as a master workflow for all the tasks that are to be provisioned after the VM provisioning.
+1.0.3 - Fixed find VM Object function
+1.0.4 - Added output properties to add to vm - ssb
+1.0.5 - Added return of short domain name
+1.0.6 - Remove workflows that now have salt states
+1.0.7 - Added Final reboot for disk errors]]></description><position y="50.0" x="80.0"/><input><param name="inputProperties" type="Properties"/></input><output><param name="scriptExitCodeOut" type="number"/><param name="scriptOutputTextOut" type="string"/><param name="customProperties" type="Properties"/></output><attrib name="vmUsername" type="string" read-only="false"><value encoded="n"><![CDATA[!Admin!]]></value></attrib><attrib name="vmPassword" type="SecureString" read-only="false"><value encoded="n"><![CDATA[8BY21I6EN73M65W63W75S72P33QEEE4EE1S3977824L8D0CAAAQ4DC1B4DY40EE6C0RDC6D281S72BC86EKA36B42BQ7874C1CM8DE9273G2105FBAGCC3759QCAD718ENBE9E5CCIA7D55A2KE6AEC01U4AEE823I8EC975DJ4A3D6D1LF719E11UDC75FE7VE4316C4G3987896TF735A82O]]></value></attrib><attrib name="pollingRate" type="number" read-only="false"><value encoded="n"><![CDATA[10.0]]></value><description><![CDATA[Time between all request information on the tools [seconds]]]></description></attrib><attrib name="timeout" type="number" read-only="false"><value encoded="n"><![CDATA[10.0]]></value><description><![CDATA[Timeout before throwing a timeout exception [minutes]]]></description></attrib><attrib name="scriptConfigurationResource3" type="ResourceElement" read-only="false"><value encoded="n"><![CDATA[dunes://service.dunes.ch/ResourceElement?id='60f9ced5-6021-4e22-b5a0-f98d1b077f11'&dunesName='ResourceElement']]></value></attrib><attrib name="errorCode" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="vCenterVm" type="VC:VirtualMachine" read-only="false"><value encoded="n"/></attrib><attrib name="Role" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="machineDescription" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="machineDomain" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="roleKey" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="customProps" type="Properties" read-only="false"><value encoded="n"><![CDATA[{}]]></value></attrib><attrib name="envKey" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="machineOU" type="string" read-only="false"><value encoded="n"/></attrib><workflow-item name="item1" out-name="item3" type="task"><display-name><![CDATA[Read inputproperties]]></display-name><script encoded="false"><![CDATA[System.log("Machine Provisioned started.");
+System.log("inputProperties: " + JSON.stringify(inputProperties));
+var vmName = inputProperties.get('resourceNames')[0];
+//vCenterVm = VcPlugin.getAllVirtualMachines(null, "xpath:matches(name, '" + vmName + "')")[0];
+vCenterVm = findVM(vmName);    
+customProperties = inputProperties.get('customProperties');         
+machineDescription = customProperties.get('custom.machineDescription');        
+roleKey = customProperties.get('custom.role');
+envKey = customProperties.get('custom.environment');
+machineDomain = customProperties.get('custom.machineDomain');        
+machineOU = customProperties.get('custom.machineOU');
+var shortDomain = machineDomain.split(".")[0].toUpperCase()  
+System.log("machineDescription: " + machineDescription);
+System.log("roleKey: " + roleKey);
+System.log("envKey: " + envKey);
+System.log("machineDomain: " + machineDomain);
+System.log("shortDomain: " + shortDomain);
+System.log("machineOU: " + machineOU);
+var host = VcPlugin.convertToVimManagedObject(vCenterVm, vCenterVm.runtime.host); //[VC:HostSystem]
+var version = host.config.product.version;
+var vc = host.sdkConnection.id;
+var vCenter = host.sdkConnection.id;
+var vmId = vCenterVm.id;
+
+// Get the full role name to return for the computer description
+var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var utils_1 = VROES.importLazy("com.vmware.pscoe.nyc.vra_integration.vro.actions/utils/utils");
+var config = utils_1._.Utils.getConfig('NYC/CustomHostname');
+var rolesProperties = config.get('roles');
+Role = rolesProperties.get(roleKey);
+
+// updated properties to return and populate the server properties
+var outputProperties = {"vcfqdn":vc, "vmId":vmId, "vCenter":vc, "shortDomain":shortDomain, "roleName":Role};
+
+// Functions //
+
+function findVM(vmName){
+    //System.log("vmName is " + vmName)
+    //var vm = VcPlugin.getAllVirtualMachines(null, "xpath:name[matches(.,'"+ vmName +"')]")[0];
+    var vm = VcPlugin.getAllVirtualMachines(null, "xpath:matches(name, '" + vmName + "')")[0];
+    //System.log(vm)
+    if ( vm == null || vm == undefined || vm == "" ){
+        System.log("Looking for the vm object...")
+        var vms = VcPlugin.getAllVirtualMachines(new Array());
+        for each ( v in vms ){
+            if (v.name.toLowerCase() == vmName.toLowerCase() || v.name.toLowerCase() == vmName.toLowerCase()){
+                System.log("Found it... " + v.name.toLowerCase() + " == " + vmName.toLowerCase())
+                return v;
+                }
+            }
+        } else {
+            return vm;
+        }   
+}]]></script><in-binding><bind name="inputProperties" type="Properties" export-name="inputProperties"/></in-binding><out-binding><bind name="vCenterVm" type="VC:VirtualMachine" export-name="vCenterVm"/><bind name="machineDescription" type="string" export-name="machineDescription"/><bind name="machineDomain" type="string" export-name="machineDomain"/><bind name="roleKey" type="string" export-name="roleKey"/><bind name="customProperties" type="Properties" export-name="customProps"/><bind name="envKey" type="string" export-name="envKey"/><bind name="machineOU" type="string" export-name="machineOU"/><bind name="outputProperties" type="Properties" export-name="customProperties"/><bind name="Role" type="string" export-name="Role"/></out-binding><position y="60.0" x="180.0"/></workflow-item><workflow-item name="item3" out-name="item26" type="task" script-module="com.vmware.library.vc.vm.tools/vim3WaitToolsStarted"><display-name><![CDATA[vim3WaitToolsStarted]]></display-name><script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+System.getModule("com.vmware.library.vc.vm.tools").vim3WaitToolsStarted(vm,pollingRate,timeout) ;]]></script><in-binding><bind name="pollingRate" type="number" export-name="pollingRate"><description><![CDATA[Time between all request information on the tools [seconds]]]></description></bind><bind name="timeout" type="number" export-name="timeout"><description><![CDATA[Timeout before throwing a timeout exception [minutes]]]></description></bind><bind name="vm" type="VC:VirtualMachine" export-name="vCenterVm"><description><![CDATA[VM in which the action look to get the new DNS Name]]></description></bind></in-binding><out-binding/><description><![CDATA[Wait for the VMware tools to be up and the guest running
+
+Exception:
+- Timeout: When timeout is reached
+- ReferenceError: When vm is not set correctly]]></description><position y="60.0" x="320.0"/></workflow-item><workflow-item name="item10" out-name="item28" catch-name="item13" throw-bind-name="errorCode" type="link" linked-workflow-id="d7da3054-9ac3-4720-a7c3-3142c7726dbb"><display-name><![CDATA[Get disk Label]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vCenterVm"/><bind name="vmUsername" type="string" export-name="vmUsername"/><bind name="vmPassword" type="SecureString" export-name="vmPassword"/><bind name="scriptConfigurationResource" type="ResourceElement" export-name="scriptConfigurationResource3"/><bind name="customProperties" type="Properties" export-name="customProps"/></in-binding><out-binding><bind name="scriptExitCodeOut" type="number" export-name="scriptExitCodeOut"/><bind name="scriptOutputTextOut" type="string" export-name="scriptOutputTextOut"/></out-binding><position y="60.0" x="600.0"/></workflow-item><workflow-item name="item13" throw-bind-name="errorCode" type="end" end-mode="1"><in-binding/><position y="130.0" x="640.0"/></workflow-item><workflow-item name="item26" out-name="item10" type="link" linked-workflow-id="e60f8012-a3a4-4edc-acdc-43b86079b9b5"><display-name><![CDATA[Apply Policy to VM]]></display-name><in-binding><bind name="roleKey" type="string" export-name="roleKey"/><bind name="vm" type="VC:VirtualMachine" export-name="vCenterVm"/><bind name="envKey" type="string" export-name="envKey"/></in-binding><out-binding/><description><![CDATA[]]></description><position y="60.0" x="460.0"/></workflow-item><workflow-item name="item27" type="end" end-mode="0"><in-binding/><position y="50.0" x="880.0"/></workflow-item><workflow-item name="item28" out-name="item27" type="task"><display-name><![CDATA[Scriptable task]]></display-name><script encoded="false"><![CDATA[// Javascript: Set Notes
+//    Inputs: vm (VC:VirtualMachine)
+//    Outputs: None
+
+var notes = "Provisioned by vRealize Automation, Configured with SALT"
+
+var spec = new VcVirtualMachineConfigSpec();
+spec.annotation = notes;
+vCenterVm.reconfigVM_Task(spec);
+
+// pause to make sure the reconfigure task completes (5 seconds)
+System.sleep(5 * 1000);]]></script><in-binding><bind name="vCenterVm" type="VC:VirtualMachine" export-name="vCenterVm"/></in-binding><out-binding/><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="720.0"/></workflow-item><presentation/></workflow>

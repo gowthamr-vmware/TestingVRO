@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="jsonToProperties" result-type="Any" api-version="6.0.0" id="9a60d2cb-342b-4e27-a359-8c8894bf464b" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <param n="json" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var PropertiesWrapper = System.getModule("com.vmware.pscoe.library.util").PropertiesWrapper();
+return PropertiesWrapper.fromJson(json).getProperties();]]></script>
+</dunes-script-module>

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getRolesByOs" result-type="Properties" api-version="6.0.0" id="be14495f-8633-4723-a6b8-2190c33a6d38" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.presentations">
+  <param n="os" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ConfigElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ConfigElementAccessor");
+var _a;
+if (!os) {
+    return [];
+}
+var rf_conf = new ConfigElementAccessor_1._.ConfigElementAccessor('NYC/RolesFiltered', true);
+var roles_conf = new ConfigElementAccessor_1._.ConfigElementAccessor('NYC/CustomHostname', true);
+var roles = roles_conf === null || roles_conf === void 0 ? void 0 : roles_conf.get('roles');
+var rolesos = (_a = rf_conf === null || rf_conf === void 0 ? void 0 : rf_conf.get('rolesos')) === null || _a === void 0 ? void 0 : _a.get(os).split(',');
+var rolesbyOs = rolesos;
+var rolesFiltered = new Properties();
+rolesbyOs === null || rolesbyOs === void 0 ? void 0 : rolesbyOs.forEach(function (roleKey) {
+    var roleDescription = roles.get(roleKey);
+    if (roleDescription !== undefined) {
+        rolesFiltered.put(roleKey, roleDescription);
+    }
+});
+return rolesFiltered;]]></script>
+</dunes-script-module>

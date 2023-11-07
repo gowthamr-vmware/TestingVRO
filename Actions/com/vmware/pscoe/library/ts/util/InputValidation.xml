@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="InputValidation" result-type="Any" api-version="6.0.0" id="774c2900-4f3c-4286-b216-60c19983e733" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), tslib_1 = VROES.tslib, exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+function validatable(target) {
+    var validators = getValidators(target);
+    if (validators.length) {
+        var ctorValidator_1 = VROES.Shims.arrayFind(validators, function (v) { return v.target === "ctor"; });
+        var ValidatableClass_1 = /** @class */ (function (_super) {
+            tslib_1.__extends(ValidatableClass, _super);
+            function ValidatableClass() {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var _this = this;
+                if (ctorValidator_1) {
+                    validateMethod(ctorValidator_1.handlers, args);
+                }
+                _this = _super.apply(this, args) || this;
+                return _this;
+            }
+            return ValidatableClass;
+        }(target));
+        validators.filter(function (v) { return v.target === "instance"; }).forEach(function (validator) {
+            ValidatableClass_1.prototype[validator.name] = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                validateMethod(validator.handlers, args);
+                return target.prototype[validator.name].apply(this, args);
+            };
+        });
+        validators.filter(function (v) { return v.target === "static"; }).forEach(function (validator) {
+            ValidatableClass_1[validator.name] = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                validateMethod(validator.handlers, args);
+                return target[validator.name].apply(this, args);
+            };
+        });
+        return ValidatableClass_1;
+    }
+    return target;
+}
+exports.validatable = validatable;
+function required(target, propertyKey, parameterIndex) {
+    registerHandler(target, propertyKey, function (args) {
+        if (args[parameterIndex] === undefined) {
+            var className = typeof target === "object" ? target.constructor["name"] : target["name"];
+            var parameterName = getParameterName(target, propertyKey, parameterIndex);
+            return "Missing required argument '" + parameterName + "' at index " + parameterIndex + " in function call '" + (propertyKey || "constructor") + "' from class '" + className + "'.";
+        }
+        return null;
+    });
+}
+exports.required = required;
+function notNull(target, propertyKey, parameterIndex) {
+    registerHandler(target, propertyKey, function (args) {
+        if (args[parameterIndex] == null) {
+            var className = typeof target === "object" ? target.constructor["name"] : target["name"];
+            var parameterName = getParameterName(target, propertyKey, parameterIndex);
+            return "Null or undefined argument '" + parameterName + "' at index " + parameterIndex + " in function call '" + (propertyKey || "constructor") + "' from class '" + className + "'.";
+        }
+        return null;
+    });
+}
+exports.notNull = notNull;
+function notEmpty(target, propertyKey, parameterIndex) {
+    registerHandler(target, propertyKey, function (args) {
+        var value = args[parameterIndex];
+        if (value == null || !value.length) {
+            var className = typeof target === "object" ? target.constructor["name"] : target["name"];
+            var parameterName = getParameterName(target, propertyKey, parameterIndex);
+            return "Null or empty argument '" + parameterName + "' at index " + parameterIndex + " in function call '" + (propertyKey || "constructor") + "' from class '" + className + "'.";
+        }
+        return null;
+    });
+}
+exports.notEmpty = notEmpty;
+function greaterThan(expectedValue) {
+    return function (target, propertyKey, parameterIndex) {
+        registerHandler(target, propertyKey, function (args) {
+            var value = args[parameterIndex];
+            if (typeof value != "number") {
+                var className = typeof target === "object" ? target.constructor["name"] : target["name"];
+                var parameterName = getParameterName(target, propertyKey, parameterIndex);
+                return "Expected value of type 'number' greater than '" + expectedValue + "' for argument '" + parameterName + "' at index " + parameterIndex + " in function call '" + (propertyKey || "constructor") + "' from class '" + className + "'. Provided value: '" + value + "' with type '" + typeof value + "'.";
+            }
+            if (value <= expectedValue) {
+                var className = typeof target === "object" ? target.constructor["name"] : target["name"];
+                var parameterName = getParameterName(target, propertyKey, parameterIndex);
+                return "Expected value greater than '" + expectedValue + "' for argument '" + parameterName + "' at index " + parameterIndex + " in function call '" + (propertyKey || "constructor") + "' from class '" + className + "'. Provided value: '" + value + "'.";
+            }
+            return null;
+        });
+    };
+}
+exports.greaterThan = greaterThan;
+function lessThan(expectedValue) {
+    return function (target, propertyKey, parameterIndex) {
+        registerHandler(target, propertyKey, function (args) {
+            var value = args[parameterIndex];
+            if (typeof value != "number") {
+                var className = typeof target === "object" ? target.constructor["name"] : target["name"];
+                var parameterName = getParameterName(target, propertyKey, parameterIndex);
+                return "Expected value of type 'number' less than '" + expectedValue + "' for argument '" + parameterName + "' at index " + parameterIndex + " in function call '" + (propertyKey || "constructor") + "' from class '" + className + "'. Provided value: '" + value + "' with type '" + typeof value + "'.";
+            }
+            if (value >= expectedValue) {
+                var className = typeof target === "object" ? target.constructor["name"] : target["name"];
+                var parameterName = getParameterName(target, propertyKey, parameterIndex);
+                return "Expected value less than '" + expectedValue + "' for argument '" + parameterName + "' at index " + parameterIndex + " in function call '" + (propertyKey || "constructor") + "' from class '" + className + "'. Provided value: '" + value + "'.";
+            }
+            return null;
+        });
+    };
+}
+exports.lessThan = lessThan;
+var ParameterValidationError = /** @class */ (function (_super) {
+    tslib_1.__extends(ParameterValidationError, _super);
+    function ParameterValidationError(errorList) {
+        var _this = _super.call(this, VROES.Shims.spreadArrays(["The following function parameter validation errors have occured:"], errorList).join("\n")) || this;
+        _this.name = ParameterValidationError.name;
+        return _this;
+    }
+    return ParameterValidationError;
+}(Error));
+exports.ParameterValidationError = ParameterValidationError;
+var global = (function () {
+    return this;
+}).call(null) || {};
+function registerHandler(target, propertyKey, handler) {
+    var validators = getValidators(target);
+    var methodName = propertyKey || "";
+    var targetType = propertyKey ? (typeof target === "object" ? "instance" : "static") : "ctor";
+    var validator = VROES.Shims.arrayFind(validators, function (v) { return v.name === methodName && v.target === targetType; });
+    if (!validator) {
+        validator = {
+            name: methodName,
+            target: targetType,
+            handlers: [],
+        };
+        validators.push(validator);
+    }
+    validator.handlers.push(handler);
+}
+function getValidators(target) {
+    var targetClass = typeof target === "object" ? target.constructor : target;
+    return targetClass.__Validators__ || (targetClass.__Validators__ = []);
+}
+function validateMethod(handlers, args) {
+    var errors = handlers.map(function (h) { return h(args); }).filter(function (e) { return !!e; });
+    if (errors.length) {
+        throw new ParameterValidationError(errors);
+    }
+}
+function getParameterName(target, propertyKey, parameterIndex) {
+    var cacheKey = propertyKey ?
+        "__Class_" + target.constructor["name"] + "_Method_" + propertyKey + "_Parameters" :
+        "__Class_" + target["name"] + "_Ctor_Parameters";
+    var parameterNames = global[cacheKey] || (global[cacheKey] = extractParameterNames(propertyKey ? target[propertyKey] : target));
+    return parameterNames[parameterIndex];
+}
+function extractParameterNames(func) {
+    // String representaation of the function code
+    var str = func.toString();
+    // Remove comments of the form /* ... */
+    // Removing comments of the form //
+    // Remove body of the function { ... }
+    // removing '=>' if func is arrow function
+    str = str.replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\/\/(.)*/g, '')
+        .replace(/{[\s\S]*}/, '')
+        .replace(/=>/g, '')
+        .trim();
+    // Start parameter names after first '('
+    var start = str.indexOf("(") + 1;
+    // End parameter names is just before last ')'
+    var end = str.length - 1;
+    var result = str.substring(start, end).split(", ");
+    var params = [];
+    result.forEach(function (element) {
+        // Removing any default value
+        element = element.replace(/=[\s\S]*/g, '').trim();
+        if (element.length > 0) {
+            params.push(element);
+        }
+    });
+    return params;
+}
+return exports;]]></script>
+</dunes-script-module>

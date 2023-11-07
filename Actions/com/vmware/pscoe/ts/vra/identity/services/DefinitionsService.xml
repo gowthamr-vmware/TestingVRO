@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="DefinitionsService" result-type="Any" api-version="6.0.0" id="12e65287-94bb-3ae6-841d-bff38ca727f8" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.identity.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * A list of identity, account and service management APIs.
+ */
+var DefinitionsService = /** @class */ (function () {
+    function DefinitionsService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Get all service definitions.
+     * Endpoint URL: '/csp/gateway/slc/api/definitions'
+     * Endpoint Method: 'get'
+     * @param {string} orgLink
+     * @param {string} expand
+     * @return {GetAllServiceDefinitionsHttpResponse} Http response (200)
+     */
+    DefinitionsService.prototype.getAllServiceDefinitions = function (parameters) {
+        var path = "/csp/gateway/slc/api/definitions";
+        var queryParameters = {};
+        parameters = parameters || {};
+        if (parameters["query_orgLink"] !== undefined) {
+            queryParameters["orgLink"] = parameters["query_orgLink"];
+        }
+        if (parameters["query_expand"] !== undefined) {
+            queryParameters["expand"] = parameters["query_expand"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        var headerParameters = {};
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    DefinitionsService.METADATA = {
+        "description": "A list of identity, account and service management APIs.",
+        "title": "Identity Service API",
+        "version": "1.3.0"
+    };
+    return DefinitionsService;
+}());
+exports.DefinitionsService = DefinitionsService;
+return exports;
+]]></script>
+</dunes-script-module>

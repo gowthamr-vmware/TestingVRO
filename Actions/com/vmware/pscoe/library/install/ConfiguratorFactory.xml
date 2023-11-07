@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ConfiguratorFactory" result-type="Any" api-version="6.0.0" id="d264545d-8e68-4f4b-abbb-387a87e5e68a" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install">
+  <description><![CDATA[Factory that discovers and provides a collection of all available configurators in the current context.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var ModuleLoader = System.getModule("com.vmware.pscoe.library.util").ModuleLoader();
+var regex = new RegExp(".install.handlers$"); // all modules that are *.install.handlers, e.g. com.vmware.pscoe.library.vra.dispatcher.install.handlers
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.install/ConfiguratorFactory");
+
+/**
+ * ConfiguratorFactory
+ * Loads modules and all their actions, based on whitelisted / blacklisted
+ * @param {Array<string>} whitelist - Specify which modules to invoke, based on partial match of their full path; has lower priority than blacklist if both are provided
+ * @param {Array<string>} blacklist - Specify which modules NOT to invoke, based on partial match of their full path
+ */
+return Class.define(function ConfiguratorFactory(whitelist, blacklist) {
+	var configurators = [];
+	whitelist = Array.isArray(whitelist) ? whitelist : [];
+	blacklist = Array.isArray(blacklist) ? blacklist : [];
+
+	// Filtering helpers
+	var isInList = function (module, list, scope) {
+		var flag = list.some(function (tag) {
+			return module.name.indexOf("." + tag + ".") !== -1;
+		});
+		var status = "is " + (!flag ? 'not' : '');
+		logger.debug("Install handler [" + module.name + "] " + status + " " + scope);
+		return flag;
+	};
+
+	var isWhitelisted = function (module) {
+		return isInList(module, whitelist, 'whitelisted');
+	};
+
+	var isBlacklisted = function (module) {
+		return isInList(module, blacklist, 'blacklisted');
+	};
+
+	// All modules that match the path pattern
+	var installHandlers = System.getAllModules()
+		.filter(function (mod) {
+			return regex.test(mod.name);
+		});
+
+	if (whitelist.length || blacklist.length) {
+		if (whitelist.length && blacklist.length) {
+			// Only passing whitelisted that do not intersect with the blacklisted
+			installHandlers = installHandlers.filter(function (mod) {
+				return isWhitelisted(mod) === true
+					&& isBlacklisted(mod) === false;
+			});
+		} else if (whitelist.length) {
+			// Only pass whitelisted
+			installHandlers = installHandlers.filter(function (mod) {
+				return isWhitelisted(mod) === true;
+			});
+		} else {
+			// Filter all blacklisted
+			installHandlers = installHandlers.filter(function (mod) {
+				return isBlacklisted(mod) === false;
+			});
+		}
+	}
+
+	installHandlers.forEach(function (mod) {
+		new ModuleLoader(mod.name).forEach(function (configurator) {
+			return configurators.push(configurator);
+		});
+	});
+
+	this.getConfigurators = function () {
+		return [].concat(configurators);
+	}
+});]]></script>
+</dunes-script-module>

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="interface" result-type="Any" api-version="6.0.0" id="41e24928-8656-38fa-b878-b0ba8a18e410" version="2.0.6" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.http">
+  <script encoded="false"><![CDATA[var exports = {};
+return exports;
+]]></script>
+</dunes-script-module>

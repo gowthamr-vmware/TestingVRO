@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getAlbEndPointInfo" result-type="CompositeType(avi_endpoint:string,nsx_endpoint:string,cloud:string,tier1:string,segment:string,subnet:string):AlbEndPointInfo" api-version="6.0.0" id="f74029f4-9c25-49ac-81de-64000387ae1a" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi">
+  <param n="datacenter" t="string"><![CDATA[]]></param>
+  <param n="environment" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (!datacenter || !environment) {
+    throw new Error("Missing required input parameter. Got datacenter=" + datacenter + " enviroment=" + environment);
+}
+var albEndPoint = System.getModule("com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi").getAlbEndPoint(datacenter, environment);
+var result = new Properties();
+if (albEndPoint !== null) {
+    result.put('avi_endpoint', albEndPoint.avi_endpoint);
+    result.put('nsx_endpoint', albEndPoint.nsx_endpoint);
+    result.put('cloud', albEndPoint.cloud);
+    result.put('tier1', albEndPoint.tier1);
+    result.put('segment', albEndPoint.segment);
+    result.put('subnet', albEndPoint.subnet);
+}
+return result;]]></script>
+</dunes-script-module>

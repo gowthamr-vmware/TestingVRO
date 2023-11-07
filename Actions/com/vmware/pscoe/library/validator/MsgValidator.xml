@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="MsgValidator" result-type="Any" api-version="6.0.0" id="b15cfce6-0848-4356-bea5-9dbbb749552a" version="2.0.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.validator">
+  <description><![CDATA[Wrapper around the Validator to provide custom messages for validation methods]]></description>
+  <script encoded="false"><![CDATA[return function() {
+	var Validator = System.getModule("com.vmware.pscoe.library.validator").Validator();
+	this.validator = new Validator();
+	for  (var key in this.validator) {
+		
+		this[key] = function(funcName) {
+			return function() {
+
+				var result = this.validator[funcName].apply(this.validator, arguments);
+				if(result) {
+					return "ok";
+				} else {
+					return "error";
+				}
+			};
+		}(key);
+	}	
+};]]></script>
+</dunes-script-module>

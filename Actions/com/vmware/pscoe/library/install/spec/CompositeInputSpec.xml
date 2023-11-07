@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CompositeInputSpec" result-type="Any" api-version="6.0.0" id="fcf5f68e-975a-4e0b-8930-278c5d5e25a0" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[Composite type input specificator. Allows the operator to specify a composite type as part of the installation payload.
+The composite type should be further specified using the available specificators, e.g. string.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var InputSpecBase = Class.load("com.vmware.pscoe.library.install.spec", "InputSpecBase");
+
+function setValue(spec, json, value) {
+	json = json || {};
+	if (!json.hasOwnProperty(spec.path)) {
+		json[spec.path] = spec.seed();
+	}
+	if (json.hasOwnProperty(spec.path) && Array.isArray(json[spec.path])) {
+		json[spec.path].push(value);
+	} else {
+		json[spec.path] = value;
+	}
+}
+
+return Class.define(function CompositeInputSpec(path) {
+	InputSpecBase.apply(this, arguments);
+
+	var Input = Class.load("com.vmware.pscoe.library.install", "Input");
+	this.input = new Input();
+
+	for (var funcName in this.input) {
+		var func = this.input[funcName];
+		if (typeof (func) == "function" && funcName.indexOf("read") === 0) {
+			this[funcName] = func.bind(this.input);
+		}
+	}
+}, {
+	polymorphic: function () {
+		// when this flag is set the composite struction will not have to be explicitly
+		// defined through nested validators as it might not be known up-front and that
+		// might not matter for the successful composite processing
+		this.polymorph = true;
+		return this;
+	},
+
+	execute: function (value, context) {
+		var compositeValue = {};
+		this.input.specs.forEach(function (spec) {
+			var nestedValue = undefined;
+			if (value && value.hasOwnProperty && value.hasOwnProperty(spec.path)) {
+				nestedValue = value[spec.path];
+			}
+			spec.then(function (finalValue) {
+				setValue(spec, compositeValue, finalValue);
+			}).process(nestedValue, context);
+		});
+
+		if (this.polymorph) {
+			// ensure anything not handled as nested specs is pushed back to compositeValue
+			Object.keys(value).forEach(function (key) {
+				var matchSpecs = this.input.specs.filter(function (spec) {
+					return spec.path === key;
+				});
+
+				if (!matchSpecs.length) {
+					compositeValue[key] = value[key];
+				}
+			}, this);
+		}
+
+		return InputSpecBase.prototype.execute.apply(this, [compositeValue, context]);
+	},
+
+	validate: function (value) {
+		var validation = InputSpecBase.prototype.validate.apply(this, arguments);
+		if (value) {
+			var compositeValidation = this.input.validate(value);
+			validation.errors = validation.errors.concat(compositeValidation.errors);
+			validation.valid = !validation.errors.length;
+		}
+		return validation;
+	}
+}, InputSpecBase);]]></script>
+</dunes-script-module>

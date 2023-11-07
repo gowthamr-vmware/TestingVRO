@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Session" result-type="Any" api-version="6.0.0" id="017ee6b9-af52-40d1-b93a-e51926c85131" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var Session = /** @class */ (function () {
+    function Session() {
+        var _this = this;
+        this.values = {};
+        var systemContext = System.getContext();
+        if (systemContext) {
+            (systemContext.parameterNames() || []).forEach(function (name) { return _this.values[name] = systemContext.getParameter(name); });
+        }
+        // Workflow might not be present 
+        try {
+            if (workflow) {
+                var attributes_1 = workflow.getAttributes();
+                (attributes_1.keys || []).forEach(function (name) { return _this.values[name] = attributes_1.get(name); });
+                var inputParameters_1 = workflow.getInputParameters();
+                (inputParameters_1.keys || []).forEach(function (name) { return _this.values[name] = inputParameters_1.get(name); });
+            }
+        }
+        catch (_a) { }
+    }
+    Session.prototype.names = function () {
+        var names = [];
+        for (var name in this.values) {
+            names.push(name);
+        }
+        return names;
+    };
+    Session.prototype.get = function (name) {
+        return this.values[name];
+    };
+    Session.prototype.set = function (name, value) {
+        this.values[name] = value;
+    };
+    Session.prototype.setAll = function (state) {
+        if (state) {
+            for (var name in state) {
+                this.set(name, state[name]);
+            }
+        }
+    };
+    Session.prototype.has = function (name) {
+        return this.values[name] != null;
+    };
+    Object.defineProperty(Session, "current", {
+        get: function () {
+            var systemContext = System.getContext();
+            return systemContext.__session__ || (systemContext.__session__ = new Session());
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Session;
+}());
+exports.Session = Session;
+return exports;]]></script>
+</dunes-script-module>

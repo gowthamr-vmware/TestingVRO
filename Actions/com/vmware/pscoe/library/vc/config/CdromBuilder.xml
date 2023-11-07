@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CdromBuilder" result-type="Any" api-version="6.0.0" id="b113f7e1-1d0a-4288-9b39-caafabbcfc09" version="1.4.4" allowed-operations="vef" category-name="com.vmware.pscoe.library.vc.config">
+  <description><![CDATA[Class for building new CD-ROMs]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var AbstractCdromBuilder = Class.load("com.vmware.pscoe.library.vc.config", "AbstractCdromBuilder");
+var Storage = Class.load("com.vmware.pscoe.library.vc", "Storage");
+
+/**
+ * @param {Any} storage - storage system, e.g. com.vmware.pscoe.library.vc.Storage
+ */
+return Class.define(function CdromBuilder(storage) {
+	AbstractCdromBuilder.call(this, storage);
+	this.saved = null;
+	this.datastore = null;
+}, {
+		getUnitNumber: function () {
+			return this.unitNumber;
+		},
+		setUnitNumber: function (unitNumber) {
+			this.unitNumber = unitNumber;
+			return this;
+		},
+
+        /**
+         * Required.
+         * @param {Any} ctrl - a VC controller to attach the CD-ROM to, e.g. VcVirtualAHCIController
+         */
+		setController: function (ctrl) {
+			this.controller = ctrl;
+			return this;
+		},
+
+        /**
+         * @returns {Any}
+         */
+		getController: function () {
+			if (!this.controller) {
+				var controllers = this.storage.getControllers(Storage.ControllerTypes.SATA)
+					.concat(this.storage.getControllers(Storage.ControllerTypes.IDE));
+				return controllers.length ? controllers[0] : null;
+			}
+			return this.controller;
+		},
+
+		buildConnectInfo: function () {
+			var connectInfo = new VcVirtualDeviceConnectInfo();
+			connectInfo.allowGuestControl = true;
+			connectInfo.connected = true;
+			connectInfo.startConnected = true;
+			return connectInfo;
+		},
+
+		
+		buildCdrom: function () {
+			var controller = this.getController();
+			if (!controller) {
+				throw new Error("Controller not set.")
+			}
+			var unitNumber = this.getUnitNumber();
+			if (unitNumber === null || unitNumber === undefined) {
+				unitNumber = this.storage.nextUnitNumber(controller.key);
+			}
+
+			var cdrom = new VcVirtualCdrom();
+			cdrom.unitNumber = unitNumber;
+			cdrom.controllerKey = controller.key;
+			cdrom.backing = this.buildBackingInfo();;
+			cdrom.connectable = this.buildConnectInfo();
+
+			return cdrom;
+		},
+
+        /**
+         * @returns {VcVirtualDeviceConfigSpec} - the device spec to be used for reconfiguration
+         */
+		build: function () {
+			var deviceConfigSpec = AbstractCdromBuilder.prototype.build.apply(this, arguments);
+			deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.add;
+			return deviceConfigSpec;
+		}
+	}, AbstractCdromBuilder);]]></script>
+</dunes-script-module>

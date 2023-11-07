@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Set" result-type="Any" api-version="6.0.0" id="2d6a5de2-9a8d-4084-8ad0-33cd522149ac" version="2.30.0" allowed-operations="vef" category-name="com.vmware.pscoe.library.ecmascript">
+  <script encoded="false"><![CDATA[var exports = {};
+/*-
+ * #%L
+ * ecmascript
+ * %%
+ * Copyright (C) 2023 VMware
+ * %%
+ * Build Tools for VMware Aria
+ * Copyright 2023 VMware, Inc.
+ *
+ * This product is licensed to you under the BSD-2 license (the "License"). You may not use this product except in compliance with the BSD-2 License.
+ *
+ * This product may include a number of subcomponents with separate copyright notices and license terms. Your use of these subcomponents is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
+ * #L%
+ */
+var Set = /** @class */ (function () {
+    function Set(values) {
+        this.size = 0;
+        this.items = {};
+        if (values) {
+            for (var _i = 0, values_1 = values; _i < values_1.length; _i++) {
+                var value = values_1[_i];
+                this.items[value] = true;
+                this.size++;
+            }
+        }
+    }
+    Set.prototype.entries = function () {
+        var entries = [];
+        for (var value in this.items) {
+            entries.push([value, value]);
+        }
+        return entries;
+    };
+    Set.prototype.keys = function () {
+        return this.values();
+    };
+    Set.prototype.values = function () {
+        var values = [];
+        for (var value in this.items) {
+            values.push(value);
+        }
+        return values;
+    };
+    Set.prototype.has = function (value) {
+        return this.items.hasOwnProperty(value);
+    };
+    Set.prototype.add = function (value) {
+        this.items[value] = true;
+        return this;
+    };
+    Set.prototype.delete = function (value) {
+        var exist = this.items.hasOwnProperty(value);
+        if (exist) {
+            this.size--;
+            delete this.items[value];
+        }
+        return exist;
+    };
+    Set.prototype.clear = function () {
+        this.size = 0;
+        this.items = {};
+    };
+    Set.prototype.forEach = function (callbackfn) {
+        for (var value in this.items) {
+            callbackfn(value, value, this);
+        }
+    };
+    return Set;
+}());
+exports.default = Set;
+return exports;]]></script>
+</dunes-script-module>

@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CloudAssemblyService" result-type="Any" api-version="6.0.0" id="048c423c-19f8-4ba0-9fbc-ee30579521a0" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.actions.vra">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var AuthClientService_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.authentication/actions/AuthClientService");
+var MachinesService_1 = VROES.importLazy("com.vmware.pscoe.ts.vra.iaas/services/MachinesService");
+var oDataServiceFactory_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.odata/oDataServiceFactory");
+var oDataFilterExpressions_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.odata/oDataFilterExpressions");
+var logger = Logger_1._.Logger.getLogger("com.vmware.pscoe.sebi.vro.vra/CloudAssemblyService");
+var CloudAssemblyService = /** @class */ (function () {
+    function CloudAssemblyService() {
+        this.vraClient = AuthClientService_1._.default.withDefaultAuthentication();
+        var serviceFactory = new oDataServiceFactory_1._.ODataServiceFactory(this.vraClient);
+        this.wrappedMachinesService = serviceFactory.createService(MachinesService_1._.MachinesService);
+    }
+    CloudAssemblyService.prototype.getMachinesByName = function (machineName) {
+        logger.debug("Searching machine " + machineName);
+        var expressions = new oDataFilterExpressions_1._.FilterExpressions();
+        expressions.add(new oDataFilterExpressions_1._.FilterExpression("name", oDataFilterExpressions_1._.FilterOperation.EQUAL, machineName));
+        expressions.clause(oDataFilterExpressions_1._.FilterClause.AND);
+        var machines = this.wrappedMachinesService.query("getMachines").filter(expressions.toString()).exec();
+        return machines.content;
+    };
+    CloudAssemblyService.prototype.getMachinesByPrefix = function (prefix) {
+        logger.debug("Searching machines with prefix: " + prefix);
+        var expressions = new oDataFilterExpressions_1._.FilterExpressions();
+        expressions.add(new oDataFilterExpressions_1._.FilterExpression("name", oDataFilterExpressions_1._.FilterOperation.EQUAL, prefix + "*"));
+        expressions.clause(oDataFilterExpressions_1._.FilterClause.AND);
+        var machinesResponse = this.wrappedMachinesService.query("getMachines", {}).filter(expressions.toString()).execPaginatedRequest();
+        return machinesResponse.content;
+    };
+    return CloudAssemblyService;
+}());
+exports.CloudAssemblyService = CloudAssemblyService;
+return exports;]]></script>
+</dunes-script-module>

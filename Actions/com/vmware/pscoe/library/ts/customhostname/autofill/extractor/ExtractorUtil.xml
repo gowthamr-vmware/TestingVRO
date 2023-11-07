@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ExtractorUtil" result-type="Any" api-version="6.0.0" id="b44368a5-75e7-4f5d-8f74-5061a098116d" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.autofill.extractor">
+  <script encoded="false"><![CDATA[var exports = {};
+var ExtractorUtil = /** @class */ (function () {
+    function ExtractorUtil() {
+    }
+    ExtractorUtil.getExtractedVmPrefix = function (extractedVmName) {
+        var indexOfFirstDigit = extractedVmName.search(/\d/i);
+        var extractedVmPrefix = "";
+        if (indexOfFirstDigit > -1) {
+            extractedVmPrefix = extractedVmName.slice(0, indexOfFirstDigit);
+        }
+        return extractedVmPrefix;
+    };
+    ExtractorUtil.getExtractedVmSuffix = function (extractedVmName, templatePostfix) {
+        var extractedVmSuffix = "";
+        if (templatePostfix.length === 0) {
+            var vmLastChar = extractedVmName.charAt(extractedVmName.length - 1);
+            if (isNaN(vmLastChar)) {
+                extractedVmSuffix = vmLastChar;
+            }
+        }
+        else {
+            extractedVmSuffix = extractedVmName.slice(extractedVmName.length - templatePostfix.length);
+        }
+        return extractedVmSuffix;
+    };
+    return ExtractorUtil;
+}());
+exports.ExtractorUtil = ExtractorUtil;
+return exports;]]></script>
+</dunes-script-module>

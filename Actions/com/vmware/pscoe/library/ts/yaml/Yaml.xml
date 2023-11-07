@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Yaml" result-type="Any" api-version="6.0.0" id="20a691d6-0711-43e7-9b56-b8ad1d3bacb1" version="1.0.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.yaml">
+  <script encoded="false"><![CDATA[/*-
+     * #%L
+     * yaml
+     * %%
+     * Copyright (C) 2023 VMware, WWCC CoE
+     * %%
+     * This program is licensed under Technical Preview License by VMware.
+     * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+     * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+     * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+     * You should have received a copy of the Technical Preview License along with this program.  If not, see
+     * <https://flings.vmware.com/vrealize-build-tools/license>
+     * #L%
+     */
+    var __global = System.getContext() || (function () {
+        return this;
+    }).call(null);
+    var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+    var YamlParse_1 = VROES.importLazy("com.vmware.pscoe.library.ts.yaml.YamlParse");
+    var YamlStringify_1 = VROES.importLazy("com.vmware.pscoe.library.ts.yaml.YamlStringify");
+    var Yaml = /** @class */ (function () {
+        function Yaml() {
+            // Prevent instantiation.
+        }
+        Yaml.parse = function (content) {
+            return YamlParse_1._.YamlParse.parse(content);
+        };
+        Yaml.stringify = function (yml, opts) {
+            if (opts === void 0) { opts = {}; }
+            return YamlStringify_1._.YamlStringify.stringify(yml, opts);
+        };
+        return Yaml;
+    }());
+    exports.Yaml = Yaml;
+    return exports;]]></script>
+</dunes-script-module>

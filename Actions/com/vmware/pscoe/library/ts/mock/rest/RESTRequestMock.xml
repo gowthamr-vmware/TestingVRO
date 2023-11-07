@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RESTRequestMock" result-type="Any" api-version="6.0.0" id="5092321a-5145-3d9f-bb46-bbeb5cada802" version="2.0.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.mock.rest">
+  <script encoded="false"><![CDATA[var __global = (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var RESTResponseMock_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.rest.RESTResponseMock");
+var RESTUtils_1 = VROES.importLazy("com.vmware.pscoe.library.ts.mock.rest.RESTUtils");
+var RESTRequestMock = /** @class */ (function () {
+    function RESTRequestMock(url, method, content, handlers) {
+        this.url = RESTUtils_1._.RESTUtils.parseUrl(url);
+        this.method = method;
+        this.content = content;
+        this.headers = new Properties();
+        this.handlers = handlers;
+    }
+    RESTRequestMock.prototype.execute = function () {
+        if (this.contentType) {
+            this.headers.put("Content-Type", this.contentType);
+        }
+        for (var _i = 0, _a = this.handlers; _i < _a.length; _i++) {
+            var handler = _a[_i];
+            var requestInfo = this.createMatchingRequest(handler);
+            if (requestInfo) {
+                if (handler.callback) {
+                    var content = handler.callback(requestInfo);
+                    return new RESTResponseMock_1._.RESTResponseMock(content, 200);
+                }
+                else if (handler.respond) {
+                    return handler.respond(requestInfo);
+                }
+            }
+        }
+        return new RESTResponseMock_1._.RESTResponseMock("", 404);
+    };
+    RESTRequestMock.prototype.executeWithCredentials = function (user, pass) {
+        return this.execute();
+    };
+    RESTRequestMock.prototype.setHeader = function (header, value) {
+        this.headers.put(header, value);
+    };
+    RESTRequestMock.prototype.getMethod = function () {
+        return this.method;
+    };
+    RESTRequestMock.prototype.createMatchingRequest = function (handler) {
+        var _this = this;
+        if (handler.method && handler.method != this.method) {
+            return undefined;
+        }
+        if (handler.urlTemplate.parts.length != this.url.parts.length) {
+            return undefined;
+        }
+        var parameters = {};
+        for (var i = 0; i < handler.urlTemplate.parts.length; i++) {
+            var urlPart = this.url.parts[i];
+            var urlPartTemp = handler.urlTemplate.parts[i];
+            if (urlPartTemp[0] == "{" && urlPartTemp[urlPartTemp.length - 1] == "}") {
+                parameters[urlPartTemp.substring(1, urlPartTemp.length - 1)] = urlPart;
+            }
+            else if (urlPartTemp != urlPart) {
+                return undefined;
+            }
+        }
+        if (handler.urlTemplate.queryString) {
+            if (!this.url.queryString) {
+                return undefined;
+            }
+            Object.keys(handler.urlTemplate.queryString).forEach(function (key) {
+                var queryValue = _this.url.queryString[key];
+                var queryValueTemp = handler.urlTemplate.queryString[key];
+                if (queryValueTemp[0] == "{" && queryValueTemp[queryValueTemp.length - 1] == "}" && !!queryValue) {
+                    parameters[queryValueTemp.substring(1, queryValueTemp.length - 1)] = queryValue;
+                }
+                else if (queryValueTemp != queryValue) {
+                    return;
+                }
+            });
+        }
+        return {
+            url: this.url.path,
+            parameters: parameters,
+            queryString: this.url.queryString || {},
+            headers: this.headers,
+            content: this.content && this.headers.get("Content-Type") == "application/json" ? JSON.parse(this.content) : this.content
+        };
+    };
+    return RESTRequestMock;
+}());
+exports.RESTRequestMock = RESTRequestMock;
+return exports;
+]]></script>
+</dunes-script-module>

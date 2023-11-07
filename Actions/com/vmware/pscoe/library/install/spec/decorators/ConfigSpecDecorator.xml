@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ConfigSpecDecorator" result-type="Any" api-version="6.0.0" id="5f04b1c6-ef71-4836-bae8-4cf0743e8cc8" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec.decorators">
+  <description><![CDATA[Configuration input specificator. Decorates any input specificator with the ability to store the value in a configuration file, e.g. vCAC Cafe host.]]></description>
+  <script encoded="false"><![CDATA[return function ConfigSpecDecorator(subj, path) {
+	var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+	var ConfigElementAccessor = Class.load("com.vmware.pscoe.library.util", "ConfigElementAccessor");
+
+	var parts = path.split("/");
+	var elementName = parts.pop();
+	var elementPath = parts.join("/");
+	var configAccessor = new ConfigElementAccessor(elementPath, elementName, true);
+
+	var clean = false;
+	/* 
+		In environments with heavy use of installer and in general big amount of Configuration Element updates
+		it is recommended to set "saveToVersionRepository" to "false" unless explicitly needed since leaving it "true" results
+		in a big number of commits to the vRO internal repository which over long time periods makes the vRO unstable
+		Note: If value is not explicitly set to "false" ConfigElementAccessor uses "true" as default value for null/undefined
+	*/
+	subj.set = function (attr, typeHint, saveToVersionRepository) {
+		subj.fn = function (value) {				
+			if (subj.isPartOfList) {
+				if (!clean) {
+					configAccessor.set(attr, [], typeHint, saveToVersionRepository);
+					clean = true;
+				}
+				var values = configAccessor.get(attr, []) || [];
+				values.push(value);
+				configAccessor.set(attr, values, typeHint, saveToVersionRepository);
+			} else {
+				configAccessor.set(attr, value, typeHint, saveToVersionRepository);
+			}
+		};
+		return subj;
+	};
+	subj.setAsIs = function (attr, saveToVersionRepository) {
+		subj.fn = function (value) {
+			configAccessor.set(attr, value, null, saveToVersionRepository);
+		};
+		return subj;
+	};
+}]]></script>
+</dunes-script-module>

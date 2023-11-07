@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="FileAppender" result-type="Any" api-version="6.0.0" id="6a0475c8-118c-45d2-b235-4c113cc773dc" version="3.3.2" allowed-operations="vef" category-name="com.vmware.pscoe.library.logging.appenders">
+  <description><![CDATA[Appender that prints it's input to a file]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var BaseAppender = Class.load("com.vmware.pscoe.library.logging.appenders", "BaseAppender");
+
+return Class.define(function FileAppender(properties) {
+	BaseAppender.call(this, properties);
+	//populate properties
+	var filepath = System.getTempDirectory() + "/" + properties.fileName || "/var/lib/vco/app-server/temp/pscoe/logger/vro-default-log.log";
+
+	var logFile = new File(filepath);
+
+	if (!logFile.exists) {
+		logFile.createFile();
+	}
+
+	if (logFile.isDir) {
+		throw "File: " + "[ " + filepath + " ] is a directory";
+	}
+
+	if (!logFile.canWrite()) {
+		throw "Cannot write to file: [ " + filepath + " ]";
+	}
+
+	this.logWriter = new FileWriter(logFile);
+
+	this.append = function (severity, msg) {
+		try {
+			this.logWriter.open();
+			msg = this.format(severity, msg);
+			this.logWriter.writeLine(msg);
+		} finally {
+			this.logWriter.close();
+		}
+	}.bind(this);
+}, null, BaseAppender);]]></script>
+</dunes-script-module>

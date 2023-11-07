@@ -1,0 +1,218 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item6" object-name="workflow:name=generic" id="a687d213-6792-482d-8fa1-68ce7e18791c" version="1.0.0" api-version="6.0.0" allowed-operations="vef" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[LinuxDriveManagement]]></display-name><position y="0.0" x="65.0"/><input><param name="hostNameOrIP" type="string"><description><![CDATA[Hostname or IP address of the SSH host]]></description></param><param name="payload" type="Properties"/><param name="username" type="string"/><param name="password" type="SecureString"/></input><attrib name="result" type="number" read-only="false"><description><![CDATA[0 = OK, Negative = Error, Positive = Number of values returned, after error text]]></description></attrib><attrib name="errorText" type="string" read-only="false"><value encoded="n"/><description><![CDATA[Error text, if any]]></description></attrib><attrib name="outputText" type="string" read-only="false"><value encoded="n"/><description><![CDATA[Result of running the SSH command]]></description></attrib><attrib name="cmd" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="passwordAuthentication" type="boolean" read-only="false"><value encoded="n"><![CDATA[true]]></value></attrib><workflow-item name="item0" type="end" end-mode="0"><position y="45.40909090909091" x="804.5"/></workflow-item><workflow-item name="item1" out-name="item2" type="link" linked-workflow-id="90808080808080808080808080808080D28080800120523434428525559a3425f"><display-name><![CDATA[Get Drives SSH command]]></display-name><in-binding><bind name="hostNameOrIP" type="string" export-name="hostNameOrIP"><description><![CDATA[Hostname or IP address of the SSH host]]></description></bind><bind name="port" type="number" explicitly-not-bound="true"><description><![CDATA[Target port]]></description></bind><bind name="username" type="string" export-name="username"><description><![CDATA[Username]]></description></bind><bind name="password" type="SecureString" export-name="password"><description><![CDATA[Password]]></description></bind><bind name="cmd" type="string" export-name="cmd"><description><![CDATA[The SSH command to run]]></description></bind><bind name="passwordAuthentication" type="boolean" export-name="passwordAuthentication"><description><![CDATA[Sets authentication to password or key file]]></description></bind><bind name="path" type="Path" explicitly-not-bound="true"><description><![CDATA[Path to the private key]]></description></bind><bind name="passphrase" type="SecureString" explicitly-not-bound="true"><description><![CDATA[Private key pass-phrase]]></description></bind><bind name="encoding" type="string" explicitly-not-bound="true"><description><![CDATA[The encoding to be used. Leave this field empty to use the default system encoding. (Example values: "UTF-8", "ISO-8859-1"...)]]></description></bind></in-binding><out-binding><bind name="result" type="number" export-name="result"><description><![CDATA[0 = OK, Negative = Error, Positive = Number of values returned, after error text]]></description></bind><bind name="errorText" type="string" export-name="errorText"><description><![CDATA[Error text, if any]]></description></bind><bind name="outputText" type="string" export-name="outputText"><description><![CDATA[Result of running the SSH command]]></description></bind></out-binding><description><![CDATA[Runs an SSH command.]]></description><position y="55.40909090909091" x="204.5"/></workflow-item><workflow-item name="item2" out-name="item4" type="task"><display-name><![CDATA[Create Format Command]]></display-name><script encoded="false"><![CDATA[//echo "Usage: $0 volumeGroupName logicalVolumeName mountPoint blockDevice"
+var scriptPath = "/root/drives.sh";
+var machine = payload.get("machine");
+var properties = machine.get("properties");
+
+machineDrives = getDrivesFromMachine(outputText);
+requestDrives = getDrivesFromRequest(properties);
+
+var rename = "";
+if (requestDrives) {
+   System.log("requestDrive size: " + requestDrives.length);
+   for (i = 0; i < requestDrives.length; i++) {
+      drv = requestDrives[i];
+
+      for (var key in machineDrives) {
+         if (machineDrives.hasOwnProperty(key)) {
+            if (machineDrives[key] == drv.size + "G") {
+               if (rename != "" ) { rename += " ; "; }
+
+	           var vgName = "vg0"+machineDrives.vgcount;
+	           var lvName=  "lvName"+machineDrives.vgcount;
+	           if (machineDrives.vgcount > 9) { vgName = "vg" + machineDrives.vgcount; lvName = "lvName" + machineDrives.vgcount; }
+               rename += scriptPath + " " + vgName + " " + lvName + " " + drv.letter + " /dev/" + key; 
+               rename += "; rm -rf " + drv.letter + "/lost+found ";//remove the lost+found directory generated when forma
+
+               machineDrives.vgcount++;
+               delete machineDrives[key]
+            }
+         }
+      }
+   }
+} else { System.log("no request drives"); }
+
+System.log("rename was " + rename);
+if (rename) {
+   cmd = rename;
+} else { 
+   cmd = null; 
+}
+
+//drive.letter in this case is the block device path
+function getDrivesFromMachine(driveResponse) {
+var lines = outputText.split('\n');
+var drives = new Object();
+
+
+for(var i = 0;i < lines.length;i++){
+
+   if (lines[i]) {
+      aLine = lines[i].split(" ");
+
+      var kName = aLine[0];
+      var size = aLine[aLine.length-1];
+
+      if (kName != null) {
+         aDrive = kName.indexOf("sd");
+         if (aDrive == 0) {
+            
+            if (kName.length == 3) {
+               drives[kName] = size;//sda and size 10G example
+            } else if (kName.length == 4 && drives[kName.substring(0,kName.length-1)] != null) {
+               if (drives['vgcount'] == null) { drives['vgcount'] = 1; } else { drives['vgcount'] = drives['vgcount'] + 1; } //keep track of vg count for naming
+               delete drives[kName.substring(0,kName.length-1)]//Already formatted drive
+			}
+			
+         }
+      }   
+   }
+}
+   return drives;
+}
+
+
+//drive.letter in this case is the /dev/sd?
+function getDrivesFromRequest(properties) {
+
+   var drives = [];
+   //Parse the requested drives for added drives with drive letters specified
+   for(count = 0; count < 100; count++){
+      var diskName = "VirtualMachine.Disk" + count;
+
+      if (properties.get(diskName+".DeviceID") == null ) { System.log("DeviceID was null for " + count); break; }
+
+      var letter = properties.get(diskName + ".Letter");
+      var size   = properties.get(diskName + ".Size");
+
+      if (letter == null || letter == "") { continue; } 
+
+      var drive = new Object();
+      drive.size = parseInt(size);
+      drive.letter = letter
+      drives.push(drive);
+   }
+
+   drives.sort(function compare(a,b) {if (a.letter.length < b.letter.length){return -1;} if (a.letter.length > b.letter.length) {return 1;} return 0;})
+   return drives;
+}]]></script><in-binding><bind name="result" type="number" export-name="result"/><bind name="errorText" type="string" export-name="errorText"/><bind name="outputText" type="string" export-name="outputText"/><bind name="payload" type="Properties" export-name="payload"/></in-binding><out-binding><bind name="cmd" type="string" export-name="cmd"/></out-binding><position y="55.40909090909091" x="344.5"/></workflow-item><workflow-item name="item3" out-name="item0" type="link" linked-workflow-id="90808080808080808080808080808080D28080800120523434428525559a3425f"><display-name><![CDATA[Format Drives SSH command]]></display-name><in-binding><bind name="hostNameOrIP" type="string" export-name="hostNameOrIP"><description><![CDATA[Hostname or IP address of the SSH host]]></description></bind><bind name="port" type="number" explicitly-not-bound="true"><description><![CDATA[Target port]]></description></bind><bind name="username" type="string" export-name="username"><description><![CDATA[Username]]></description></bind><bind name="password" type="SecureString" export-name="password"><description><![CDATA[Password]]></description></bind><bind name="cmd" type="string" export-name="cmd"><description><![CDATA[The SSH command to run]]></description></bind><bind name="passwordAuthentication" type="boolean" export-name="passwordAuthentication"><description><![CDATA[Sets authentication to password or key file]]></description></bind><bind name="path" type="Path" explicitly-not-bound="true"><description><![CDATA[Path to the private key]]></description></bind><bind name="passphrase" type="SecureString" explicitly-not-bound="true"><description><![CDATA[Private key pass-phrase]]></description></bind><bind name="encoding" type="string" explicitly-not-bound="true"><description><![CDATA[The encoding to be used. Leave this field empty to use the default system encoding. (Example values: "UTF-8", "ISO-8859-1"...)]]></description></bind></in-binding><out-binding><bind name="result" type="number" export-name="result"><description><![CDATA[0 = OK, Negative = Error, Positive = Number of values returned, after error text]]></description></bind><bind name="errorText" type="string" export-name="errorText"><description><![CDATA[Error text, if any]]></description></bind><bind name="outputText" type="string" export-name="outputText"><description><![CDATA[Result of running the SSH command]]></description></bind></out-binding><description><![CDATA[Runs an SSH command.]]></description><position y="55.40909090909091" x="624.5"/></workflow-item><workflow-item name="item4" out-name="item3" type="condition" alt-out-name="item5" comparator="0"><display-name><![CDATA[Decision]]></display-name><script encoded="false"><![CDATA[//Generated by the system, cannot be edited
+return (cmd != null) ;]]></script><in-binding><bind name="cmd" type="string" export-name="cmd"/></in-binding><condition name="cmd" type="string" comparator="3" label="null"/><position y="45.40909090909091" x="484.5"/></workflow-item><workflow-item name="item5" type="end" end-mode="0"><position y="109.04545454545453" x="524.5"/></workflow-item><workflow-item name="item6" out-name="item7" type="task"><display-name><![CDATA[generate script]]></display-name><script encoded="false"><![CDATA[var scriptLocation = '/root/drives.sh';
+scriptStub = ["#!/bin/bash -u",
+"# Script from Trisha Navarro <tnavarro@vmware.com> provided as part of the",
+"# Enterprise Hybrid Cloud initative 12/2015",
+
+"# Refactored significantly by Mike Myers to add error checking and other aspects to",
+"# make the script more robust",
+
+"# Known issues:",
+"#  This script supports only a 1:1 mapping of PV to LV (though it does use LVM)",
+"#   Given the 60 disk limit on a VM this may cause problems on systems with lots of",
+"#   file systems (eg. SAP)",
+"#  Theres a sequencing issue: if the script is called to create /foo/bar before /foo",
+"#   it will fail in interesting ways",
+"#  This will also fail in interesting ways if called a second time with the same",
+"#   parameters (and another free disk)",
+
+
+"# Usage",
+"if [ \\\$# -ne 4 ]; then",
+        "echo \\\"Usage: \\\$0 volumeGroupName logicalVolumeName mountPoint blockDevice\\\"",
+        "exit 1",
+"fi",
+
+"vg_name=\\\$1",
+
+
+"echo \\\"\\\$vg_name\\\" | egrep \\\"^vg[0-9][0-9]$\\\" > /dev/null",
+"if [ \\\$? -ne 0 ]; then",
+        "echo \\\"Error: volume group name must be of the format vgnum eg. vg02\\\"",
+        "exit 1",
+"fi",
+
+"lv_name=\\\$2",
+
+"echo \\\"\\\$lv_name\\\" | egrep '^lv' > /dev/null",
+"if [ \\\$? -ne 0 ]; then",
+        "echo \\\"Error: LV name must begin with lv\\\"",
+        "exit 1",
+"fi",
+
+"mpoint_name=\\\$3",
+
+"echo \\\"\\\$mpoint_name\\\" | egrep '^/' > /dev/null",
+"if [ \\\$? -ne 0 ]; then",
+        "echo \\\"Error: Mount point must being with a slash\\\"",
+        "exit 1",
+"fi",
+
+
+
+"# Scan Disks",
+"# Changed to just scan all controllers",
+"#echo \\\"- - -\\\" > /sys/class/scsi_host/\\\`grep mpt /sys/class/scsi_host/host?/proc_name|awk -F \\\"/\\\" '{print \\\$5}'\\\`/scan;",
+"#for i in /sys/class/scsi_host/host*/scan; do",
+        "#echo \\\"- - -\\\" > \\\$i",
+"#done",
+
+"# Locate any unused disks",
+"#unused_disks=\\\`parted -lm | grep 'unrecognised disk label\\\$' | awk -F: '{ print \\\$2 }'\\\`",
+"#count=\\\$(echo \\\"\\\$unused_disks\\\" | sed -e 's/ //g' | wc -w)",
+"#if [ \\\"\\\$count\\\" -gt 1 ]; then",
+        "#echo \\\"Error: there is more than one free disk on the system\\\"",
+        "#exit 2",
+"#elif [ \\\"\\\$count\\\" -eq 0 ]; then",
+        "#echo \\\"There are no free disks on the disks\\\"",
+        "#exit 2",
+"#fi",
+
+
+"block_device=\\\$4",
+
+
+
+"# Partition the disk with a single partition covering the whole disk",
+"parted \\$block_device mklabel gpt",
+"if [ \\\$? -ne 0 ]; then echo  \\\"Putting GUID Partition Table on \\\$block_device failed\\\"; exit 3; fi",
+"parted \\$block_device mkpart primary ext2 0% 100%",
+"if [ \\\$? -ne 0 ]; then echo  \\\"Putting primary partition on \\\$block_device failed\\\"; exit 4; fi",
+
+"# Redefine block_device to add the partition number to the end",
+"block_device=\\\${block_device}1",
+
+"# Create Physical Volume",
+"pvcreate -vvv \\\${block_device}",
+"if [ \\\$? -ne 0 ]; then echo \\\"Call to pvcreate for \\\$block_device failed\\\"; exit 5; fi",
+
+"# Create Volume Group if it doesn't already exist",
+"vgs \\\$vg_name \> /dev/null 2\>&1",
+
+"if [ \\\$? -ne 0 ]; then",
+"vgcreate -s 128 \\\$vg_name \\\${block_device}",
+"if [ \\\$? -ne 0 ]; then echo \\\"vgcreate of \\\$vg_name with disk \\\$block_device failed\\\"; exit 6; fi",
+"else",
+"vgextend \\\$vg_name \\\${block_device}",
+"if [ \\\$? -ne 0 ]; then echo \\\"vgextend of \\\$vg_name with disk \\\$block_device failed\\\"; exit 7; fi",
+"fi",
+"# Create Logical Volume",
+"# Note: this is where the 1:1 mapping of PV to LV happens",
+"lvcreate -n \\\$lv_name -l 100%PVS \\\$vg_name \\\${block_device}",
+"if [ \\\$? -ne 0 ]; then echo \\\"lvcreate of \\\$lv_name in vg \\\$vg_name on disk \\\$block_device failed\\\"; exit 8; fi",
+"# Make ext4 Filesystem",
+"uuid=\\\$(uuidgen)",
+"mkfs -t ext4 -m 1 -U \\\$uuid /dev/mapper/\\\${vg_name}-\\\${lv_name}",
+"if [ \\\$? -ne 0 ]; then echo \\\"mkfs on /dev/mapper/\\\${vg_name}-\\\${lv_name} failed\\\"; exit 9; fi",
+"# Create Mount Point",
+"# Theres a potential problem here -- if they ask for /foo/bar first",
+"# then a request for /foo this will break in an interesting way",
+"mkdir -p /\\\${mpoint_name}",
+"if [ \\\$? -ne 0 ]; then echo \\\"mkdir of /\\\${mpoint_name} failed\\\"; exit 10; fi",
+"# Update /etc/fstab Entries and mount all",
+"echo -e \\\"\\\\n/dev/mapper/\\\${vg_name}-\\\${lv_name}\\\\t\\\${mpoint_name}\\\\text4\\\\tdefaults\\\\t1 2\\\" >> /etc/fstab",
+"mount -a",
+"if [ \\\$? -ne 0 ]; then echo \\\"Call to mount -a failed\\\"; exit 11; fi",
+
+
+"exit 0"].join("\n");
+
+System.log(scriptStub);
+
+cmd = "echo \""+scriptStub+"\" > " + scriptLocation + "; chmod 777 " + scriptLocation;]]></script><in-binding><bind name="password" type="SecureString" export-name="password"/><bind name="username" type="string" export-name="username"/><bind name="passwordAuthentication" type="boolean" export-name="passwordAuthentication"/></in-binding><out-binding><bind name="cmd" type="string" export-name="cmd"/></out-binding><position y="55.40909090909091" x="24.5"/></workflow-item><workflow-item name="item7" out-name="item8" type="link" linked-workflow-id="90808080808080808080808080808080D28080800120523434428525559a3425f"><display-name><![CDATA[Run SSH command]]></display-name><in-binding><bind name="hostNameOrIP" type="string" export-name="hostNameOrIP"><description><![CDATA[Hostname or IP address of the SSH host]]></description></bind><bind name="port" type="number" explicitly-not-bound="true"><description><![CDATA[Target port]]></description></bind><bind name="username" type="string" export-name="username"><description><![CDATA[Username]]></description></bind><bind name="password" type="SecureString" export-name="password"><description><![CDATA[Password]]></description></bind><bind name="cmd" type="string" export-name="cmd"><description><![CDATA[The SSH command to run]]></description></bind><bind name="passwordAuthentication" type="boolean" export-name="passwordAuthentication"><description><![CDATA[Sets authentication to password or key file]]></description></bind><bind name="path" type="Path" explicitly-not-bound="true"><description><![CDATA[Path to the private key]]></description></bind><bind name="passphrase" type="SecureString" explicitly-not-bound="true"><description><![CDATA[Private key pass-phrase]]></description></bind><bind name="encoding" type="string" explicitly-not-bound="true"><description><![CDATA[The encoding to be used. Leave this field empty to use the default system encoding. (Example values: "UTF-8", "ISO-8859-1"...)]]></description></bind></in-binding><out-binding><bind name="result" type="number" export-name="result"><description><![CDATA[0 = OK, Negative = Error, Positive = Number of values returned, after error text]]></description></bind><bind name="errorText" type="string" export-name="errorText"><description><![CDATA[Error text, if any]]></description></bind><bind name="outputText" type="string" export-name="outputText"><description><![CDATA[Result of running the SSH command]]></description></bind></out-binding><description><![CDATA[Runs an SSH command.]]></description><position y="100.86363636363636" x="25.0"/></workflow-item><workflow-item name="item8" out-name="item1" type="task"><display-name><![CDATA[Scriptable task]]></display-name><script encoded="false"><![CDATA[cmd = 'lsblk --output KNAME,SIZE']]></script><in-binding/><out-binding><bind name="cmd" type="string" export-name="cmd"/></out-binding><position y="100.86363636363636" x="204.5"/></workflow-item><presentation><p-param name="hostNameOrIP"><desc><![CDATA[Hostname or IP address of the SSH host]]></desc></p-param><p-param name="payload"><desc><![CDATA[payload]]></desc></p-param><p-param name="username"><desc><![CDATA[username]]></desc></p-param><p-param name="password"><desc><![CDATA[password]]></desc></p-param></presentation></workflow>

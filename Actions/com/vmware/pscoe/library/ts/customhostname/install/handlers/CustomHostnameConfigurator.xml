@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="CustomHostnameConfigurator" result-type="Any" api-version="6.0.0" id="abe860e9-a009-4520-8013-cb149cc409e4" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.install.handlers">
+  <script encoded="false"><![CDATA[var exports = {};
+var CustomHostnameConfigurator = /** @class */ (function () {
+    function CustomHostnameConfigurator() {
+        this.config.path = 'PSCoE/Library/Custom hostname settings';
+        this.config.attr.base = 'custom-hostname';
+        this.config.attr.maxGenAttemp = 'maxNameGenerationAttempts';
+        this.config.attr.autofill = 'shouldAutofillIndexes';
+        this.config.attr.startIndex = 'startIndex';
+        this.config.attr.incrementStep = "incrementStep";
+    }
+    CustomHostnameConfigurator.prototype.configure = function (input) {
+        //set maximum numbers of attemps to be performed
+        input.readNumber([this.config.attr.base, this.config.attr.maxGenAttemp].join('.')).default(3).config(this.config.path).set(this.config.attr.maxGenAttemp);
+        //set if need to autofill free indexes
+        input.readBoolean([this.config.attr.base, this.config.attr.autofill].join('.')).default(false).config(this.config.path).set(this.config.attr.autofill);
+        //set global starting index
+        input.readNumber([this.config.attr.base, this.config.attr.startIndex].join('.')).default(1).config(this.config.path).set(this.config.attr.startIndex);
+        input.readNumber([this.config.attr.base, this.config.attr.incrementStep].join('.')).default(1).config(this.config.path).set(this.config.attr.incrementStep);
+    };
+    return CustomHostnameConfigurator;
+}());
+exports.CustomHostnameConfigurator = CustomHostnameConfigurator;
+return exports;]]></script>
+</dunes-script-module>

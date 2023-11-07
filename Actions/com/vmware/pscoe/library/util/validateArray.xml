@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="validateArray" result-type="Any" api-version="6.0.0" id="10589988-34bc-43c0-bebf-cefcf733848a" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[Validates an array for empty values. It can also validate a passed Array of
+CompositeTypes if one or more of the composite types is empty.]]></description>
+  <param n="inputArray" t="Any"><![CDATA[]]></param>
+  <param n="errorMessage" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (inputArray == undefined) {
+	/*
+	 * If the array is undefined return success since there is nothing to
+	 * validate.
+	 */
+	return "";
+} else if (inputArray.length == 0) {
+	return "Input array is empty or undefined!";
+}
+
+var defaultErrorMessage = "Value is not entered for one or more elements";
+
+for ( var ind in inputArray) {
+	var val = inputArray[ind];
+	/*
+	 * Check for empty value in array only if is passed as
+	 * isNameValidated=true
+	 */
+	if (!val || (Object.prototype.toString.call(val) == '[object String]' && !val
+			.trim())) {
+		return errorMessage ? errorMessage : defaultErrorMessage;
+	}
+}
+
+return "";]]></script>
+</dunes-script-module>

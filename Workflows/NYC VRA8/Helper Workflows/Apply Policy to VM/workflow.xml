@@ -1,0 +1,65 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item4" object-name="workflow:name=generic" id="e60f8012-a3a4-4edc-acdc-43b86079b9b5" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="1.6" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[Apply Policy to VM]]></display-name><position y="50.0" x="20.0"/><input><param name="roleKey" type="string"/><param name="vm" type="VC:VirtualMachine"/><param name="envKey" type="string"/></input><attrib name="policyName" type="string" read-only="false"><value encoded="n"/></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="50.0" x="520.0"/></workflow-item><workflow-item name="item1" out-name="item0" type="task"><display-name><![CDATA[Apply Policy]]></display-name><script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var VcTaskUtil = Class.load("com.vmware.pscoe.library.util", "VcTaskUtil");
+var Storage = Class.load("com.vmware.pscoe.library.vc", "Storage");
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+		.getLogger("com.vmware.pscoe.nyc/ApplyPolicy");
+
+var POLLING_RATE_SECONDS = 2;
+var VCTASK_TIMEOUT_SECONDS = 600;
+
+function getPolicySpec(policyUuid) {
+    if (policyUuid == "None") {
+        var emptyProfileArray = new Array();
+        var emptyProfileSpec = new VcVirtualMachineEmptyProfileSpec();
+        emptyProfileArray[0] = emptyProfileSpec;//if user set to None or nothing input
+        logger.info("Setting empty profile");
+        return emptyProfileArray;
+    }
+    var definedProfileSpec = new VcVirtualMachineDefinedProfileSpec();
+    logger.info("Setting profile ID: " + policyUuid);
+    definedProfileSpec.profileId = policyUuid;
+    var vmProfileArray = new Array();
+    vmProfileArray[0] = definedProfileSpec;
+    return vmProfileArray;
+}
+
+var storage = new Storage(vm);
+var profile = Storage.getProfileByName(vm.sdkConnection, policyName);
+var disks = storage.getDisks();
+var deviceSpecs = [];
+for (var i = 0; i < disks.length; i++) {
+    //For each Disk
+    // Check if vmdkFileName parameter is set in that case
+    // prepare device config spec for that disk only otherwise for all
+    // disk devices of vm
+    
+    var deviceConfigSpec = new VcVirtualDeviceConfigSpec();
+    deviceConfigSpec.device = disks[i];
+    deviceConfigSpec.operation = VcVirtualDeviceConfigSpecOperation.edit;
+    deviceConfigSpec.profile = this.getPolicySpec(profile.profileId.uniqueId);
+    deviceSpecs.push(deviceConfigSpec);
+
+    var configSpec = new VcVirtualMachineConfigSpec();
+    configSpec.vmProfile = this.getPolicySpec(profile.profileId.uniqueId);
+    
+    configSpec.deviceChange = deviceSpecs;
+
+    var task = vm.reconfigVM_Task(configSpec);
+    (new VcTaskUtil()).wait(task, POLLING_RATE_SECONDS, VCTASK_TIMEOUT_SECONDS);
+}]]></script><in-binding><bind name="policyName" type="string" export-name="policyName"/><bind name="vm" type="VC:VirtualMachine" export-name="vm"/></in-binding><out-binding/><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="340.0"/></workflow-item><workflow-item name="item2" type="end" end-mode="0"><in-binding/><position y="110.0" x="240.0"/></workflow-item><workflow-item name="item3" out-name="item1" type="custom-condition" alt-out-name="item2"><display-name><![CDATA[Decision]]></display-name><script encoded="false"><![CDATA[if (policyName && policyName !== '')
+  return true;
+else 
+  return false;]]></script><in-binding><bind name="policyName" type="string" export-name="policyName"/></in-binding><out-binding/><description><![CDATA[Custom decision based on a custom script.]]></description><position y="50.0" x="200.0"/></workflow-item><workflow-item name="item4" out-name="item3" type="task"><display-name><![CDATA[Get Policy Map]]></display-name><script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var utils_1 = VROES.importLazy("com.vmware.pscoe.nyc.vra_integration.vro.actions/utils/utils");
+var config = utils_1._.Utils.getConfig('NYC/StoragePolicies');
+var storagePoliciesMap = config.get('envRoleMapping');
+
+policyName = '';
+storagePoliciesMap.forEach(function (item){   
+    if (item.env == envKey && item.role == roleKey)
+      policyName = item.policyName;
+});
+System.log('Policy Name : ' + policyName);]]></script><in-binding><bind name="envKey" type="string" export-name="envKey"/><bind name="roleKey" type="string" export-name="roleKey"/></in-binding><out-binding><bind name="policyName" type="string" export-name="policyName"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.0" x="80.0"/></workflow-item><presentation/></workflow>

@@ -1,0 +1,242 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="HostnameGenerator" result-type="Any" api-version="6.0.0" id="bc9731a9-38a0-4f9b-9d7c-bb95676403c7" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.actions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var Locking_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/Locking");
+var HostnameValidator_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.validation/HostnameValidator");
+var AutofillService_1 = VROES.importLazy("com.vmware.pscoe.library.ts.customhostname.autofill/AutofillService");
+var HostnameGenerator = /** @class */ (function () {
+    function HostnameGenerator(template, validations, minLength, maxLength, configurationElementSeed, sequence, context) {
+        this.extractorFlag = false;
+        this.excludedNumbers = [];
+        this.template = template;
+        this.validations = validations;
+        this.minLength = minLength;
+        this.maxLength = maxLength;
+        this.sequence = sequence;
+        this.context = context ? context : {};
+        var incrementStepAttr = configurationElementSeed.getAttributeWithKey("incrementStep");
+        this.incrementStep = incrementStepAttr && incrementStepAttr.value ? incrementStepAttr.value : 1;
+        var maxAttemptsAttr = configurationElementSeed.getAttributeWithKey('maxNameGenerationAttempts');
+        this.maxAttempts = maxAttemptsAttr && maxAttemptsAttr.value ? maxAttemptsAttr.value : 3;
+        this.configurationElementSeed = configurationElementSeed;
+        this.lockId = configurationElementSeed.configurationElementCategory.path + "/" + configurationElementSeed.name;
+        this.excludedMachineNames = [];
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.generateHostname');
+    }
+    HostnameGenerator.prototype.generateHostname = function (template, minLength, maxLength, excludedMachineNames, configurationElementSeed, sequence, validators) {
+        this.logger.debug("Resolved name: " + template);
+        template = this.applyMinMaxLength(template, minLength, maxLength);
+        this.logger.debug("Excluded machine names: " + excludedMachineNames);
+        var digitsPattern, machinePrefix, postfixPattern;
+        try {
+            digitsPattern = template.match(/#+/)[0];
+            machinePrefix = template.match(/^[^#]+/) != null ? template.match(/^[^#]+/)[0] : '';
+            postfixPattern = template.match(/[^#]+$/) != null ? template.match(/[^#]+$/)[0] : '';
+        }
+        catch (e) {
+            this.logger.error("Empty digits pattern, the default will be applied. " + e.message); // empty prefix or number sufix - error ignore, just log
+        }
+        this.logger.debug("digits pattern - " + digitsPattern + " \n machine prefix: " + machinePrefix);
+        var digits = this.getNextMachineDigits(machinePrefix, postfixPattern, excludedMachineNames, configurationElementSeed, sequence, validators);
+        if (!digitsPattern) {
+            // if no digits pattern (###) - apply a valid one
+            digitsPattern = this.formDigitsPattern(digits);
+            template += digitsPattern;
+        }
+        var digitsString = System.formatNumber(digits, digitsPattern.replace(/#/g, '0'));
+        if (!this.checkDigitsLength(digits, digitsPattern.length)) {
+            throw new Error('Digits exceeds maximum length of ' + digitsPattern.length);
+        }
+        return template.replace(/([#]+)/, digitsString);
+    };
+    HostnameGenerator.prototype.applyMinMaxLength = function (template, minLength, maxLength) {
+        this.logger.debug("Template length - " + template.length + " \n Min length - " + minLength + " \n Max length - " + maxLength);
+        if (minLength != null && maxLength != null && minLength > maxLength) {
+            throw new Error('Minimum Length cannot be bigger than Maximum Length.');
+        }
+        else if (maxLength != null && template.length > maxLength) {
+            this.logger.info("The string '" + template + "' has length that is more than the allowed - " + maxLength);
+            return this.applyMaxLength(template, maxLength);
+        }
+        else if (minLength != null && template.length < minLength) {
+            this.logger.info("The string '" + template + "' has length that is less than the allowed - " + minLength);
+            return this.applyMinLength(template, minLength);
+        }
+        else {
+            this.logger.info("The template's length matches the requirements.");
+            return template;
+        }
+    };
+    HostnameGenerator.prototype.applyMaxLength = function (template, maxLength) {
+        var digitsPattern = template.match(/#+/)[0];
+        if (digitsPattern.length > maxLength) {
+            throw new Error("The selected pattern has " + digitsPattern.length + " + \" digits and the max length is selected to be \" + " + maxLength);
+        }
+        var prefix = template.match(/^[^#]+/) != null ? template.match(/^[^#]+/)[0] : '';
+        var postfix = template.match(/[^#]+$/) != null ? template.match(/[^#]+$/)[0] : '';
+        var numberOfCharsToBeTruncated = template.length - maxLength;
+        if (!!postfix) {
+            if (postfix.length > numberOfCharsToBeTruncated) {
+                postfix = postfix.substring(0, postfix.length - numberOfCharsToBeTruncated);
+                numberOfCharsToBeTruncated = 0;
+            }
+            else {
+                numberOfCharsToBeTruncated -= postfix.length;
+                postfix = '';
+            }
+            this.logger.debug("To be truncated - " + numberOfCharsToBeTruncated);
+        }
+        if (numberOfCharsToBeTruncated > 0) {
+            prefix = prefix.substring(0, prefix.length - numberOfCharsToBeTruncated);
+        }
+        return prefix + digitsPattern + postfix;
+    };
+    HostnameGenerator.prototype.applyMinLength = function (template, minLength) {
+        var numberOfCharsToBeAdded = minLength - template.length;
+        var firstIndexOfDigits = template.indexOf('#');
+        return template.substring(0, firstIndexOfDigits) + Array(numberOfCharsToBeAdded + 1).join('#') + template.substring(firstIndexOfDigits);
+    };
+    /*
+          suffix (number) - the calculated number for the undefined suffixPattern - no (###)
+          calculates the length of the curretn suffix and replase it with #
+          return the calculated suffixPattern
+    */
+    HostnameGenerator.prototype.formDigitsPattern = function (digits) {
+        var length = digits.toString().length;
+        return Array(length + 1).join('#');
+    };
+    HostnameGenerator.prototype.getNextMachineDigits = function (machinePrefix, postfixPattern, excludedMachineNames, config, sequence, validators) {
+        var shouldFullfillIndexes = this.isAutofillingIndexesEnabled(config);
+        //Some###name - the generated config attribute would be -> SomenamenextIndex
+        var index = 0;
+        var indexPrefix = sequence && sequence.length ? sequence : machinePrefix + postfixPattern;
+        if (!config) {
+            throw new Error('Configuration file error.');
+        }
+        config.reload();
+        this.logger.debug("Generating new machine index " + indexPrefix + " nextIndex");
+        var nextIndex = config.getAttributeWithKey(indexPrefix + 'nextIndex');
+        this.logger.debug("nextIndex " + JSON.stringify(nextIndex));
+        if (nextIndex) {
+            this.logger.debug("nextIndex " + nextIndex.name + " with value: " + nextIndex.value);
+            if (nextIndex.value == null) {
+                throw new Error("No value is set in the configuration for attribute " + nextIndex.name + ".");
+            }
+            index = nextIndex.value;
+        }
+        else {
+            index = this.getStartingNumber(config, indexPrefix);
+        }
+        if (shouldFullfillIndexes) {
+            return this.getNextDigitsUsingAutofillMechanism(machinePrefix, postfixPattern, excludedMachineNames, config.getAttributeWithKey('startIndex').value, validators);
+        }
+        else {
+            return this.getNextDigitsUsingConfigurations(indexPrefix, index, config);
+        }
+    };
+    HostnameGenerator.prototype.getStartingNumber = function (config, indexPrefix) {
+        // both specific and global start prefix :  {"name:"startIndex", "value":1}
+        var specificStartPrefix = config.getAttributeWithKey(indexPrefix + 'startIndex');
+        var globalStartPrefix = config.getAttributeWithKey('startIndex');
+        if (specificStartPrefix) {
+            if (specificStartPrefix.value == null) {
+                throw new Error("The hostname template is not new and has been configured to use a particular starting number. Trying to use it: No value is set in the configuration for attribute " + specificStartPrefix.name + ".");
+            }
+            this.logger.info("The hostname template is new and has been configured to use a particular starting number: " + specificStartPrefix.value);
+            return specificStartPrefix.value;
+        }
+        else if (globalStartPrefix) {
+            if (globalStartPrefix.value == null) {
+                throw new Error("The hostname template is new and no particular starting number has been configured. Trying to use the global starting number: No value is set in the configuration for attribute " + globalStartPrefix.name + ".");
+            }
+            this.logger.info("The hostname template is new. Using the global starting number: " + globalStartPrefix.value);
+            return globalStartPrefix.value;
+        }
+        else {
+            return 1;
+        }
+    };
+    HostnameGenerator.prototype.getNextDigitsUsingConfigurations = function (indexPrefix, index, config) {
+        var retIdx = index;
+        if (!config) {
+            throw new Error("Configuration file error.");
+        }
+        config.reload();
+        config.setAttributeWithKey(indexPrefix + 'nextIndex', retIdx + this.incrementStep);
+        this.logger.debug('Next machine index saved.');
+        return retIdx;
+    };
+    HostnameGenerator.prototype.getNextDigitsUsingAutofillMechanism = function (machinePrefix, machineSuffix, excludedMachineNames, startIndex, validators) {
+        var afs = new AutofillService_1._.AutofillService(machinePrefix, machineSuffix, validators, excludedMachineNames);
+        if (!this.extractorFlag) {
+            this.excludedNumbers = afs.getTakenNumbers();
+            this.extractorFlag = true;
+        }
+        return afs.getNextFreeNumber(this.excludedNumbers, startIndex, this.incrementStep);
+    };
+    HostnameGenerator.prototype.checkDigitsLength = function (digits, length) {
+        var digitsLength = digits.toString().length;
+        return digitsLength <= length;
+    };
+    HostnameGenerator.prototype.isAutofillingIndexesEnabled = function (config) {
+        if (config) {
+            config.reload();
+            return config.getAttributeWithKey('shouldAutofillIndexes').value;
+        }
+        else {
+            throw new Error('Configuration file error.');
+        }
+    };
+    HostnameGenerator.prototype.getValidHostname = function () {
+        var isAutofillEnabled = this.isAutofillingIndexesEnabled(this.configurationElementSeed);
+        this.context.isAutofill = isAutofillEnabled;
+        var hostname;
+        var _loop_1 = function (i) {
+            try {
+                Locking_1._.Locking.lock(this_1.lockId);
+                this_1.context.testHostname = this_1.generateHostname(this_1.template, this_1.minLength, this_1.maxLength, this_1.excludedMachineNames, this_1.configurationElementSeed, this_1.sequence, this_1.validations);
+            }
+            finally {
+                Locking_1._.Locking.unlock(this_1.lockId);
+            }
+            var hostnameValidator = new HostnameValidator_1._.HostnameValidator(this_1.context);
+            this_1.validations.forEach(function (validation) {
+                hostnameValidator.addValidation(validation);
+            });
+            var isValidHostname = hostnameValidator.validate();
+            if (!this_1.excludedMachineNames) {
+                this_1.excludedMachineNames = new Array();
+            }
+            if (isValidHostname) {
+                hostname = this_1.context.testHostname;
+                this_1.excludedMachineNames.push(this_1.context.testHostname);
+                return "break";
+            }
+            else {
+                this_1.excludedMachineNames.push(this_1.context.testHostname);
+                this_1.logger.error("Cannot use hostname: " + this_1.context.testHostname);
+                this_1.logger.debug("Have another " + (this_1.maxAttempts - (i + 1)) + " retries.");
+            }
+        };
+        var this_1 = this;
+        for (var i = 0; i < this.maxAttempts; i++) {
+            var state_1 = _loop_1(i);
+            if (state_1 === "break")
+                break;
+        }
+        if (!hostname) {
+            var errorMessage = "No valid custom hostname was generated after " + this.maxAttempts + " attempts.";
+            this.logger.error(errorMessage);
+            throw errorMessage;
+        }
+        return hostname;
+    };
+    return HostnameGenerator;
+}());
+exports.HostnameGenerator = HostnameGenerator;
+return exports;]]></script>
+</dunes-script-module>

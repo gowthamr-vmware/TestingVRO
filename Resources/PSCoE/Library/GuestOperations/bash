@@ -1,0 +1,7 @@
+{
+	"tmpFolder": "/tmp",
+	"runScriptArguments": "{{scriptPath}} {{args}} > {{stdOutPath}} 2> {{stdErrPath}}",
+	"separator": "/",
+	"scriptProgram": "/bin/bash",
+	"scriptExtension": "sh"
+}

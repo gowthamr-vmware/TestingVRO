@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ConstructorWrapper" result-type="Any" api-version="6.0.0" id="89ff128f-5903-4672-a797-9e5591fb7cfb" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <description><![CDATA[The  Constructor wrapper allows calling constructor of an arbitrary class. 
+The constructor arguments are given as an array.]]></description>
+  <param n="WrappingClass" t="Any"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+return Class.define (WrappingClass.name,  function (args) {
+	WrappingClass.apply(this, args);
+}, {}, WrappingClass);]]></script>
+</dunes-script-module>

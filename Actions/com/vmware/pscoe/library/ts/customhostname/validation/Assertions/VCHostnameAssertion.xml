@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="VCHostnameAssertion" result-type="Any" api-version="6.0.0" id="bb733787-33fd-490e-afe2-bb628327c4a0" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.validation.Assertions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var VCHostnameAssertion = /** @class */ (function () {
+    function VCHostnameAssertion() {
+        this.name = 'vCenter';
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.validation.Assertions.VCHostnameAssertion');
+    }
+    VCHostnameAssertion.prototype.assert = function (context) {
+        if (!context.isAutofill) {
+            var testHostname = context.testHostname;
+            this.logger.debug("vSphere validation - Checking for " + testHostname);
+            // Iterate through all host connections
+            var regexHostname_1 = testHostname.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            var foundVMs = VcPlugin.allSdkConnections.reduce(function (foundVMs, sdkConnection) {
+                // Check if hostname exists in vCenter
+                // Note: Escape hostname for regex chars, because it is used as regex in the filter, otherwise in some cases VM names may be treated as equal
+                // e.g. replace dot (.) character with (\.) in Photon.2 to avoid match with Photon-2
+                return foundVMs.concat(sdkConnection.getAllVirtualMachines(null, "xpath:matches(name, '(?i)" + regexHostname_1 + "')"));
+            }, []);
+            this.logger.debug("vSphere validation - Found VMs " + foundVMs.length);
+            if (foundVMs.length > 0) {
+                throw new Error("vSphere validation failed - Virtual Machine already exists for '" + testHostname + "'");
+            }
+            this.logger.debug("The name '" + testHostname + "' does not exist within any vCenter. Validation succeeded.");
+        }
+    };
+    return VCHostnameAssertion;
+}());
+exports.VCHostnameAssertion = VCHostnameAssertion;
+return exports;]]></script>
+</dunes-script-module>

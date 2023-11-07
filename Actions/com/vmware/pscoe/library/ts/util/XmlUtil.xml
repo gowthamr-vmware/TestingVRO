@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="XmlUtil" result-type="Any" api-version="6.0.0" id="4002c1dc-9f36-4ac0-925d-80fa4383615b" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var XmlUtil = /** @class */ (function () {
+    function XmlUtil() {
+        throw new Error("Private constructor");
+    }
+    XmlUtil.json2xml = function (obj) {
+        if (obj === Object(obj)) {
+            return Object.keys(obj).map(function (k) { return "<" + k + ">" + XmlUtil.json2xml(obj[k]) + "</" + k + ">"; }).join("");
+        }
+        else {
+            return obj;
+        }
+    };
+    return XmlUtil;
+}());
+exports.XmlUtil = XmlUtil;
+return exports;]]></script>
+</dunes-script-module>

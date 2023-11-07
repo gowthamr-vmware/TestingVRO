@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="DNSHostnameAssertion" result-type="Any" api-version="6.0.0" id="0b9aa297-ad42-4b60-b51f-0f8992316a50" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.validation.Assertions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var DNSHostnameAssertion = /** @class */ (function () {
+    function DNSHostnameAssertion() {
+        this.name = 'DNS';
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.validation.Assertions.DNSHostnameAssertion');
+    }
+    DNSHostnameAssertion.prototype.assert = function (context) {
+        var testHostname = context.testHostname;
+        var ipAddress = System.resolveHostName(testHostname);
+        if (ipAddress != null) {
+            throw new Error("Another system has already been registered with the same DNS. Hostname: " + testHostname);
+        }
+    };
+    return DNSHostnameAssertion;
+}());
+exports.DNSHostnameAssertion = DNSHostnameAssertion;
+return exports;]]></script>
+</dunes-script-module>

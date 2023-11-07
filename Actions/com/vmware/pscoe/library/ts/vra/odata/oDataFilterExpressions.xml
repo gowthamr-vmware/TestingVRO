@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="oDataFilterExpressions" result-type="Any" api-version="6.0.0" id="a7f0bda5-5824-4e64-ae89-6ce75c614c95" version="8.8.223597" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.vra.odata">
+  <script encoded="false"><![CDATA[var exports = {};
+/*-
+ * #%L
+ * odata
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var FilterExpressions = /** @class */ (function () {
+    function FilterExpressions() {
+        var _this = this;
+        this.CLAUSE = 'and';
+        this._content = [];
+        this.add = function (expression) { return _this._content.push(expression); };
+        this.toString = function () { return _this._content.join(" " + _this.CLAUSE + " "); };
+        this.clause = function (clause) { return _this.CLAUSE = clause; };
+    }
+    return FilterExpressions;
+}());
+exports.FilterExpressions = FilterExpressions;
+var FilterExpression = /** @class */ (function () {
+    function FilterExpression(_field, _operator, _value) {
+        var _this = this;
+        this._field = _field;
+        this._operator = _operator;
+        this._value = _value;
+        this.toString = function () { return _this._field + " " + _this._operator + " '" + _this._value + "'"; };
+    }
+    return FilterExpression;
+}());
+exports.FilterExpression = FilterExpression;
+var FilterOperation = {};
+exports.FilterOperation = FilterOperation;
+var FilterOperation = exports.FilterOperation;
+(function (FilterOperation) {
+    FilterOperation["EQUAL"] = "eq";
+    FilterOperation["NOT_EQUAL"] = "ne";
+})(FilterOperation || (FilterOperation = {}));
+var FilterClause = {};
+exports.FilterClause = FilterClause;
+var FilterClause = exports.FilterClause;
+(function (FilterClause) {
+    FilterClause["AND"] = "and";
+    FilterClause["OR"] = "or";
+})(FilterClause || (FilterClause = {}));
+return exports;]]></script>
+</dunes-script-module>

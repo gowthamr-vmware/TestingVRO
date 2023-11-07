@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="609f7b66-d9e6-3da7-9abd-73e7842ac9c5" version="1.0.0">
+  <display-name><![CDATA[Standalone]]></display-name>
+  <atts>
+    <att name="endpoints" type="Array/CompositeType(datacenter:string,avi_endpoint:string,nsx_endpoint:string,subdomain:string,subnet:string,cloud:string,tier:string,network:string,avi_username:string,avi_password:SecureString,nsx_username:string,nsx_password:SecureString):StandaloneEndPoints" read-only="false"/>
+  </atts>
+</config-element>

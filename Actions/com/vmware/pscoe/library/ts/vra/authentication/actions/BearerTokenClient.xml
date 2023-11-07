@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="BearerTokenClient" result-type="Any" api-version="6.0.0" id="79742b77-3422-3d03-aba0-d94bcb4274d8" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.vra.authentication.actions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var __extends = VROES.tslib.__extends;
+var HttpClient_1 = VROES.importLazy("com.vmware.pscoe.library.ts.http/HttpClient");
+var VraConfigurationAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.vra.authentication.elements/config/VraConfigurationAccessor");
+/**
+ * HTTP bearer token is used to authenticate against vRealize Automation REST API
+ * The token expires in 24 hours by default
+ */
+var BearerTokenClient = /** @class */ (function (_super) {
+    __extends(BearerTokenClient, _super);
+    function BearerTokenClient(restHost, opts) {
+        var _this = _super.call(this, restHost, VROES.Shims.objectAssign({}, opts, { onBeforeRequest: function (req) { return _this.applyBearerToken(req, opts && opts.onBeforeRequest); } })) || this;
+        return _this;
+    }
+    /**
+     * Return a bearer token. Force authentication if there is not such
+     */
+    BearerTokenClient.prototype.getBearerToken = function () {
+        var conf = new VraConfigurationAccessor_1._.VraConfigurationAccessor();
+        this.bearerToken = (conf.getToken() && (new Date().getTime() < conf.getExpiryDate())) ? conf.getToken() : null;
+        if (!this.bearerToken) {
+            this.authenticate();
+        }
+        return this.bearerToken;
+    };
+    BearerTokenClient.prototype.setBearerToken = function (token, expires_in) {
+        var conf = new VraConfigurationAccessor_1._.VraConfigurationAccessor();
+        var now = new Date();
+        now.setSeconds(now.getSeconds() + expires_in);
+        conf.set('token', token);
+        conf.set('expires_in', now.getTime());
+        this.bearerToken = token;
+    };
+    /**
+     * Enrich the HttpRequest with the Authorization header
+     */
+    BearerTokenClient.prototype.applyBearerToken = function (req, prevHandler) {
+        if (!this.isAuthPath(req.path)) {
+            req.headers = VROES.Shims.objectAssign({}, req.headers, { Authorization: "Bearer " + this.getBearerToken() });
+        }
+        !!prevHandler && prevHandler(req);
+    };
+    return BearerTokenClient;
+}(HttpClient_1._.HttpClientVro));
+exports.default = BearerTokenClient;
+return exports;
+]]></script>
+</dunes-script-module>

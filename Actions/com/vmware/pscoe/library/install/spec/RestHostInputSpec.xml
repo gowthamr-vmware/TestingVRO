@@ -1,0 +1,213 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="RestHostInputSpec" result-type="Any" api-version="6.0.0" id="072486f5-af30-440f-9101-806ad76f2a73" version="1.8.1" allowed-operations="vef" category-name="com.vmware.pscoe.library.install.spec">
+  <description><![CDATA[RestHost input specificator. Allows the operator to specify a rest host object as part of the installation payload.]]></description>
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+var RefInputSpec = Class.load("com.vmware.pscoe.library.install.spec", "RefInputSpec");
+var InputSpecBase = Class.load("com.vmware.pscoe.library.install.spec", "InputSpecBase");
+var RestClient = Class.load("com.vmware.pscoe.library.rest", "RestClient");
+
+var logger = System.getModule("com.vmware.pscoe.library.logging")
+	.getLogger("com.vmware.pscoe.library.install.spec.RestHostInputSpec");
+
+var SUCCESS_CODES = "^20\\d{0,1}";
+
+return Class.define(function RestHostInputSpec(path) {
+	InputSpecBase.apply(this, arguments);
+	this.refType = "REST:RESTHost";
+	this.validators.push(function (val) {
+		if (!val) {
+			logger.warn("The RestHost structure is missing and is being skipped.");
+			return null;
+		}
+
+		return (val.url || val.id) ? null : ("no url or id property found for " + JSON.stringify(val));
+	});
+}, {
+	reachable: function (timeout) {
+		timeout = timeout || 60;
+		this.validators.push(function (value) {
+			var url = new URL(value.url);
+			var isHostReachable = System.isHostReachable(url.host, timeout);
+			return !isHostReachable ? "Host '" + url.host + "' is not reachable. " : null;
+		});
+		return this;
+	},
+	execute: function (value, context) {
+		var deref = this.dereference(value)[0];
+		return InputSpecBase.prototype.execute.apply(this, [deref, context]);
+	},
+
+	verify: function (value, restHost) {
+		this.verifications.push(function (val, host) {
+			if (val && host) {
+				var failed = [];
+				(val.restOperations || []).forEach(function (restOp) {
+					logger.debug("Verifying REST host " + restHost);
+					var restClient = new RestClient(host);
+					var restOptions = {
+						returnResponseObject: true,
+						interpretResponseCode: false
+					};
+					var result = null;
+					try {
+						var response = null;
+						switch (restOp.method.toLowerCase()) {
+							case "get":
+								response = restClient.get(restOp.url, restOp.params, restOptions);
+								result = response.statusCode;
+								break;
+							case "post":
+								response = restClient.post(restOp.url, restOp.params, restOp.content, restOptions);
+								result = response.statusCode;
+								break;
+							case "put":
+								response = restClient.put(restOp.url, restOp.params, restOp.content, restOptions);
+								result = response.statusCode;
+								break;
+							default:
+								result = "Unsupported rest method: " + restOp.method;
+								logger.debug("Unsupported rest method: " + restOp.method);
+								break;
+						}
+						var expression = restOp.validStatusCode || SUCCESS_CODES;
+						var statusCodePattern = new RegExp(expression);
+
+						if (!statusCodePattern.test(result)) {
+							failed.push("REST host '" + host.url + "' has failed rest operation: " + restOp.url + " with HTTP code/result: " + result);
+						}
+					} catch (ex) {
+						failed.push("REST host '" + host.url + "' has failed rest operation: " + restOp.url + " with error: " + ex);
+					}
+				});
+				return (failed.length == 0) ? null : failed;
+			}
+		});
+		return InputSpecBase.prototype.verify.apply(this, [restHost, value]);
+	},
+
+	/**
+	 * Finds a REST:RESTHost object in vRO. First-level properties:
+	 * -id
+	 * -name
+	 * -url
+	 * -authentication
+	 * -sessionMode
+	 * -authUserName
+	 * -authPassword
+	 * -consumerKey
+	 * -consumerSecret
+	 * -accessToken
+	 * -accessTokenSecret
+	 * -connectionTimeout
+	 * -operationTimeout
+	 * -oauth2Token
+	 * -workstation
+	 * -domain
+	 * -useProxy
+	 * -proxyHost
+	 * -proxyPort
+	 * -hostVerification
+	 * -proxyAuthentication
+	 * -proxyAuthUserName
+	 * -proxyAuthPassword
+	 * -proxySessionMode
+	 * -autoUrlRedirection
+	 * -parallelRequestExecution
+	 * -override (Deprecated)
+	 * -overwrite
+	 * -customProperties (optional) - setting custom properties on the vRO RESTHost
+	 *
+	 * @param {Any} value - JSON criteria
+	 * @returns {REST:RESTHost}
+	 */
+	dereference: function (value) {
+		var dereferenceCriteria = buildDereferenceCriteria(value);
+		var hosts = RefInputSpec.prototype.dereference.apply(this, [dereferenceCriteria]);
+		if (!value.id) {
+			if (value.override != undefined) {
+				logger.warn("REST host parameter override is deprecated, use overwrite");
+			}
+			if ((hosts && hosts.length == 1) && (value.overwrite || value.override)) {
+				removeRestHost(hosts[0]);
+				hosts = [createRestHost(value)];
+				value.override = false;
+				value.overwrite = false;
+			}
+			if (!hosts || hosts.length < 1) {
+				hosts = [createRestHost(value)];
+			}
+		}
+		return hosts;
+	}
+}, InputSpecBase);
+
+
+function buildDereferenceCriteria(value) {
+	var criteria = {};
+	if (value.id) {
+		criteria.id = value.id;
+	} else {
+		var validKeys = ["name", "url", "proxyHost", "proxyPort"];
+		Object.keys(value).forEach(function (key) {
+			if (validKeys.indexOf(key) > -1) {
+				criteria[key] = value[key];
+			}
+		});
+	}
+	return criteria;
+}
+
+function createRestHost(options) {
+	var authentication = options.authentication || ((options.authUserName && options.authPassword) ? "Basic" : "NONE");
+	logger.info("Creating a new rest host [" + JSON.stringify(options.url) + "]...");
+	logger.debug("Rest host params: " + JSON.stringify(options.url) + ", authentication: " + authentication + ((options.useProxy !== undefined && options.useProxy) ? (", proxy: " +  options.proxyHost + " proxy port: " + options.proxyPort + " with authentication: " + options.proxyAuthentication) :  ""));
+
+	var wf = Server.getWorkflowWithId("8F8080808080808080808080808080808080808001299080088268176866967b3");
+
+	var inputs = new Properties();
+
+	inputs.put("name", (options.name) ? options.name : options.url);
+	inputs.put("url", options.url);
+	inputs.put("authentication", authentication);
+	inputs.put("sessionMode", options.sessionMode || "Shared Session");
+	inputs.put("authUserName", options.authUserName || options.username);
+	inputs.put("authPassword", options.authPassword || options.password);
+	inputs.put("connectionTimeout", options.connectionTimeout || 30);
+	inputs.put("operationTimeout", options.operationTimeout || 60);
+	inputs.put("ignoreWarnings", true);
+	inputs.put("autoUrlRedirection", options.autoUrlRedirection);
+	inputs.put("parallelRequestExecution", options.parallelRequestExecution);
+	inputs.put("consumerKey", options.consumerKey);
+	inputs.put("consumerSecret", options.consumerSecret);
+	inputs.put("accessToken", options.accessToken);
+	inputs.put("accessTokenSecret", options.accessTokenSecret);
+	inputs.put("oauth2Token", options.oauth2Token);
+	inputs.put("workstation", options.workstation);
+	inputs.put("domain", options.domain);
+	inputs.put("useProxy", options.useProxy);
+	inputs.put("proxyHost", options.proxyHost);
+	inputs.put("proxyPort", options.proxyPort || -1);
+	inputs.put("proxyAuthentication", options.proxyAuthentication);
+	inputs.put("proxySessionMode", options.proxySessionMode);
+	inputs.put("proxyAuthUserName", options.proxyAuthUserName);
+	inputs.put("proxyAuthPassword", options.proxyAuthPassword);
+	inputs.put("hostVerification", options.hostVerification);
+	inputs.put("key", null);
+
+	var token = wf.execute(inputs);
+	var output = System.getModule("com.vmware.pscoe.library.util").waitForWorkflowToComplete(token, 1, 30);
+	var restHost = output.get("restHost");
+	if (!!options.customProperties) {
+		var inSpecDummy = new InputSpecBase("dummy");
+		Object.keys(options.customProperties).forEach(function (key) {
+			inSpecDummy.setCustomProperty(restHost, key, options.customProperties[key]);
+		}, this);
+	}
+	return restHost;
+}
+
+function removeRestHost(host) {
+	RESTHostManager.removeHost(host.id);
+	logger.info("RESTHost with url '" + host.url + "' has been deleted.");
+}]]></script>
+</dunes-script-module>

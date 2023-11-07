@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="Future" result-type="Any" api-version="6.0.0" id="2a04f8e4-d4ce-422e-9bb3-8ce37a630b76" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), tslib_1 = VROES.tslib, exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var Future = /** @class */ (function () {
+    function Future(value) {
+        this.value = value;
+    }
+    Future.prototype.isDone = function () {
+        return this.isCompleted || (this.isCompleted = this.checkCompleted());
+    };
+    Future.prototype.wait = function (timeoutInSeconds, sleepTimeInSeconds) {
+        timeoutInSeconds = timeoutInSeconds != null ? timeoutInSeconds : 300;
+        sleepTimeInSeconds = sleepTimeInSeconds || 1;
+        var endDate = new Date();
+        if (timeoutInSeconds) {
+            endDate.setSeconds(endDate.getSeconds() + timeoutInSeconds);
+        }
+        while (!this.isDone()) {
+            System.sleep(sleepTimeInSeconds * 1000);
+            if (timeoutInSeconds && endDate.getTime() < (new Date()).getTime()) {
+                throw new Error("Timeout waiting '" + this.toString() + "'");
+            }
+        }
+        if (this.error) {
+            throw this.error;
+        }
+    };
+    Future.prototype.get = function (timeoutInSeconds, sleepTimeInSeconds) {
+        this.wait(timeoutInSeconds, sleepTimeInSeconds);
+        return this.value;
+    };
+    Future.prototype.toString = function () {
+        return "Future";
+    };
+    Future.prototype.getInnerState = function () {
+        return null;
+    };
+    Future.join = function (futures) {
+        return new AggregatedFuture(futures);
+    };
+    Future.waitAll = function (futures, timeoutInSeconds, sleepTimeInSeconds) {
+        this.join(futures).wait(timeoutInSeconds, sleepTimeInSeconds);
+    };
+    Future.getAll = function (futures, timeoutInSeconds, sleepTimeInSeconds) {
+        return this.join(futures).get(timeoutInSeconds, sleepTimeInSeconds);
+    };
+    Future.prototype.checkCompleted = function () {
+        return true;
+    };
+    return Future;
+}());
+exports.Future = Future;
+var AggregatedFuture = /** @class */ (function (_super) {
+    tslib_1.__extends(AggregatedFuture, _super);
+    function AggregatedFuture(futures) {
+        var _this = _super.call(this) || this;
+        _this.futures = futures;
+        return _this;
+    }
+    AggregatedFuture.prototype.wait = function (timeoutInSeconds, sleepTimeInSeconds) {
+        if (!this.value) {
+            var values_1 = [];
+            this.futures.forEach(function (f) {
+                values_1.push(f.get(timeoutInSeconds, sleepTimeInSeconds));
+            });
+            this.value = values_1;
+        }
+    };
+    AggregatedFuture.prototype.checkCompleted = function () {
+        return this.futures.every(function (f) { return f.isDone(); });
+    };
+    AggregatedFuture.prototype.getInnerState = function () {
+        return this.futures.map(function (f) { return f.getInnerState(); });
+    };
+    return AggregatedFuture;
+}(Future));
+return exports;]]></script>
+</dunes-script-module>

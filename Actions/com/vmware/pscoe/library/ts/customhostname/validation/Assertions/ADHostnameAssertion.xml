@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ADHostnameAssertion" result-type="Any" api-version="6.0.0" id="fc7cf0b7-6465-46f9-bd26-b3d21c0d09c9" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.validation.Assertions">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var ADHostnameAssertion = /** @class */ (function () {
+    function ADHostnameAssertion() {
+        this.name = 'AD';
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.validation.Assertions.ADHostnameAssertion');
+    }
+    ADHostnameAssertion.prototype.assert = function (context) {
+        if (!context.isAutofill) {
+            var testHostname = context.testHostname;
+            var adHosts = Server.findAllForType('AD:AdHost');
+            if (!this.hasElements(adHosts)) {
+                throw new Error('No Active Directory hosts have been configured within vRO');
+            }
+            for (var i in adHosts) {
+                var computerObjects = ActiveDirectory.getComputerADRecursively(testHostname, adHosts[i]);
+                if (this.hasElements(computerObjects)) {
+                    for (var j in computerObjects) {
+                        if (computerObjects[j].name.toLowerCase() === testHostname.toLowerCase()) {
+                            throw new Error("Active Directory validation failed - computer object already exists for '" + testHostname + "'");
+                        }
+                    }
+                }
+            }
+            this.logger.debug("Active Directory validation succeeded. Computer object with the name '" + testHostname + "' does not exist");
+        }
+    };
+    ADHostnameAssertion.prototype.hasElements = function (arr) {
+        return arr != null && arr.length > 0;
+    };
+    return ADHostnameAssertion;
+}());
+exports.ADHostnameAssertion = ADHostnameAssertion;
+return exports;]]></script>
+</dunes-script-module>

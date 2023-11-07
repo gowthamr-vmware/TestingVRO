@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ResourceElementAccessor" result-type="Any" api-version="6.0.0" id="424cb9eb-466d-429b-b8bc-32009a66e495" version="2.19.7" allowed-operations="vef" category-name="com.vmware.pscoe.library.util">
+  <script encoded="false"><![CDATA[var Class = System.getModule("com.vmware.pscoe.library.class").Class();
+
+var ResourceElementAccessor = Class.define(function ResourceElementAccessor(categoryPath, elementName, createIfMissing, mimeType) {
+	this.logger = System.getModule("com.vmware.pscoe.library.logging").getLogger(
+			"com.vmware.pscoe.library.util.ResourceElementAccessor");
+
+	var category = Server.getResourceElementCategoryWithPath(categoryPath);
+
+	var result = Server.query("ResourceElement", "categoryid='" + System.getObjectId(category)
+			+ "' and name='" + elementName + "'");
+
+	if (result.length > 1) {
+		throw "Found more than 1 resource element with path name '" + elementName
+				+ "'. " + "This is not supported and indicates an inconsistency.";
+	}
+
+	this.resourceElement = result[0];
+
+	if (!this.resourceElement &&
+		createIfMissing) {
+		this.logger.info("Creating new resource element at: " + categoryPath + "/" + elementName);
+		this.resourceElement = Server.createResourceElement(categoryPath, elementName, null, mimeType);
+	}
+
+	if (!this.resourceElement) {
+		throw "Resource element " + elementName + " in " + categoryPath + " not found.";
+	}
+}, {
+
+	/**
+	*Return the content of the ResourceElement as string
+	*/
+	getContent: function() {
+		try {
+			if (this.resourceElement.reload) {
+				this.resourceElement.reload();
+			}
+			var mimeContent = this.resourceElement.getContentAsMimeAttachment();
+			var content = mimeContent.content;
+			if (content) {
+				return content;
+			} else {
+				this.logger.info("Resource element is empty");
+				return "";
+			}
+		} catch (err) {
+			this.logger.error("Error retrieving resource element content: " + err);
+			throw err;
+		}
+	},
+
+	/**
+	*Set the content of the ResourceElement
+	*@param {string} newContent - New content to set
+	*@param {string} mimeType - mimeType of the ResourceElement
+	*@param {boolean} saveToVersionRepository - try to save to internal VRO git repo, default true
+	*/
+	setContent: function(newContent, mimeType, saveToVersionRepository) {
+
+		var contentMime = new MimeAttachment();
+		contentMime.content = newContent;
+		if (!mimeType) {
+			mimeType = "text/plain";
+		}
+
+		contentMime.mimeType = mimeType;
+
+		this.resourceElement.setContentFromMimeAttachment(contentMime);
+		// This method is required for vRA8, as it is expected to have an issue with RE and CE when upgrading to vRA 8.2
+		// saveToVersionRepository threat null as true - default value
+		if(saveToVersionRepository !== false && this.resourceElement.saveToVersionRepository && typeof this.resourceElement.saveToVersionRepository === "function"){
+			this.resourceElement.saveToVersionRepository();
+		}			
+	},
+
+	/**
+	*Return the content as a JSON object
+	*/
+	asJSON: function() {
+		try{
+			var content = this.getContent();
+			return JSON.parse(content);
+		} catch(e) {
+			this.logger.error("Unable to parse content of resource element '" + this.resourceElement.getResourceElementCategory().path + "/" + this.resourceElement.name + "' to JSON");
+			this.logger.error("Incorrect content formatting: " + e + "\n" + e.stack);
+			throw e;
+		}
+	},
+
+	/**
+	*Return the ResourceElement object
+	*/
+	getElement: function() {
+		return this.resourceElement;
+	},
+
+	writeContentToFile: function(fileName) {
+		this.resourceElement.writeContentToFile(fileName);
+	},
+	/**
+	 * Delete ResourceElement from vRO
+	 */
+	delete: function() {
+		return Server.removeResourceElement(this.resourceElement);
+	}
+});
+
+/**
+*Static method to return an array of ResourceElementAccessor
+*@param {string} name - Name of the sought ResourceElement
+*/
+ResourceElementAccessor.getByName = function(name) {
+	var result = [];
+	var foundResourceElements = Server.query("ResourceElement", "name ='" + name + "'");
+
+	for (var i in foundResourceElements) {
+		var reName = foundResourceElements[i].name;
+		var reCat = foundResourceElements[i].getResourceElementCategory().path;
+		var resultEntry = new ResourceElementAccessor(reCat, reName);
+		result.push(resultEntry);
+	}
+
+	return result;
+};
+
+/**
+*Static method to return a ResourceElementAccessor
+*@param {string} path - Path to the sought ResourceElement
+*@param {string} name - Name of the sought ResourceElement
+*/
+ResourceElementAccessor.getByPath = function(path, name) {
+	return new ResourceElementAccessor(path, name);
+};
+
+/**
+ * Static method to return all ResourceElementAccessors by given path
+ * @param {string} path - Path to the sought ResourceElements
+ */
+ResourceElementAccessor.getAllByPath = function(path) {
+	var category = Server.getResourceElementCategoryWithPath(path);
+	var result = Server.query("ResourceElement", "categoryid='" + System.getObjectId(category) + "'");
+	var reAccessors = result.map(function(resource) {
+		return new ResourceElementAccessor(path, resource.name, false);
+	});
+	return reAccessors;
+};
+
+return ResourceElementAccessor;]]></script>
+</dunes-script-module>

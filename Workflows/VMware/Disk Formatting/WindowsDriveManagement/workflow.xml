@@ -1,0 +1,107 @@
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item10" object-name="workflow:name=generic" id="46ab0a77-a427-4f14-8620-e55fd3454fb0" version="1.0.0" api-version="6.0.0" allowed-operations="vef" editor-version="1.6" restartMode="1" resumeFromFailedMode="0"><display-name><![CDATA[WindowsDriveManagement]]></display-name><position y="50.0" x="20.0"/><input><param name="payload" type="Properties"/></input><attrib name="cmd" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="errorCode" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="counter" type="number" read-only="false"><value encoded="n"><![CDATA[0.0]]></value></attrib><attrib name="sleepTime" type="number" read-only="false"><value encoded="n"><![CDATA[10.0]]></value></attrib><attrib name="vm" type="VC:VirtualMachine" read-only="false"><value encoded="n"/></attrib><attrib name="vmName" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="interactiveSession" type="boolean" read-only="false"><value encoded="n"><![CDATA[false]]></value></attrib><attrib name="scriptType" type="string" read-only="false"><value encoded="n"><![CDATA[powershell]]></value></attrib><attrib name="password" type="SecureString" read-only="false"><value encoded="n"/></attrib><attrib name="username" type="string" read-only="false"><value encoded="n"/></attrib><attrib name="scriptOutputText" type="string" read-only="false"><value encoded="n"/></attrib><workflow-item name="item0" type="end" end-mode="0"><in-binding/><position y="50.58823529411765" x="968.2352941176471"/></workflow-item><workflow-item name="item1" out-name="item12" type="task"><display-name><![CDATA[Get added disks]]></display-name><script encoded="false"><![CDATA[cmd =  'Get-WMIObject Win32_Volume | ? { $_.Label -eq "additional" }'
+System.log(scriptOutputText);]]></script><in-binding><bind name="scriptOutputText" type="string" export-name="scriptOutputText"/></in-binding><out-binding><bind name="cmd" type="string" export-name="cmd"/></out-binding><position y="60.58823529411765" x="292.94117647058823"/></workflow-item><workflow-item name="item3" out-name="item4" type="task"><display-name><![CDATA[Get Rename Payload]]></display-name><script encoded="false"><![CDATA[cmd = '';
+
+var drives = new Array();//Array of drives from the request
+var drives2 = new Array();//Array of drives from teh provisioned machine
+var rename = "";
+
+if (output != null) {
+var rootobj = output.getRootObject();
+var isList = rootobj instanceof Array
+
+System.log("islist " + isList)
+
+//Parse result of getting the added drives on the Guest OS
+if (isList) {
+
+   rootobj.forEach(function(psobj) {
+      
+      var size = psobj.getPropertyAsString("Capacity");
+      var deviceID = psobj.getPropertyAsString("DeviceID");
+
+      if (size != null && deviceID != null){
+         var drive = new Object();
+         drive.size = Math.round(parseInt(size)/1024/1024/1024);
+         drive.deviceID = deviceID.replace(/\\/g,"\\\\");;
+System.log("Drive was " + drive.deviceID + " " + drive.size);
+         drives2.push(drive);
+      }
+   })
+} else {
+
+      var size = rootobj.getPropertyAsString("Capacity");
+      var deviceID = rootobj.getPropertyAsString("DeviceID");
+
+      if (size != null && deviceID != null){
+         var drive = new Object();
+         drive.size = Math.round(parseInt(size)/1024/1024/1024);
+        drive.deviceID = deviceID.replace(/\\/g,"\\\\");;
+System.log("Drive was " + drive.serialNumber + " " + drive.size);
+         drives2.push(drive);
+      }
+}
+
+
+var machine = payload.get("machine");
+var properties = machine.get("properties") ;
+
+// If there are no additional drives skip it
+if (drives2.length > 0) 
+{
+   //Parse the requested drives for added drives with drive letters specified
+   for(count = 0; count < 100; count++){
+      var diskName = "VirtualMachine.Disk" + count;
+
+      if (properties.get(diskName+".DeviceID") == null ) { System.log("DeviceID was null for " + count); break; }
+
+      var letter = properties.get(diskName + ".Letter");
+      var size   = properties.get(diskName + ".Size");
+      var label  =  properties.get(diskName + ".Label");
+
+      if (letter == null || letter == "") { continue; } 
+
+System.log("Found letter " + letter + " size " + size);
+
+      var drive = new Object();
+      drive.size = parseInt(size);
+      drive.letter = letter.replace(":","").toUpperCase().trim();
+      drive.label = label;
+      drives.push(drive);
+   }
+
+//For each drive with a specified letter choose a drive added on the VM that matches it in size
+for (i = 0; i < drives.length; i++) {
+   drv = drives[i];
+System.log("Checking for " + drv.letter + "index " + i);
+   for (j = 0; j < drives2.length; j++) {
+      drv2 = drives2[j];
+	  if (drv2 != null && drv2.size == drv.size){
+System.log("Matched size " + drv.size);
+             if (drv.label) {
+                rename += "$drive" + i + " = get-wmiobject -class win32_volume -Filter \"DeviceID='" + drv2.deviceID + "'\" ; Set-WmiInstance -input $drive" + i + " -Arguments @{Label=\"" + drv.label + "\"; DriveLetter=\”" + drv.letter + ":\”};";
+             } else {
+                rename += "$drive" + i + " = get-wmiobject -class win32_volume -Filter \"DeviceID='" + drv2.deviceID + "'\" ; Set-WmiInstance -input $drive" + i + " -Arguments @{Label=\"\"; DriveLetter=\”" + drv.letter + ":\”};";
+             }
+             drives2[j] = null;//remove from available
+		break;
+      }
+   }
+}
+   if (rename == "") { cmd = null; System.log("firstnull"); }
+   else { cmd = rename; }
+   
+} else { cmd = null; System.log("Secondnull");}
+} else { cmd = null; System.log("output was null");}
+System.log("Rename Command " + cmd);]]></script><in-binding><bind name="payload" type="Properties" export-name="payload"/><bind name="scriptOutputText" type="string" export-name="scriptOutputText"/></in-binding><out-binding><bind name="cmd" type="string" export-name="cmd"/></out-binding><position y="60.58823529411765" x="528.2352941176471"/></workflow-item><workflow-item name="item4" out-name="item6" type="condition" alt-out-name="item5" comparator="0"><display-name><![CDATA[Decision]]></display-name><script encoded="false"><![CDATA[//Generated by the system, cannot be edited
+return (cmd != null) ;]]></script><in-binding><bind name="cmd" type="string" export-name="cmd"/></in-binding><out-binding/><condition name="cmd" type="string" comparator="3" label="null"/><position y="50.58823529411765" x="645.8823529411765"/></workflow-item><workflow-item name="item5" type="end" end-mode="0"><in-binding/><position y="132.94117647058823" x="685.8823529411765"/></workflow-item><workflow-item name="item6" out-name="item0" type="link" linked-workflow-id="2D8080808080808080808080808080801A80808001304933636362ce882292c2a"><display-name><![CDATA[Invoke a PowerShell script]]></display-name><in-binding><bind name="host" type="PowerShell:PowerShellHost"><description><![CDATA[PowerShell host]]></description></bind><bind name="script" type="string" export-name="cmd"><description><![CDATA[PowerShell script]]></description></bind></in-binding><out-binding><bind name="output" type="PowerShell:PowerShellRemotePSObject"><description><![CDATA[Script execution result]]></description></bind></out-binding><description><![CDATA[Runs a custom script on a PowerShell host.]]></description><position y="60.58823529411765" x="763.5294117647059"/></workflow-item><workflow-item name="item9" out-name="item1" type="link" linked-workflow-id="f8cd5692-92a0-46b6-a98d-53ffd878d779"><display-name><![CDATA[Run Script In Guest]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[Virtual Machine (VC)]]></description></bind><bind name="username" type="string" export-name="username"><description><![CDATA[Guest OS username]]></description></bind><bind name="password" type="SecureString" export-name="password"><description><![CDATA[Guest OS password]]></description></bind><bind name="scriptType" type="string" export-name="scriptType"><description><![CDATA[bash / bat / powershell]]></description></bind><bind name="script" type="string" export-name="cmd"><description><![CDATA[Script Text]]></description></bind><bind name="scriptTimeout" type="number" export-name=""><description><![CDATA[Timeout for the running script (in second)]]></description></bind><bind name="scriptRefreshTime" type="number" export-name=""><description><![CDATA[(default) Time (in seconds) where a check of script status occurs]]></description></bind><bind name="scriptWorkingDirectory" type="string" export-name=""><description><![CDATA[Script working directory in the guest]]></description></bind><bind name="interactiveSession" type="boolean" export-name="interactiveSession"><description><![CDATA[Script context interactivity]]></description></bind></in-binding><out-binding><bind name="scriptOutputText" type="string" export-name="scriptOutputText"><description><![CDATA[Output of the script]]></description></bind><bind name="scriptExitCode" type="number" export-name=""><description><![CDATA[Exit code of the script]]></description></bind></out-binding><description><![CDATA[]]></description><position y="131.1764705882353" x="292.94117647058823"/></workflow-item><workflow-item name="item10" out-name="item11" type="task"><display-name><![CDATA[Parse Payload]]></display-name><script encoded="false"><![CDATA[vmName = payload.resourceNames[0];
+
+script = 'Get-Disk |';
+script += "Where partitionstyle -eq ‘raw’ |";
+script += 'Initialize-Disk -PartitionStyle GPT -PassThru |';
+script += 'New-Partition -UseMaximumSize |'
+script += 'Format-Volume -FileSystem NTFS -NewFileSystemLabel “additional” -Confirm:$false';
+
+System.log("Formatting " + script);
+
+cmd = script;]]></script><in-binding><bind name="payload" type="Properties" export-name="payload"/></in-binding><out-binding><bind name="vmName" type="string" export-name="vmName"/><bind name="cmd" type="string" export-name="cmd"/></out-binding><description><![CDATA[Simple task with custom script capability.]]></description><position y="60.58823529411765" x="104.70588235294119"/></workflow-item><workflow-item name="item11" out-name="item9" type="task" script-module="com.vmware.pso.helpers/getVCVirtualByName"><display-name><![CDATA[getVCVirtualByName]]></display-name><script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.pso.helpers").getVCVirtualByName(vmNameToFind);]]></script><in-binding><bind name="vmNameToFind" type="string" export-name="vmName"/></in-binding><out-binding><bind name="actionResult" type="VC:VirtualMachine" export-name="vm"/></out-binding><description><![CDATA[Add a note to the workflow schema.]]></description><position y="131.1764705882353" x="104.70588235294119"/></workflow-item><workflow-item name="item12" out-name="item3" type="link" linked-workflow-id="f8cd5692-92a0-46b6-a98d-53ffd878d779"><display-name><![CDATA[Run Script In Guest]]></display-name><in-binding><bind name="vm" type="VC:VirtualMachine" export-name="vm"><description><![CDATA[Virtual Machine (VC)]]></description></bind><bind name="username" type="string" export-name="username"><description><![CDATA[Guest OS username]]></description></bind><bind name="password" type="SecureString" export-name="password"><description><![CDATA[Guest OS password]]></description></bind><bind name="scriptType" type="string" export-name="scriptType"><description><![CDATA[bash / bat / powershell]]></description></bind><bind name="script" type="string" export-name="cmd"><description><![CDATA[Script Text]]></description></bind><bind name="scriptTimeout" type="number" export-name=""><description><![CDATA[Timeout for the running script (in second)]]></description></bind><bind name="scriptRefreshTime" type="number" export-name=""><description><![CDATA[(default) Time (in seconds) where a check of script status occurs]]></description></bind><bind name="scriptWorkingDirectory" type="string" export-name=""><description><![CDATA[Script working directory in the guest]]></description></bind><bind name="interactiveSession" type="boolean" export-name="interactiveSession"><description><![CDATA[Script context interactivity]]></description></bind></in-binding><out-binding><bind name="scriptOutputText" type="string" export-name="scriptOutputText"><description><![CDATA[Output of the script]]></description></bind><bind name="scriptExitCode" type="number" export-name=""><description><![CDATA[Exit code of the script]]></description></bind></out-binding><description><![CDATA[]]></description><position y="60.58823529411765" x="410.5882352941177"/></workflow-item><presentation/></workflow>

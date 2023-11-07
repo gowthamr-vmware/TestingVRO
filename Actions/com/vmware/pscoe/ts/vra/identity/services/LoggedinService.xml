@@ -1,0 +1,393 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="LoggedinService" result-type="Any" api-version="6.0.0" id="e6f16db4-edcb-31ff-873d-b86b9719e5c0" version="2.0.9" allowed-operations="vef" category-name="com.vmware.pscoe.ts.vra.identity.services">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var BASE_PATH = "/";
+/**
+ * A list of identity, account and service management APIs.
+ */
+var LoggedinService = /** @class */ (function () {
+    function LoggedinService(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * Get the currently logged in user.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user'
+     * Endpoint Method: 'get'
+     * @param {boolean} expand
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @return {GetLoggedInUserHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getLoggedInUser = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user";
+        var queryParameters = {};
+        parameters = parameters || {};
+        if (parameters["query_expand"] !== undefined) {
+            queryParameters["expand"] = parameters["query_expand"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.0 release one user can belong to exactly one organization.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/default-org'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @return {GetUserDefaultOrgHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getUserDefaultOrg = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/default-org";
+        var headerParameters = {};
+        parameters = parameters || {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get the currently logged in user's detailed information.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/details'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @return {GetLoggedInUserDetailsHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getLoggedInUserDetails = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/details";
+        var headerParameters = {};
+        parameters = parameters || {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.x release one user can belong to exactly one organization. If expand parameter is passed, detailed information for the organizations will be returned.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/orgs'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @param {string} expand
+     * @return {GetUserOrgsHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getUserOrgs = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/orgs";
+        var queryParameters = {};
+        parameters = parameters || {};
+        if (parameters["query_expand"] !== undefined) {
+            queryParameters["expand"] = parameters["query_expand"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get Principal User Groups Information Within the Specified Organization
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/orgs/{orgId}/groups'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @param {string} orgId
+     * @return {GetLoggedInUserGroupsOnOrgHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getLoggedInUserGroupsOnOrg = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/orgs/" + parameters["path_orgId"] + "/groups";
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * For vRA 8.0 release one user can belong to exactly one organization.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/orgs/{orgId}/info'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @param {string} orgId
+     * @return {GetUserOrgInfoHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getUserOrgInfo = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/orgs/" + parameters["path_orgId"] + "/info";
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get the currently logged in user's roles.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/orgs/{orgId}/roles'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @param {string} orgId
+     * @return {GetUserOrgRolesHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getUserOrgRoles = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/orgs/" + parameters["path_orgId"] + "/roles";
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get the currently logged in user's service roles.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/orgs/{orgId}/service-roles'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @param {string} orgId
+     * @param {string} serviceDefinitionLink
+     * @return {GetUserOrgServiceRolesHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getUserOrgServiceRoles = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/orgs/" + parameters["path_orgId"] + "/service-roles";
+        var queryParameters = {};
+        if (parameters["query_serviceDefinitionLink"] !== undefined) {
+            queryParameters["serviceDefinitionLink"] = parameters["query_serviceDefinitionLink"];
+        }
+        var queryKeys = Object.keys(queryParameters);
+        if (queryKeys.length) {
+            path = path + "?" + queryKeys.map(function (key) { return key + "=" + encodeURIComponent(queryParameters[key]); }).join("&");
+        }
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Get the currently logged in user's profile.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/profile'
+     * Endpoint Method: 'get'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @return {GetPrincipalUserProfileHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.getPrincipalUserProfile = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/profile";
+        var headerParameters = {};
+        parameters = parameters || {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "GET",
+            headers: headerParameters,
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    /**
+     * Update the currently logged in user's preferences.
+     * Endpoint URL: '/csp/gateway/am/api/loggedin/user/profile/locale-preferences'
+     * Endpoint Method: 'put'
+     * @param {string} Authorization
+     * @param {string} csp-auth-token
+     * @param {UserLocaleRequest} body
+     * @return {UpdateUserPreferencesHttpResponse} Http response (200)
+     */
+    LoggedinService.prototype.updateUserPreferences = function (parameters) {
+        var path = "/csp/gateway/am/api/loggedin/user/profile/locale-preferences";
+        var headerParameters = {};
+        if (parameters["header_Authorization"] !== undefined) {
+            headerParameters["Authorization"] = parameters["header_Authorization"];
+        }
+        if (parameters["header_csp-auth-token"] !== undefined) {
+            headerParameters["csp-auth-token"] = parameters["header_csp-auth-token"];
+        }
+        path = "" + BASE_PATH + path;
+        if (VROES.Shims.stringStartsWith(path, "//")) {
+            path = path.slice(1);
+        }
+        parameters["Content-Type"] && (headerParameters["Content-Type"] = parameters["Content-Type"]);
+        var response = this.httpClient.request({
+            path: path,
+            pathEncoded: true, method: "PUT",
+            headers: headerParameters,
+            content: parameters["body_body"],
+        });
+        return {
+            status: response.statusCode,
+            headers: response.headers,
+            body: response.content && (response.content[0] === "{" || response.content[0] === "[") ? JSON.parse(response.content) : response.content,
+        };
+    };
+    LoggedinService.METADATA = {
+        "description": "A list of identity, account and service management APIs.",
+        "title": "Identity Service API",
+        "version": "1.3.0"
+    };
+    return LoggedinService;
+}());
+exports.LoggedinService = LoggedinService;
+return exports;
+]]></script>
+</dunes-script-module>

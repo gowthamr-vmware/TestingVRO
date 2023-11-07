@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="fb433a63-0b47-30e3-8609-e513a0f34f82" version="1.0.0">
+  <display-name><![CDATA[Subnets]]></display-name>
+  <atts>
+    <att name="subnets" type="Array/CompositeType(datacenter:string,environment:string,subnet:string):AlbSubnetType" read-only="false"/>
+  </atts>
+</config-element>

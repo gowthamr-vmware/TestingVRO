@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="ResourceElementAccessor" result-type="Any" api-version="6.0.0" id="bfee7d87-8229-4342-a837-a0b427a8d593" version="2.1.18" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.util">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+/*
+ * #%L
+ * util
+ * %%
+ * Copyright (C) 2023 VMware, WWCC CoE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var ResourceElementAccessor = /** @class */ (function () {
+    function ResourceElementAccessor(resourcePath, throwIfMissing) {
+        var _this = this;
+        this.resourcePath = resourcePath;
+        var sepIndex = resourcePath.lastIndexOf("/");
+        this.categoryPath = resourcePath.substring(0, sepIndex);
+        this.elementName = resourcePath.substring(sepIndex + 1);
+        var category = Server.getResourceElementCategoryWithPath(this.categoryPath);
+        if (category) {
+            this.resourceElement = VROES.Shims.arrayFind((category.resourceElements || []), function (re) { return re.name === _this.elementName; });
+        }
+        if (!this.resourceElement && throwIfMissing) {
+            throw new Error("Resource element " + this.elementName + " with path " + this.categoryPath + " not found.");
+        }
+    }
+    ResourceElementAccessor.prototype.getContent = function () {
+        if (this.resourceElement) {
+            var mimeContent = this.resourceElement.getContentAsMimeAttachment();
+            return mimeContent.content || "";
+        }
+        return "";
+    };
+    // Add saveToVersionRepository as optional, as it might cause internal performance vRO issues when saving resource element
+    ResourceElementAccessor.prototype.setContent = function (content, mimeType, saveToVersionRepository) {
+        if (saveToVersionRepository === void 0) { saveToVersionRepository = true; }
+        var contentMime = new MimeAttachment();
+        contentMime.content = content;
+        contentMime.mimeType = mimeType || "text/plain";
+        var resourceElement = this.getElement();
+        resourceElement.setContentFromMimeAttachment(contentMime);
+        // This method is required for vRA8, as it is expected to have an issue with RE and CE when upgrading to vRA 8.2
+        if (saveToVersionRepository && resourceElement.saveToVersionRepository && typeof resourceElement.saveToVersionRepository === "function") {
+            resourceElement.saveToVersionRepository();
+        }
+    };
+    ResourceElementAccessor.prototype.asJSON = function () {
+        return JSON.parse(this.getContent());
+    };
+    ResourceElementAccessor.prototype.delete = function () {
+        if (this.resourceElement) {
+            Server.removeResourceElement(this.resourceElement);
+        }
+    };
+    ResourceElementAccessor.prototype.writeContentToFile = function (fileName) {
+        this.getElement().writeContentToFile(fileName);
+    };
+    ResourceElementAccessor.prototype.getElement = function () {
+        if (!this.resourceElement) {
+            this.resourceElement = Server.createResourceElement(this.categoryPath, this.elementName);
+        }
+        return this.resourceElement;
+    };
+    return ResourceElementAccessor;
+}());
+exports.ResourceElementAccessor = ResourceElementAccessor;
+return exports;]]></script>
+</dunes-script-module>

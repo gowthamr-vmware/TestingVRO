@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="AlbConstants" result-type="Any" api-version="6.0.0" id="f7c6d36e-5024-4be1-bb4c-f1cc65fe2921" version="1.0.0" allowed-operations="vef" category-name="com.vmware.pscoe.nyc-doe.ts-vrac-ng-automation.actions.actions.avi">
+  <script encoded="false"><![CDATA[var exports = {};
+/*-
+ * #%L
+ * actions
+ * %%
+ * Copyright (C) 2023 VMWARE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var AlbConstants = /** @class */ (function () {
+    function AlbConstants() {
+    }
+    AlbConstants.Class = function () {
+        return System.getModule("com.vmware.pscoe.library.class").Class();
+    };
+    AlbConstants.ALB_CONFIG_PATH = "NYC/Alb";
+    AlbConstants.CUSTOM_HOSTNAME_CONFIG_PATH = "PSCoE/PpS/Custom Hostname Configuration";
+    return AlbConstants;
+}());
+exports.AlbConstants = AlbConstants;
+return exports;]]></script>
+</dunes-script-module>

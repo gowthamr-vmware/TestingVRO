@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="DNSHostnameExtractor" result-type="Any" api-version="6.0.0" id="34bce1a1-5b79-4b60-b5dd-f59112b87d38" version="1.0.10" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.customhostname.autofill.extractor">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+var Logger_1 = VROES.importLazy("com.vmware.pscoe.library.ts.logging/Logger");
+var DNSHostnameExtractor = /** @class */ (function () {
+    function DNSHostnameExtractor(machinePrefix, machineSuffix) {
+        this.logger = Logger_1._.Logger.getLogger('com.vmware.pscoe.library.ts.customhostname.autofill.extractor.DNSHostnameExtractor');
+        this.prefix = machinePrefix;
+        this.postfix = machineSuffix;
+    }
+    DNSHostnameExtractor.prototype.extract = function () {
+        this.logger.debug("Extracting registered systems in DNS for prefix " + this.prefix + " and suffix: " + this.postfix + "...");
+        return [];
+    };
+    return DNSHostnameExtractor;
+}());
+exports.DNSHostnameExtractor = DNSHostnameExtractor;
+return exports;]]></script>
+</dunes-script-module>

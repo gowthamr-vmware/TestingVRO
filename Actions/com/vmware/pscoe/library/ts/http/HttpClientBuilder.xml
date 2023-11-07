@@ -1,0 +1,233 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="HttpClientBuilder" result-type="Any" api-version="6.0.0" id="45f3f3ae-49c5-307e-b1fe-3a127c0f80e3" version="2.0.6" allowed-operations="vef" category-name="com.vmware.pscoe.library.ts.http">
+  <script encoded="false"><![CDATA[var __global = System.getContext() || (function () {
+    return this;
+}).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES()), exports = {};
+/*
+ * #%L
+ * http
+ * %%
+ * Copyright (C) 2020 VMWARE
+ * %%
+ * This program is licensed under Technical Preview License by VMware.
+ * VMware shall own and retain all right, title and interest in and to the Intellectual Property Rights in the Technology Preview Software.
+ * ALL RIGHTS NOT EXPRESSLY GRANTED IN LICENSE ARE RESERVED TO VMWARE.
+ * VMware is under no obligation to support the Technology Preview Software in any way or to provide any Updates to Licensee.
+ * You should have received a copy of the Technical Preview License along with this program.  If not, see
+ * <https://flings.vmware.com/vrealize-build-tools/license>
+ * #L%
+ */
+var HttpClient_1 = VROES.importLazy("com.vmware.pscoe.library.ts.http.HttpClient");
+var URL_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/URL");
+var SHARED_SESSION = "Shared Session";
+var BASIC_AUTH = "Basic";
+var OAUTH_1 = "OAuth 1.0";
+var OAUTH_2 = "OAuth 2.0";
+var NTLM_AUTH = "NTLM";
+var KERBEROS_AUTH = "Kerberos";
+var DIGEST_AUTH = "Digest";
+var HttpClientVroBuilder = /** @class */ (function () {
+    function HttpClientVroBuilder(url) {
+        this.url = url;
+        this._proxyUse = false;
+        this._proxyHost = null;
+        this._proxyPort = 0;
+        this._transient = false;
+        this._hostVerification = false;
+        this._trustCert = false;
+        this._authParams = [];
+    }
+    HttpClientVroBuilder.prototype.name = function (name) {
+        this._name = name;
+        return this;
+    };
+    HttpClientVroBuilder.prototype.proxy = function (host, port) {
+        this._proxyUse = !!host;
+        this._proxyHost = host;
+        this._proxyPort = port;
+        return this;
+    };
+    HttpClientVroBuilder.prototype.transient = function () {
+        this._transient = true;
+        return this;
+    };
+    HttpClientVroBuilder.prototype.trustCert = function () {
+        this._trustCert = true;
+        return this;
+    };
+    /**
+      * Sets Basic authentication with Shared Session mode
+      * @param {string} username
+      * @param {string} password
+      *
+      * @return {HttpClientVroBuilder}
+      */
+    HttpClientVroBuilder.prototype.basic = function (username, password) {
+        return this.setAuth(BASIC_AUTH, [SHARED_SESSION, username, password]);
+    };
+    /**
+      * Sets Digest authentication with Shared Session mode
+      * @param {string} username
+      * @param {string} password
+      *
+      * @return {HttpClientVroBuilder}
+      */
+    HttpClientVroBuilder.prototype.digest = function (username, password) {
+        return this.setAuth(DIGEST_AUTH, [SHARED_SESSION, username, password]);
+    };
+    /**
+      * Sets Kerberos authentication with Shared Session mode
+      * @param {string} username
+      * @param {string} password
+      *
+      * @return {HttpClientVroBuilder}
+      */
+    HttpClientVroBuilder.prototype.kerberos = function (username, password) {
+        return this.setAuth(KERBEROS_AUTH, [SHARED_SESSION, username, password]);
+    };
+    /**
+      * Sets OAuth 1.0 authentication
+      * @param {string} consumerKey
+      * @param {string} consumerSecret
+      * @param {string} accessToken
+      * @param {string} accessTokenSecret
+      *
+      * @return {HttpClientVroBuilder}
+      */
+    HttpClientVroBuilder.prototype.oauth1 = function (consumerKey, consumerSecret, accessToken, accessTokenSecret) {
+        return this.setAuth(OAUTH_1, [consumerKey, consumerSecret, accessToken, accessTokenSecret]);
+    };
+    /**
+      * Sets OAuth 2.0 authentication
+      * @param {string} oauth2Token
+      *
+      * @return {HttpClientVroBuilder}
+      */
+    HttpClientVroBuilder.prototype.oauth2 = function (oauth2Token) {
+        return this.setAuth(OAUTH_2, [oauth2Token]);
+    };
+    /**
+      * Sets NTLM authentication with Shared Session mode
+      * @param {string} authUserName
+      * @param {string} authPassword
+      * @param {string} workstation
+      * @param {string} domain
+      *
+      * @return {HttpClientVroBuilder}
+      */
+    HttpClientVroBuilder.prototype.ntlm = function (authUserName, authPassword, workstation, domain) {
+        return this.setAuth(NTLM_AUTH, [SHARED_SESSION, authUserName, authPassword, workstation, domain]);
+    };
+    HttpClientVroBuilder.prototype.verifyHostname = function () {
+        this._hostVerification = true;
+        return this;
+    };
+    HttpClientVroBuilder.prototype.newRestHost = function () {
+        var name = this._name ||
+            this.url
+                .replace(/https:\/\//i, "")
+                .replace(/http:\/\//i, "")
+                .replace(/\W/g, "_");
+        var host = RESTHostManager.createHost(name);
+        // Generate a friendly name for a RESTHost or RESTOperation from a given URL,
+        // removing "HTTP" and "HTTPS", and replacing non-words with '_'
+        host.name = name;
+        host.url = this.normalizedUrl(this.url);
+        host.hostVerification = this._hostVerification;
+        if (this._proxyUse) {
+            host.proxyHost = this._proxyHost;
+            host.proxyPort = this._proxyPort;
+        }
+        if (this._authType) {
+            host.authentication = RESTAuthenticationManager.createAuthentication(this._authType, this._authParams);
+        }
+        return host;
+    };
+    HttpClientVroBuilder.prototype.addIfCertMissingInTruststore = function () {
+        if (this._trustCert && this.url.toLowerCase().indexOf("https:") === 0) {
+            var importAction = eval("Config.getKeystores().getImportCAFromUrlAction()");
+            var model = importAction.getModel();
+            model.value = this.url;
+            if (this._proxyUse) {
+                var proxyHostHolder = importAction.getProxyHost();
+                proxyHostHolder.value = this._proxyHost;
+                var proxyPortHolder = importAction.getProxyPort();
+                proxyPortHolder.value = this._proxyPort + "";
+            }
+            var certValidationResult = importAction.validateCertificates();
+            // let certInfo = importAction.getCertInfo();
+            var isNotTrusted = certValidationResult.isNoChainOfTrust();
+            // let isCertificateExpired = certValidationResult.isCertificateExpired();
+            var isDomainWrong = certValidationResult.isWrongDomain();
+            // let certificateHostName = certValidationResult.getCertificateHostName();
+            var isNotValid = certValidationResult.isNotValid();
+            // let errorText = certValidationResult.getErrorText();
+            if (isDomainWrong || (isNotValid && !isNotTrusted)) {
+                importAction.execute();
+            }
+        }
+    };
+    HttpClientVroBuilder.prototype.normalizedUrl = function (url) {
+        var u = new URL_1._.URL(url);
+        if (!u.port) {
+            u.port = "https" == u.protocol ? "443" : "80";
+        }
+        if (u.page) {
+            while (VROES.Shims.stringEndsWith(u.page, "/")) {
+                u.page = u.page.substring(0, u.page.length - 1);
+            }
+        }
+        else if (u.path) {
+            while (VROES.Shims.stringEndsWith(u.path, "/")) {
+                u.path = u.path.substring(0, u.path.length - 1);
+            }
+        }
+        return u.getUrl();
+    };
+    HttpClientVroBuilder.prototype.buildTransientRestHost = function () {
+        var host = this.newRestHost();
+        host = RESTHostManager.createTransientHostFrom(host);
+        RESTHostManager.reloadConfiguration();
+        this.addIfCertMissingInTruststore();
+        return host;
+    };
+    HttpClientVroBuilder.prototype.findOrCreateRestHost = function () {
+        var _this = this;
+        var normalUrl = this.url && this.normalizedUrl(this.url);
+        var matchingHosts = RESTHostManager.getHosts()
+            .map(function (hostId) { return RESTHostManager.getHost(hostId); })
+            .filter(function (host) { return (normalUrl && _this.normalizedUrl(host.url) === normalUrl) || !normalUrl; })
+            .filter(function (host) { return _this._name === host.name; });
+        if (matchingHosts.length > 1) {
+            throw new Error("Found more than one host: " + JSON.stringify(matchingHosts.map(function (host) { return "url: " + _this.normalizedUrl(host.url) + ", name: " + host.name; })));
+        }
+        if (!matchingHosts.length) {
+            var host = this.newRestHost();
+            host = RESTHostManager.addHost(host);
+            this.addIfCertMissingInTruststore();
+            return host;
+        }
+        else {
+            return matchingHosts[0];
+        }
+    };
+    HttpClientVroBuilder.prototype.setAuth = function (authType, authParams) {
+        this._authType = authType;
+        this._authParams = authParams;
+        return this;
+    };
+    HttpClientVroBuilder.prototype.build = function (ctor, opts) {
+        var host = this._transient ? this.buildTransientRestHost() : this.findOrCreateRestHost();
+        if (!ctor) {
+            ctor = HttpClient_1._.HttpClientVro;
+        }
+        return new ctor(host, opts);
+    };
+    return HttpClientVroBuilder;
+}());
+exports.HttpClientVroBuilder = HttpClientVroBuilder;
+exports.HttpClientBuilder = HttpClientVroBuilder;
+return exports;
+]]></script>
+</dunes-script-module>
