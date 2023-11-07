@@ -11,7 +11,7 @@
     </workflow-item>
     <workflow-item name="item1" out-name="item0" type="task" comparator="0">
         <display-name>Scriptable task</display-name>
-        <script encoded="false">console.log("Test");</script>
+        <script encoded="false">console.log("Test Gowti");</script>
         <in-binding/>
         <out-binding/>
         <description>Simple task with custom script capability.</description>
